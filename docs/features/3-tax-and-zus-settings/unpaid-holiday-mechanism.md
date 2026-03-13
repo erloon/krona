@@ -152,4 +152,4 @@ The mechanism operates as a **revenue-reduction engine**. It must not treat unpa
    * Monthly retainer contract without explicit proration rule -> approximation warning shown.
    * Holiday entered in December of a year with additional statutory non-working day(s) -> working-day denominator recalculates correctly.
 
-7. **Keep the scope strict.** Do not merge this feature with sick leave, maternity, business suspension, or tax-relief logic. Those may influence similar outputs, but they are separate business mechanisms and should remain isolated in both UX and calculation logic.
+7. **Keep the scope strict.** Do not merge this feature with sick leave, maternity, business suspension, or tax-relief logic. Those may influence similar outputs, but they are separate business mechanisms and should remain isolated in both UX and calculation logic. 
