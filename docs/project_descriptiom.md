@@ -1,76 +1,100 @@
-# Business-Technical Analysis Document
-## Target Application: Kalkulator B2B (B2B Calculator Module)
+# Project Description: Kalkulator B2B
 **Date:** March 24, 2026
 
-### 1. Executive Summary
-The analyzed application is a specialized financial calculator designed for Polish sole traders (B2B contractors - JDG). Its primary purpose is to calculate net monthly income by accurately deducting applicable taxes (PIT, VAT) and social security contributions (ZUS, Health contribution). The tool also features a comparison module (B2B vs. UoP - Employment Contract).
+## Overview
+A web application for Polish sole traders (JDG / B2B contractors) to estimate their real monthly net income ("na rękę"). The app instantly calculates all mandatory deductions — PIT, VAT, ZUS social contributions and health insurance — based on the user's contract value and personal tax situation.
 
-### 2. Functional Scope (Application Features)
-The B2B calculator focuses on real-time net income estimation based on highly configurable user inputs. Key functionalities include:
+---
 
-* **Multi-Source Revenue Management:** Users can add and manage multiple independent B2B revenue streams. Each source is normalized to a monthly PLN value and aggregated for tax calculations. ZUS and health contribution are calculated once at entrepreneur level regardless of source count.
-* **Time-Based Rate Conversion:** The calculator supports inputs as monthly, daily, or hourly rates, automatically converting them based on configurable billable days per month and hours per day.
-* **Multi-Currency Support:** Income can be entered in various currencies (PLN, USD, EUR, GBP, CHF), with conversion to PLN using predefined or live NBP exchange rates (Table A). Each source retains its own rate, effective date, and rate source.
-* **Advanced Tax Configuration:** Full support for the Polish tax system including Tax Scale / Skala podatkowa (12%/32%), Flat Tax / Podatek liniowy (19%), and Lump Sum / Ryczałt (rates: 2%, 3%, 5.5%, 8.5%, 12%, 14%, 15%, 17%).
-* **ZUS (Social Security) Configuration:** Calculations adapt to the user's ZUS status: Brak ulgi (Standard), Składka preferencyjna (Preferential/Reduced), Ulga na start (Startup relief - social ZUS = 0), or Umowa o pracę (Employment Contract overlap - social ZUS = 0 under statutory conditions). FP/FS (Labor Fund) is applied only where statutory conditions are met.
-* **Voluntary Sickness Insurance:** Optional 2.45% contribution available when the active ZUS status allows social insurance contributions from business activity.
-* **Tax Reliefs & Benefits:**
-  * **IP BOX** — Annual 5% PIT preference on qualified IP income, applied as an overlay on Tax Scale or Flat Tax. Uses the statutory nexus ratio formula: `((a+b)×1.3) / (a+b+c+d)`, capped at 1.0. Not available for Lump Sum.
-  * **Return Relief / Ulga na powrót** — Exempts qualifying revenue up to 85,528 PLN/year from PIT for eligible taxpayers who transferred tax residency to Poland. Consumes the shared annual PIT-0 pool.
-  * **Family Relief / Ulga dla rodzin 4+** — Exempts qualifying revenue up to 85,528 PLN/year from PIT for taxpayers with 4+ qualifying children. Shares the same annual PIT-0 cap with other zero-PIT reliefs.
-  * **Joint Taxation with Spouse / Rozliczenie z małżonkiem** — Annual PIT optimization mechanism available only under Tax Scale. Combined eligible income is halved, taxed per scale, then doubled.
-  * **Unpaid Holiday / Urlop bezpłatny** — Reduces billable revenue for planned non-billable days; fixed obligations (ZUS, health contribution) remain in force.
-* **Cost Management:** Business expenses reduce the PIT and health contribution base under Tax Scale and Flat Tax. Under Lump Sum, costs affect only cash flow, not the tax base. Supports cost categories: Standard, Car - Mixed Use (50% VAT deductibility, 75% PIT deductibility), Car - Business Use (100% VAT and PIT deductibility).
-* **VAT Settlement:** Per-source VAT rate selection (0%, 5%, 8%, 23%, NP). Output VAT (VAT należny) aggregated across sources; input VAT (VAT naliczony) from costs offsets the payable amount. VAT-exempt status disables VAT deduction. Supports Reverse Charge (NP) for cross-border B2B services.
-* **B2B vs. UoP Comparison:** Side-by-side net income comparison between B2B and a standard employment contract (Umowa o Pracę), including employer-side costs (Super-Gross) and Copyright Costs (50% KUP) option.
-* **Solidarity Levy (Danina Solidarnościowa):** Additional 4% levy on annual income exceeding 1,000,000 PLN, applicable under Tax Scale and Flat Tax.
-* **Real-time Summary Dashboard:** Immediate calculation of deductions, providing a high-level view and an expandable detailed summary panel.
-* **State Management:** Functionality to share the calculation (URL/state sharing) and reset all inputs.
+## Core Features
 
-### 3. User Interface (UI) Configuration
-The UI is divided into several logical input/output blocks:
+### 1. Revenue Input
+- Add one or more B2B income sources independently
+- Per source: enter amount as **monthly, daily or hourly rate**
+- Configurable billable days/month and hours/day
+- Supported currencies: **PLN, USD, EUR, GBP, CHF** with NBP Table A exchange rates
+- Per-source VAT rate: **0%, 5%, 8%, 23%, NP** (not taxable — reverse charge for EU/international)
 
-* **Result Dashboard (Top/Sticky):**
-    * **Main Output:** "Net income per month" (Przychód netto miesięcznie).
-    * **Deduction breakdown:** PIT, VAT, ZUS, and Health Contribution (Zdrowotna).
-    * **Actions:** "Share" (Udostępnij), "Reset", "Expand detailed summary".
-* **Incomes Section (Przychody B2B):**
-    * List of current income sources with an "Add source" (Dodaj źródło przychodu) button.
-    * Inputs per source: Amount, Currency dropdown (PLN/USD/EUR/GBP/CHF), VAT rate dropdown (0%, 5%, 8%, 23%, NP).
-    * Billing mode tabs: Monthly / Daily / Hourly with corresponding Days/Month and Hours/Day adjusters.
-    * Exchange rate display per source (rate source, effective date, resolved NBP rate).
-* **Costs Section (Koszty prowadzenia działalności):**
-    * "Add cost" (Dodaj koszt) button with inputs: Label, Net amount, VAT rate, Cost category (Standard / Car - Mixed Use / Car - Business Use).
-* **Settings Panel (Ustawienia):**
-    * *Radio buttons:* Tax form selection (Skala / Liniowy / Ryczałt), ZUS status selection (Brak ulgi / Składka preferencyjna / Ulga na start / Umowa o pracę).
-    * *Checkboxes/Toggles:* Voluntary sickness insurance, IP BOX, Return relief (Ulga na powrót), Family relief 4+ (Ulga dla rodzin 4+), Joint taxation with spouse.
-    * *Numeric Input:* "Save for holidays" (Odłóż na urlop) — number of unpaid days.
-* **Detailed Summary Panel (Szczegółowe podsumowanie):**
-    * Expandable step-by-step breakdown: gross revenue, VAT, expenses, ZUS social, health contribution, PIT base, PIT, solidarity levy, net income.
-    * Annual and monthly views; threshold crossing indicators (e.g., 120k PLN Tax Scale bracket, 60k/300k PLN Lump Sum health tiers).
-* **B2B vs. UoP Comparison Panel:**
-    * Toggle to activate side-by-side view; inputs for UoP gross salary and author's rights percentage (KUP).
+### 2. Business Costs
+- Add any number of expense items (label + net amount + VAT rate)
+- Cost categories affecting VAT and PIT deductibility:
+  - **Standard** — full VAT deduction (if VAT-registered), full PIT deduction
+  - **Car – Mixed Use** — 50% VAT deduction, 75% PIT deduction
+  - **Car – Business Only** — 100% VAT deduction, 100% PIT deduction
+- Under Lump Sum (Ryczałt), costs do **not** reduce the tax base (only affect cash flow)
 
-### 4. Core Calculation Pipeline
-The engine processes inputs in the following order per calculation cycle:
+### 3. Tax Form Selection
+Choose one of three Polish tax regimes:
 
-1. **Revenue normalization** — time-based rate conversion (hourly/daily → monthly) per source.
-2. **Currency conversion** — foreign revenue normalized to PLN using per-source NBP rates.
-3. **Multi-source aggregation** — sources summed into total monthly PLN revenue.
-4. **Unpaid holiday adjustment** — revenue reduced by lost billable days (business stays active).
-5. **ZUS social calculation** — based on selected status; paid once at entrepreneur level.
-6. **Health contribution calculation** — Tax Scale: 9% of income; Flat Tax: 4.9% of income (min. floor); Lump Sum: tiered by annual revenue (up to 60k / 60k–300k / above 300k PLN).
-7. **Tax base computation** — Revenue minus costs minus deductible ZUS social; costs excluded from base under Lump Sum.
-8. **PIT-0 relief application** — Return Relief and/or Family Relief 4+ applied chronologically against qualifying revenue (shared 85,528 PLN annual pool).
-9. **IP BOX overlay** — annual 5% preferential estimate applied to nexus-adjusted qualified IP income (Tax Scale / Flat Tax only).
-10. **PIT calculation** — Scale: 12%/32% with 3,600 PLN tax-reducing amount; Flat Tax: 19%; Lump Sum: selected rate on revenue.
-11. **Joint settlement adjustment** — annual tax recalculated on combined halved base (Tax Scale only).
-12. **Solidarity Levy** — 4% on annual surplus above 1,000,000 PLN (Tax Scale / Flat Tax).
-13. **VAT settlement** — output VAT minus deductible input VAT from costs.
-14. **Net income** — Revenue − expenses − ZUS social − health contribution − PIT − solidarity levy.
+| Form | Rate | Health contribution |
+|---|---|---|
+| Tax Scale (Skala podatkowa) | 12% / 32% (above 120k PLN) | 9% of income |
+| Flat Tax (Podatek liniowy) | 19% flat | 4.9% of income (min. floor applies) |
+| Lump Sum (Ryczałt) | 2% – 17% (by activity type) | Fixed tier by annual revenue |
 
-### 5. Data Structure (JSON State Model)
-The underlying state managing the calculator resembles the following JSON schema:
+**Lump Sum health contribution tiers (2026):** up to 60k PLN / 60k–300k PLN / above 300k PLN
+
+### 4. ZUS (Social Security) Status
+Selects the contribution scheme — one status active at a time:
+
+| Status | Social ZUS | Notes |
+|---|---|---|
+| Brak ulgi (Standard) | Full base (~60% avg. wage) | FP/FS applies where conditions are met |
+| Składka preferencyjna | Reduced base (~30% min. wage) | Temporary, up to 24 months |
+| Ulga na start | 0 PLN | Health contribution still due; up to 6 months |
+| Umowa o pracę | 0 PLN | Only when employment covers social insurance threshold |
+
+**Voluntary sickness insurance** (+2.45%) available under Brak ulgi and Składka preferencyjna.
+
+### 5. Tax Reliefs
+All reliefs affect **PIT only** — ZUS and health contribution remain unchanged.
+
+- **IP BOX** — 5% annual PIT rate on qualified IP income (software copyright). Applied as year-end overlay on Tax Scale or Flat Tax using the statutory nexus ratio. Not available under Lump Sum.
+- **Ulga na powrót (Return Relief)** — PIT exemption on up to 85,528 PLN/year of qualifying revenue, for taxpayers who transferred tax residency to Poland. Part of a shared annual PIT-0 pool.
+- **Ulga dla rodzin 4+ (Family Relief)** — PIT exemption on up to 85,528 PLN/year of qualifying revenue, for taxpayers with 4+ qualifying children. Shares the same 85,528 PLN annual cap as other PIT-0 reliefs.
+- **Rozliczenie z małżonkiem (Joint Taxation)** — Annual PIT optimisation available under Tax Scale only. Combined household income is halved, taxed per scale, then doubled. Most beneficial when spouses' incomes differ significantly.
+- **Unpaid holiday (Urlop bezpłatny)** — Enter planned non-billable days to see the impact on monthly revenue. Fixed obligations (ZUS, health contribution) stay in force.
+
+### 6. VAT Settlement
+- Output VAT (VAT należny) collected per invoice source
+- Input VAT (VAT naliczony) from business costs offsets the payable amount
+- Result: **VAT to pay** or **VAT surplus** (carry-forward / refund candidate)
+- VAT-exempt users: VAT deduction disabled; undeductible VAT increases cost base
+
+### 7. Result Dashboard (sticky, real-time)
+Displays instantly on every input change:
+- **Net income per month** (Przychód netto miesięcznie) — the main headline figure
+- Breakdown: **PIT · VAT · ZUS · Zdrowotna**
+- Actions: Share (URL state), Reset
+
+### 8. Detailed Summary Panel
+Expandable step-by-step breakdown showing the full calculation path:
+- Gross revenue → VAT → Costs → ZUS social → Health contribution → Tax base → PIT → **Net income**
+- Annual and monthly views
+- Threshold indicators: 120k PLN Tax Scale bracket, 60k/300k PLN Lump Sum health tiers, 1M PLN Solidarity Levy threshold
+
+---
+
+## Calculation Pipeline (order of operations)
+
+1. Time-based rate conversion (hourly / daily → monthly) per source
+2. Currency conversion to PLN (per-source NBP rate)
+3. Multi-source revenue aggregation
+4. Unpaid holiday revenue reduction
+5. ZUS social contributions (once per entrepreneur)
+6. Health contribution (per selected tax form)
+7. Tax base: revenue − costs − deductible ZUS (costs excluded under Lump Sum)
+8. PIT-0 reliefs applied chronologically to qualifying revenue (shared 85,528 PLN cap)
+9. IP BOX annual estimate (Tax Scale / Flat Tax only)
+10. PIT: 12%/32% or 19% on income, or Ryczałt rate on revenue
+11. Joint settlement recalculation (Tax Scale only)
+12. Solidarity Levy: 4% on annual income above 1,000,000 PLN (Scale / Flat Tax)
+13. VAT settlement: output VAT − input VAT from costs
+14. **Net income = Revenue − Costs − ZUS − Health − PIT − Solidarity Levy**
+
+---
+
+## Data State Model (JSON)
 
 ```json
 {
@@ -82,8 +106,7 @@ The underlying state managing the calculator resembles the following JSON schema
         "billingType": "MONTHLY | DAILY | HOURLY",
         "baseAmount": 10000.00,
         "currency": "PLN | USD | EUR | GBP | CHF",
-        "vatRate": 0.23,
-        "vatRateLabel": "23% | 8% | 5% | 0% | NP",
+        "vatRate": "23% | 8% | 5% | 0% | NP",
         "workingDaysPerMonth": 21,
         "workingHoursPerDay": 8,
         "exchangeRate": 1.0,
@@ -103,11 +126,11 @@ The underlying state managing the calculator resembles the following JSON schema
     "taxSettings": {
       "taxationForm": "SCALE | FLAT_19 | LUMP_SUM",
       "lumpSumRate": 0.12,
-      "zusStatus": "NONE | PREFERENTIAL | STARTUP | UOP",
+      "zusStatus": "STANDARD | PREFERENTIAL | STARTUP | UOP",
       "voluntarySicknessInsurance": false,
       "unpaidHolidayDays": 0,
-      "jointTaxation": false,
-      "jointTaxationSpouseAnnualIncome": 0.00,
+      "vatStatus": "ACTIVE | EXEMPT",
+      "taxYear": 2026,
       "ipBox": false,
       "ipBoxQualifiedIncomePercent": 0.0,
       "ipBoxCostsA": 0.00,
@@ -116,13 +139,8 @@ The underlying state managing the calculator resembles the following JSON schema
       "ipBoxCostsD": 0.00,
       "returnRelief": false,
       "familyRelief": false,
-      "vatStatus": "ACTIVE | EXEMPT",
-      "taxYear": 2026
-    },
-    "comparisonMode": {
-      "enabled": false,
-      "uopGrossSalary": 0.00,
-      "uopAuthorRightsPercent": 0.0
+      "jointTaxation": false,
+      "jointTaxationSpouseAnnualIncome": 0.00
     }
   },
   "calculatedResults": {
