@@ -1,1 +1,1 @@
-# SoloB2B
+# Krona
