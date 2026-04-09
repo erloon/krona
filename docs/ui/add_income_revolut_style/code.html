@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pl"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,FILL@0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#49ddbf",
+              "primary-container": "#005143",
+              "on-primary": "#00493d",
+              "on-primary-container": "#56e7c8",
+              "background": "#0b0f0f",
+              "surface": "#0b0f0f",
+              "surface-container-low": "#0f1414",
+              "surface-container-high": "#182121",
+              "surface-container-highest": "#1c2828",
+              "on-surface": "#dbe8e8",
+              "on-surface-variant": "#a1aead",
+              "outline": "#6b7878",
+              "outline-variant": "#3e4a4a",
+              "error": "#ee7d77"
+            },
+            borderRadius: {
+              "DEFAULT": "0.25rem",
+              "lg": "0.5rem",
+              "xl": "0.75rem",
+              "2xl": "1rem",
+              "full": "9999px"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #0b0f0f;
+            color: #dbe8e8;
+            font-family: 'Inter', sans-serif;
+            min-height: 100dvh;
+        }
+        .hero-text {
+            font-family: 'Manrope', sans-serif;
+        }
+        input:focus {
+            outline: none;
+            box-shadow: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .sticky-summary {
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="flex flex-col">
+<!-- Header -->
+<header class="fixed top-0 w-full z-50 bg-[#0b0f0f]/80 backdrop-blur-md flex items-center px-6 h-16 border-b border-white/5">
+<div class="flex items-center gap-4">
+<button class="text-[#49ddbf] hover:bg-[#1c2828] transition-colors p-2 rounded-full flex items-center justify-center active:scale-95 duration-200">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline text-lg font-semibold tracking-tight text-[#dbe8e8]">Dodaj przychód</h1>
+</div>
+</header>
+<main class="mt-16 mb-48 px-6 pt-8 space-y-10 max-w-2xl mx-auto w-full">
+<!-- Section 1: Kwota i waluta -->
+<section class="space-y-4">
+<label class="font-label text-xs font-medium uppercase tracking-widest text-on-surface-variant">Kwota netto</label>
+<div class="flex items-baseline gap-3">
+<input autofocus="" class="hero-text bg-transparent border-none p-0 text-5xl sm:text-6xl font-extrabold text-on-surface w-full placeholder:text-surface-container-highest focus:ring-0" placeholder="0,00" type="text" value="0,00"/>
+<span class="font-label text-xl font-semibold text-primary">PLN</span>
+</div>
+<div class="flex gap-2 overflow-x-auto hide-scrollbar py-2">
+<button class="px-5 py-2 rounded-full text-sm font-semibold bg-primary text-on-primary transition-all">PLN</button>
+<button class="px-5 py-2 rounded-full text-sm font-semibold bg-surface-container-highest text-on-surface-variant hover:text-primary transition-all">EUR</button>
+<button class="px-5 py-2 rounded-full text-sm font-semibold bg-surface-container-highest text-on-surface-variant hover:text-primary transition-all">USD</button>
+<button class="px-5 py-2 rounded-full text-sm font-semibold bg-surface-container-highest text-on-surface-variant hover:text-primary transition-all">GBP</button>
+<button class="px-5 py-2 rounded-full text-sm font-semibold bg-surface-container-highest text-on-surface-variant hover:text-primary transition-all">CHF</button>
+</div>
+</section>
+<!-- Section 2: Tryb rozliczeń -->
+<section class="space-y-4">
+<label class="font-label text-xs font-medium uppercase tracking-widest text-on-surface-variant">Tryb rozliczeń</label>
+<div class="space-y-3">
+<button class="w-full flex items-center justify-between p-4 bg-surface-container-low rounded-xl border border-primary/20 transition-all hover:bg-surface-container-high group">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">calendar_month</span>
+<div class="text-left">
+<p class="font-bold text-on-surface group-hover:text-primary transition-colors">Miesięczny</p>
+<p class="text-xs text-on-surface-variant">Stała kwota co miesiąc</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 bg-surface-container-highest rounded-xl transition-all hover:bg-surface-container-high group">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-outline">today</span>
+<div class="text-left">
+<p class="font-bold text-on-surface group-hover:text-primary transition-colors">Dzienny</p>
+<p class="text-xs text-on-surface-variant">Rozliczenie za dni pracy</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">radio_button_unchecked</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 bg-surface-container-highest rounded-xl transition-all hover:bg-surface-container-high group">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-outline">schedule</span>
+<div class="text-left">
+<p class="font-bold text-on-surface group-hover:text-primary transition-colors">Godzinowy</p>
+<p class="text-xs text-on-surface-variant">Stawka za każdą godzinę</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">radio_button_unchecked</span>
+</button>
+</div>
+</section>
+<!-- Section 3: Stawka VAT -->
+<section class="space-y-4">
+<label class="font-label text-xs font-medium uppercase tracking-widest text-on-surface-variant">Stawka VAT</label>
+<div class="flex flex-wrap gap-2">
+<button class="px-5 py-2 rounded-full text-sm font-semibold bg-primary text-on-primary transition-all">23%</button>
+<button class="px-5 py-2 rounded-full text-sm font-semibold bg-surface-container-highest text-on-surface-variant hover:text-primary transition-all">8%</button>
+<button class="px-5 py-2 rounded-full text-sm font-semibold bg-surface-container-highest text-on-surface-variant hover:text-primary transition-all">5%</button>
+<button class="px-5 py-2 rounded-full text-sm font-semibold bg-surface-container-highest text-on-surface-variant hover:text-primary transition-all">0%</button>
+<button class="px-5 py-2 rounded-full text-sm font-semibold bg-surface-container-highest text-on-surface-variant hover:text-primary transition-all">NP</button>
+</div>
+</section>
+<!-- Section 4: Parametry pracy -->
+<section class="space-y-4">
+<label class="font-label text-xs font-medium uppercase tracking-widest text-on-surface-variant">Parametry pracy</label>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<div class="bg-surface-container-highest rounded-xl px-4 py-1">
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold pt-2">Dni / mies.</p>
+<input class="w-full bg-transparent border-none py-2 text-on-surface placeholder:text-outline focus:ring-0 font-bold" placeholder="20" type="number"/>
+</div>
+</div>
+<div class="space-y-2">
+<div class="bg-surface-container-highest rounded-xl px-4 py-1">
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold pt-2">Godz. / dzień</p>
+<input class="w-full bg-transparent border-none py-2 text-on-surface placeholder:text-outline focus:ring-0 font-bold" placeholder="8" type="number"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 5: Opis -->
+<section class="space-y-4">
+<label class="font-label text-xs font-medium uppercase tracking-widest text-on-surface-variant">Opis (opcjonalnie)</label>
+<div class="bg-surface-container-highest rounded-xl px-4 py-3">
+<textarea class="w-full bg-transparent border-none text-on-surface placeholder:text-outline focus:ring-0 font-medium resize-none" placeholder="Np. Faktura za usługi programistyczne" rows="3"></textarea>
+</div>
+</section>
+</main>
+<!-- Fixed Bottom Summary & Actions -->
+<footer class="fixed bottom-0 left-0 w-full z-50 bg-[#0b0f0f]/95 backdrop-blur-xl border-t border-white/5 px-6 pb-10 pt-4 flex flex-col gap-4">
+<!-- Real-time Summary Card -->
+<div class="grid grid-cols-3 gap-4 items-center mb-2 px-2">
+<div>
+<p class="text-[9px] uppercase tracking-tighter text-on-surface-variant mb-1 font-bold">Netto</p>
+<p class="text-sm font-semibold text-on-surface">0,00 PLN</p>
+</div>
+<div>
+<p class="text-[9px] uppercase tracking-tighter text-on-surface-variant mb-1 font-bold">VAT (23%)</p>
+<p class="text-sm font-semibold text-on-surface">0,00 PLN</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] uppercase tracking-tighter text-primary mb-0.5 font-extrabold">Brutto</p>
+<p class="text-xl font-headline font-extrabold text-primary">0,00 PLN</p>
+</div>
+</div>
+<div class="space-y-3">
+<button class="w-full py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-bold rounded-xl active:scale-[0.98] transition-transform shadow-[0_15px_30px_rgba(73,221,191,0.15)]">
+                Zapisz przychód
+            </button>
+<button class="w-full py-3 text-on-surface-variant font-medium hover:text-on-surface transition-colors">
+                Anuluj
+            </button>
+</div>
+</footer>
+</body></html>

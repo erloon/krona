@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pl"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Krona - Zarządzanie Przychodami</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-dim": "#35ceb1",
+              "tertiary-container": "#d8f2d3",
+              "on-error-container": "#ff9993",
+              "surface-container": "#131b1b",
+              "inverse-on-surface": "#525656",
+              "on-tertiary": "#4e654d",
+              "on-surface-variant": "#a1aead",
+              "outline": "#6b7878",
+              "on-background": "#dbe8e8",
+              "on-secondary-fixed-variant": "#4c5f5c",
+              "on-secondary": "#112321",
+              "secondary": "#8ea29e",
+              "background": "#0b0f0f",
+              "on-error": "#490106",
+              "tertiary-fixed": "#e1fbdb",
+              "tertiary-dim": "#d5efd0",
+              "primary-fixed-dim": "#5bebcc",
+              "secondary-fixed-dim": "#c4d9d5",
+              "error-container": "#7f2927",
+              "error": "#ee7d77",
+              "tertiary-fixed-dim": "#d2edce",
+              "on-tertiary-fixed-variant": "#556c53",
+              "on-secondary-container": "#afc4bf",
+              "on-primary-fixed": "#00483c",
+              "on-tertiary-fixed": "#394f38",
+              "surface": "#0b0f0f",
+              "secondary-fixed": "#d2e7e3",
+              "surface-container-low": "#0f1414",
+              "secondary-dim": "#8ea29e",
+              "surface-container-high": "#182121",
+              "surface-container-lowest": "#000000",
+              "primary": "#49ddbf",
+              "primary-fixed": "#6bfada",
+              "on-surface": "#dbe8e8",
+              "inverse-surface": "#f7faf9",
+              "surface-tint": "#49ddbf",
+              "inverse-primary": "#006c5a",
+              "surface-variant": "#1c2828",
+              "error-dim": "#bb5551",
+              "on-primary": "#00493d",
+              "on-secondary-fixed": "#304340",
+              "secondary-container": "#2c3f3c",
+              "on-primary-container": "#56e7c8",
+              "tertiary": "#ebffe6",
+              "surface-bright": "#202f2f",
+              "primary-container": "#005143",
+              "on-primary-fixed-variant": "#006857",
+              "surface-container-highest": "#1c2828",
+              "surface-dim": "#0b0f0f",
+              "outline-variant": "#3e4a4a",
+              "on-tertiary-container": "#465c45"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body {
+        background-color: #0b0f0f;
+        color: #dbe8e8;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="bg-[#0b0f0f] dark:bg-[#0b0f0f] docked full-width top-0 z-50 fixed w-full">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden border border-outline-variant/20">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="Close-up portrait of a professional man in a dark minimalist studio setting with soft side lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZzN0LKiP_Lqzy6pHpjWMEvAa4cxDeZPl-aqkxJnrhuRuxEmk-0fAA7J8uprqtTeM0v6oxbks00Jq7zBKRVF96_MkFIiZ4z6x_OuBvgNvTkl6TX0ND9rFiTB92hVkeVS0JQxhYkwdM_QouxrFHED3NwHnyTog9uvEnCsPwaEyd1IDkrS_ewb8UjhuxWR8tlIN9W1sM7DIgAcIe9o9kYGzliUExb5pMpJg29UQtpU_ylq-ZntJazo6dJnsla4oqyJYOmlxh5nOwExs0"/>
+</div>
+<h1 class="font-['Manrope'] font-bold text-xl tracking-tighter text-[#49ddbf]">Krona</h1>
+<button class="text-[#a1aead] hover:bg-[#1c2828] transition-colors p-2 rounded-full active:scale-95 duration-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-lg mx-auto min-h-screen">
+<!-- Header Section -->
+<section class="mb-10">
+<span class="font-label text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-2 block">Finanse</span>
+<h2 class="font-headline font-extrabold text-4xl text-on-surface tracking-tight mb-2">Przychody</h2>
+<div class="flex items-baseline gap-2">
+<span class="font-label text-sm text-on-surface-variant">Suma netto:</span>
+<span class="font-headline font-bold text-2xl text-primary">24.500,00 <span class="text-sm font-medium">PLN</span></span>
+</div>
+</section>
+<!-- Income List -->
+<div class="space-y-6">
+<!-- Entry 1 -->
+<div class="bg-surface-container-low rounded-2xl p-5 group hover:bg-surface-container-highest transition-all duration-300">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-headline font-semibold text-lg text-on-surface leading-tight">Klient A</h3>
+<p class="font-label text-xs text-on-surface-variant mt-1">Faktura #2023/04/12</p>
+</div>
+<div class="text-right">
+<div class="font-headline font-bold text-xl text-on-surface">12.000,00</div>
+<div class="font-label text-[10px] uppercase tracking-widest text-primary mt-1">VAT 23%</div>
+</div>
+</div>
+<div class="flex gap-2 pt-4 border-t border-outline-variant/10">
+<button class="flex-1 flex items-center justify-center gap-2 py-2 bg-surface-container-highest rounded-lg text-on-surface-variant text-xs font-medium hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">edit</span>
+                        Edytuj
+                    </button>
+<button class="flex-1 flex items-center justify-center gap-2 py-2 bg-surface-container-highest rounded-lg text-on-surface-variant text-xs font-medium hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+                        Duplikuj
+                    </button>
+<button class="w-10 flex items-center justify-center py-2 bg-surface-container-highest rounded-lg text-on-surface-variant text-xs font-medium hover:text-error transition-colors">
+<span class="material-symbols-outlined text-sm">delete</span>
+</button>
+</div>
+</div>
+<!-- Entry 2 -->
+<div class="bg-surface-container-low rounded-2xl p-5 group hover:bg-surface-container-highest transition-all duration-300">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-headline font-semibold text-lg text-on-surface leading-tight">Projekt Beta</h3>
+<p class="font-label text-xs text-on-surface-variant mt-1">Umowa o dzieło</p>
+</div>
+<div class="text-right">
+<div class="font-headline font-bold text-xl text-on-surface">8.500,00</div>
+<div class="font-label text-[10px] uppercase tracking-widest text-primary mt-1">VAT 0%</div>
+</div>
+</div>
+<div class="flex gap-2 pt-4 border-t border-outline-variant/10">
+<button class="flex-1 flex items-center justify-center gap-2 py-2 bg-surface-container-highest rounded-lg text-on-surface-variant text-xs font-medium hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">edit</span>
+                        Edytuj
+                    </button>
+<button class="flex-1 flex items-center justify-center gap-2 py-2 bg-surface-container-highest rounded-lg text-on-surface-variant text-xs font-medium hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+                        Duplikuj
+                    </button>
+<button class="w-10 flex items-center justify-center py-2 bg-surface-container-highest rounded-lg text-on-surface-variant text-xs font-medium hover:text-error transition-colors">
+<span class="material-symbols-outlined text-sm">delete</span>
+</button>
+</div>
+</div>
+<!-- Entry 3 -->
+<div class="bg-surface-container-low rounded-2xl p-5 group hover:bg-surface-container-highest transition-all duration-300">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-headline font-semibold text-lg text-on-surface leading-tight">Konsultacje UX</h3>
+<p class="font-label text-xs text-on-surface-variant mt-1">Usługa godzinowa</p>
+</div>
+<div class="text-right">
+<div class="font-headline font-bold text-xl text-on-surface">4.000,00</div>
+<div class="font-label text-[10px] uppercase tracking-widest text-primary mt-1">VAT 23%</div>
+</div>
+</div>
+<div class="flex gap-2 pt-4 border-t border-outline-variant/10">
+<button class="flex-1 flex items-center justify-center gap-2 py-2 bg-surface-container-highest rounded-lg text-on-surface-variant text-xs font-medium hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">edit</span>
+                        Edytuj
+                    </button>
+<button class="flex-1 flex items-center justify-center gap-2 py-2 bg-surface-container-highest rounded-lg text-on-surface-variant text-xs font-medium hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+                        Duplikuj
+                    </button>
+<button class="w-10 flex items-center justify-center py-2 bg-surface-container-highest rounded-lg text-on-surface-variant text-xs font-medium hover:text-error transition-colors">
+<span class="material-symbols-outlined text-sm">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Optional Empty State (Commented out visually, logic ready) -->
+<!-- 
+        <div class="flex flex-col items-center justify-center py-20 text-center">
+            <div class="w-24 h-24 mb-6 rounded-full bg-surface-container-low flex items-center justify-center">
+                <span class="material-symbols-outlined text-5xl text-outline-variant">payments</span>
+            </div>
+            <h3 class="font-headline font-bold text-xl text-on-surface mb-2">Brak przychodów</h3>
+            <p class="text-on-surface-variant text-sm max-w-[240px]">Zacznij monitorować swoje finanse dodając pierwszy przychód.</p>
+        </div> 
+        -->
+</main>
+<!-- Floating Action Button -->
+<button class="fixed right-6 bottom-28 w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-2xl shadow-[0_20px_40px_rgba(0,73,61,0.2)] flex items-center justify-center active:scale-90 transition-transform duration-150 z-40">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-[#0b0f0f]/80 backdrop-blur-xl dark:bg-[#0b0f0f]/80 rounded-t-2xl border-t border-[#dbe8e8]/10 shadow-[0_-20px_40px_rgba(0,73,61,0.08)]">
+<a class="flex flex-col items-center justify-center text-[#a1aead] px-4 py-2 hover:text-[#dbe8e8] transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">dashboard</span>
+<span class="font-['Inter'] font-medium text-[10px] uppercase tracking-widest">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#1c2828] text-[#49ddbf] rounded-xl px-4 py-2 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">payments</span>
+<span class="font-['Inter'] font-medium text-[10px] uppercase tracking-widest">Income</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#a1aead] px-4 py-2 hover:text-[#dbe8e8] transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">receipt_long</span>
+<span class="font-['Inter'] font-medium text-[10px] uppercase tracking-widest">Costs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#a1aead] px-4 py-2 hover:text-[#dbe8e8] transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">settings</span>
+<span class="font-['Inter'] font-medium text-[10px] uppercase tracking-widest">Settings</span>
+</a>
+</nav>
+</body></html>

@@ -2,7 +2,7 @@
 **Date:** March 24, 2026
 
 ## Overview
-A web application for Polish sole traders (JDG / B2B contractors) to estimate their real monthly net income ("na rękę"). The app instantly calculates all mandatory deductions — PIT, VAT, ZUS social contributions and health insurance — based on the user's contract value and personal tax situation.
+A mobile app for Polish sole traders (JDG / B2B contractors) to estimate their real monthly net income ("na rękę"). The app instantly calculates all mandatory deductions — PIT, VAT, ZUS social contributions and health insurance — based on the user's contract value and personal tax situation.
 
 ---
 
