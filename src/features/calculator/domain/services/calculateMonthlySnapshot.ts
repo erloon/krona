@@ -1,5 +1,9 @@
 import type { Cost, CostCategory, CostVatRate } from '@/features/calculator/domain/entities/cost';
-import type { Income, IncomeVatRate } from '@/features/calculator/domain/entities/income';
+import {
+  resolveIncomeMonthlyNetAmount,
+  type Income,
+  type IncomeVatRate,
+} from '@/features/calculator/domain/entities/income';
 import {
   createMonthlyCalculationSnapshot,
   type MonthlyCalculationSnapshot,
@@ -24,10 +28,14 @@ export function calculateMonthlySnapshot(params: {
   calculatedAt?: string;
 }): MonthlyCalculationSnapshot {
   const revenueAmount = roundMoney(
-    params.incomes.reduce((sum, income) => sum + income.netAmount, 0)
+    params.incomes.reduce((sum, income) => sum + resolveIncomeMonthlyNetAmount(income), 0)
   );
   const outputVatAmount = roundMoney(
-    params.incomes.reduce((sum, income) => sum + calculateIncomeVat(income.netAmount, income.vatRate), 0)
+    params.incomes.reduce(
+      (sum, income) =>
+        sum + calculateIncomeVat(resolveIncomeMonthlyNetAmount(income), income.vatRate),
+      0
+    )
   );
 
   const derivedCosts = params.costs.map((cost) => deriveCostAmounts(cost, params.settingsSnapshot.vatStatus));

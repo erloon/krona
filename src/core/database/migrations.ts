@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-const DATABASE_VERSION = 2;
+const DATABASE_VERSION = 3;
 
 export async function initializeDatabase(database: SQLiteDatabase) {
   await database.execAsync('PRAGMA journal_mode = WAL;');
@@ -78,6 +78,79 @@ export async function initializeDatabase(database: SQLiteDatabase) {
     await database.execAsync(`
       CREATE INDEX IF NOT EXISTS incomes_reporting_period_idx
       ON incomes(reporting_period_id);
+    `);
+
+    await database.execAsync(`
+      ALTER TABLE incomes ADD COLUMN billing_type TEXT NOT NULL DEFAULT 'MONTHLY';
+    `).catch(() => undefined);
+
+    await database.execAsync(`
+      ALTER TABLE incomes ADD COLUMN base_amount REAL NOT NULL DEFAULT 0;
+    `).catch(() => undefined);
+
+    await database.execAsync(`
+      ALTER TABLE incomes ADD COLUMN working_days_per_month INTEGER NOT NULL DEFAULT 21;
+    `).catch(() => undefined);
+
+    await database.execAsync(`
+      ALTER TABLE incomes ADD COLUMN working_hours_per_day INTEGER NOT NULL DEFAULT 8;
+    `).catch(() => undefined);
+
+    await database.execAsync(`
+      ALTER TABLE incomes ADD COLUMN exchange_rate REAL NOT NULL DEFAULT 1;
+    `).catch(() => undefined);
+
+    await database.execAsync(`
+      ALTER TABLE incomes ADD COLUMN exchange_rate_source TEXT NOT NULL DEFAULT 'STATIC';
+    `).catch(() => undefined);
+
+    await database.execAsync(`
+      ALTER TABLE incomes ADD COLUMN exchange_rate_effective_date TEXT NOT NULL DEFAULT '1970-01-01';
+    `).catch(() => undefined);
+
+    await database.execAsync(`
+      ALTER TABLE incomes ADD COLUMN lump_sum_rate TEXT;
+    `).catch(() => undefined);
+
+    await database.execAsync(`
+      ALTER TABLE incomes ADD COLUMN ip_box_qualified_income_percent TEXT;
+    `).catch(() => undefined);
+
+    await database.execAsync(`
+      ALTER TABLE incomes ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1;
+    `).catch(() => undefined);
+
+    await database.execAsync(`
+      ALTER TABLE incomes ADD COLUMN client_name TEXT NOT NULL DEFAULT '';
+    `).catch(() => undefined);
+
+    await database.execAsync(`
+      ALTER TABLE incomes ADD COLUMN invoice_number TEXT NOT NULL DEFAULT '';
+    `).catch(() => undefined);
+
+    await database.execAsync(`
+      UPDATE incomes
+      SET
+        base_amount = CASE
+          WHEN base_amount = 0 THEN net_amount
+          ELSE base_amount
+        END,
+        exchange_rate = CASE
+          WHEN exchange_rate <= 0 THEN 1
+          ELSE exchange_rate
+        END,
+        exchange_rate_source = CASE
+          WHEN exchange_rate_source = 'STATIC' AND currency <> 'PLN' THEN 'NBP_TABLE_A'
+          ELSE exchange_rate_source
+        END,
+        exchange_rate_effective_date = CASE
+          WHEN exchange_rate_effective_date = '1970-01-01' THEN substr(created_at, 1, 10)
+          ELSE exchange_rate_effective_date
+        END,
+        is_active = CASE
+          WHEN is_active IS NULL THEN 1
+          ELSE is_active
+        END;
     `);
 
     await database.execAsync(`

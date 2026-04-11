@@ -13,6 +13,7 @@ export type IncomeListItemViewModel = {
   amount: number;
   currency: string;
   vatLabel: string;
+  billingTypeLabel: string;
 };
 
 export type IncomeSummaryViewModel = {
@@ -64,9 +65,10 @@ export function buildIncomeListItems(bundle: ReportingPeriodBundle): IncomeListI
     id: income.id,
     title: income.label,
     metadata: income.description || fallbackIncomeMetadata(income),
-    amount: income.netAmount,
+    amount: income.baseAmount,
     currency: income.currency,
     vatLabel: toIncomeVatLabel(income),
+    billingTypeLabel: toIncomeBillingTypeLabel(income),
   }));
 }
 
@@ -138,7 +140,24 @@ function toCostCategoryLabel(cost: Cost) {
 }
 
 function fallbackIncomeMetadata(income: Income) {
-  return income.createdAt.slice(0, 10);
+  const sourceBits = [income.clientName, income.invoiceNumber].filter(Boolean);
+
+  if (sourceBits.length) {
+    return sourceBits.join(' · ');
+  }
+
+  return `${toIncomeBillingTypeLabel(income)} · ${income.createdAt.slice(0, 10)}`;
+}
+
+function toIncomeBillingTypeLabel(income: Income) {
+  switch (income.billingType) {
+    case 'DAILY':
+      return 'Dziennie';
+    case 'HOURLY':
+      return 'Godzinowo';
+    default:
+      return 'Miesięcznie';
+  }
 }
 
 function fallbackCostMetadata(cost: Cost) {

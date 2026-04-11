@@ -1,6 +1,6 @@
 import type { MonthlyReportingPeriod } from '@/features/calculator/domain/value-objects/MonthlyReportingPeriod';
 import type { Cost } from '@/features/calculator/domain/entities/cost';
-import type { Income } from '@/features/calculator/domain/entities/income';
+import { createIncome, type Income } from '@/features/calculator/domain/entities/income';
 import type { MonthlyCalculationSnapshot } from '@/features/calculator/domain/entities/monthly-calculation-snapshot';
 import type { ReportingPeriod } from '@/features/calculator/domain/entities/reporting-period';
 import type { ReportingPeriodBundle } from '@/features/calculator/domain/entities/reporting-period-bundle';
@@ -163,7 +163,7 @@ export class LocalStorageCalculatorRepository implements CalculatorRepository {
         reportingPeriods: parsed.reportingPeriods ?? [],
         settingsSnapshots: parsed.settingsSnapshots ?? [],
         calculationSnapshots: parsed.calculationSnapshots ?? [],
-        incomes: parsed.incomes ?? [],
+        incomes: (parsed.incomes ?? []).map((income) => migrateStoredIncome(income)),
         costs: parsed.costs ?? [],
       };
     } catch {
@@ -193,4 +193,28 @@ function getStorage() {
   }
 
   return globalThis.localStorage;
+}
+
+function migrateStoredIncome(income: Partial<Income> & { netAmount?: number }): Income {
+  return createIncome({
+    id: income.id ?? `income-${Date.now()}`,
+    reportingPeriodId: income.reportingPeriodId ?? '',
+    label: income.label ?? '',
+    description: income.description,
+    billingType: income.billingType,
+    baseAmount: income.baseAmount ?? income.netAmount ?? 0,
+    currency: income.currency,
+    vatRate: income.vatRate,
+    workParameters: income.workParameters,
+    exchangeRate: income.exchangeRate,
+    exchangeRateSource: income.exchangeRateSource,
+    exchangeRateEffectiveDate: income.exchangeRateEffectiveDate,
+    lumpSumRate: income.lumpSumRate,
+    ipBoxQualifiedIncomePercent: income.ipBoxQualifiedIncomePercent,
+    isActive: income.isActive,
+    clientName: income.clientName,
+    invoiceNumber: income.invoiceNumber,
+    createdAt: income.createdAt,
+    updatedAt: income.updatedAt,
+  });
 }

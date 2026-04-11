@@ -11,9 +11,11 @@ import {
 } from 'react-native';
 
 import {
+  INCOME_BILLING_TYPES,
   INCOME_CURRENCIES,
   INCOME_VAT_RATES,
   type Income,
+  type IncomeBillingType,
   type IncomeCurrency,
   type IncomeVatRate,
 } from '@/features/calculator/domain/entities/income';
@@ -27,7 +29,8 @@ import { TextField } from '@/shared/ui/primitives/TextField';
 export type IncomeEditorValues = {
   label: string;
   description: string;
-  netAmount: string;
+  baseAmount: string;
+  billingType: IncomeBillingType;
   currency: IncomeCurrency;
   vatRate: IncomeVatRate;
 };
@@ -45,6 +48,14 @@ const currencyOptions: SelectOption<IncomeCurrency>[] = INCOME_CURRENCIES.map((c
   label: currency,
   value: currency,
 }));
+
+const billingTypeOptions: SelectOption<IncomeBillingType>[] = INCOME_BILLING_TYPES.map(
+  (billingType) => ({
+    label:
+      billingType === 'MONTHLY' ? 'Miesięcznie' : billingType === 'DAILY' ? 'Dziennie' : 'Godzinowo',
+    value: billingType,
+  })
+);
 
 const vatRateOptions: SelectOption<IncomeVatRate>[] = INCOME_VAT_RATES.map((vatRate) => ({
   label: vatRate === 'NP' ? 'NP' : `${vatRate}%`,
@@ -76,7 +87,7 @@ export function IncomeEditorModal({
   );
 
   async function handleSubmit() {
-    const parsedAmount = Number(values.netAmount.replace(',', '.'));
+    const parsedAmount = Number(values.baseAmount.replace(',', '.'));
 
     if (!values.label.trim()) {
       setValidationMessage('Nazwa przychodu jest wymagana.');
@@ -94,7 +105,7 @@ export function IncomeEditorModal({
       ...values,
       label: values.label.trim(),
       description: values.description.trim(),
-      netAmount: parsedAmount.toFixed(2),
+      baseAmount: parsedAmount.toFixed(2),
     });
   }
 
@@ -126,10 +137,19 @@ export function IncomeEditorModal({
             <TextField
               keyboardType="decimal-pad"
               label="Kwota netto"
-              onChangeText={(netAmount) => setValues((current) => ({ ...current, netAmount }))}
+              onChangeText={(baseAmount) => setValues((current) => ({ ...current, baseAmount }))}
               placeholder="0.00"
               suffix="PLN"
-              value={values.netAmount}
+              value={values.baseAmount}
+            />
+
+            <SelectField
+              label="Tryb rozliczenia"
+              onValueChange={(billingType) =>
+                setValues((current) => ({ ...current, billingType }))
+              }
+              options={billingTypeOptions}
+              value={values.billingType}
             />
 
             <SelectField
@@ -179,7 +199,8 @@ export function incomeToEditorValues(income: Income): IncomeEditorValues {
   return {
     label: income.label,
     description: income.description,
-    netAmount: income.netAmount.toFixed(2),
+    baseAmount: income.baseAmount.toFixed(2),
+    billingType: income.billingType,
     currency: income.currency,
     vatRate: income.vatRate,
   };
@@ -189,7 +210,8 @@ export function createEmptyIncomeEditorValues(): IncomeEditorValues {
   return {
     label: '',
     description: '',
-    netAmount: '',
+    baseAmount: '',
+    billingType: 'MONTHLY',
     currency: 'PLN',
     vatRate: '23',
   };
