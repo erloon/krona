@@ -1,42 +1,38 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useCalculatorData } from '@/features/calculator/presentation/hooks/useManagedCalculatorData';
 import { colors, radius, spacing, typography } from '@/shared/theme';
 import { ScreenContainer } from '@/shared/ui/layout/ScreenContainer';
 import { AppTopBar } from '@/shared/ui/primitives/AppTopBar';
 import { EmptyState } from '@/shared/ui/primitives/EmptyState';
 import { FloatingActionButton } from '@/shared/ui/primitives/FloatingActionButton';
 import { IconButton } from '@/shared/ui/primitives/IconButton';
+import { LoadingIndicator } from '@/shared/ui/primitives/LoadingIndicator';
 import { SearchField } from '@/shared/ui/primitives/SearchField';
 
 import { IncomeListItemCard } from '../components/IncomeListItemCard';
 import { IncomeSummaryHeader } from '../components/IncomeSummaryHeader';
+import { ReportingPeriodHeader } from '../components/ReportingPeriodHeader';
 import {
+  buildIncomeListItems,
+  buildIncomeSummaryViewModel,
   formatCurrencyAmount,
-  incomeListItems,
-  incomeListSummary,
   type IncomeListItemViewModel,
-} from '../view-models/incomeList';
+} from '../view-models/calculatorViewModels';
 
 export function IncomesScreen() {
+  const { bundle, error, goToNextPeriod, goToPreviousPeriod, isLoading } = useCalculatorData();
   const [searchQuery, setSearchQuery] = React.useState('');
 
+  const incomeListItems = bundle ? buildIncomeListItems(bundle) : [];
+  const incomeListSummary = bundle ? buildIncomeSummaryViewModel(bundle) : null;
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase('pl-PL');
   const filteredItems = normalizedQuery
     ? incomeListItems.filter((item) =>
         `${item.title} ${item.metadata}`.toLocaleLowerCase('pl-PL').includes(normalizedQuery)
       )
     : incomeListItems;
-
-  const groupedItems = filteredItems.reduce<Record<string, IncomeListItemViewModel[]>>(
-    (groups, item) => {
-      const currentItems = groups[item.monthKey] ?? [];
-      currentItems.push(item);
-      groups[item.monthKey] = currentItems;
-      return groups;
-    },
-    {}
-  );
 
   function handleAddIncome() {
     // Placeholder for navigation to the income creation flow.
@@ -75,14 +71,27 @@ export function IncomesScreen() {
           }
         />
 
-        <IncomeSummaryHeader
-          pitAmount={formatCurrencyAmount(incomeListSummary.pitAmount)}
-          title="Przychody"
-          totalAmount={formatCurrencyAmount(incomeListSummary.totalNetAmount)}
-          totalCurrency="PLN"
-          totalLabel="Suma netto:"
-          vatAmount={formatCurrencyAmount(incomeListSummary.vatAmount)}
-        />
+        {bundle ? (
+          <>
+            <ReportingPeriodHeader
+              description="Przychody i snapshot miesięczny są zapisane pod wybranym okresem raportowym."
+              onNextPress={goToNextPeriod}
+              onPreviousPress={goToPreviousPeriod}
+              periodLabel={incomeListSummary?.monthLabel ?? ''}
+              title="Okres raportowy"
+            />
+
+            <IncomeSummaryHeader
+              monthLabel={incomeListSummary?.monthLabel}
+              pitAmount={formatCurrencyAmount(incomeListSummary?.pitAmount ?? 0)}
+              title="Przychody"
+              totalAmount={formatCurrencyAmount(incomeListSummary?.totalNetAmount ?? 0)}
+              totalCurrency="PLN"
+              totalLabel="Suma netto:"
+              vatAmount={formatCurrencyAmount(incomeListSummary?.vatAmount ?? 0)}
+            />
+          </>
+        ) : null}
 
         <SearchField
           onChangeText={setSearchQuery}
@@ -90,49 +99,51 @@ export function IncomesScreen() {
           value={searchQuery}
         />
 
-        {filteredItems.length ? (
+        {isLoading ? (
+          <LoadingIndicator label="Ładowanie okresu raportowego..." />
+        ) : error ? (
+          <View style={styles.emptyStateCard}>
+            <EmptyState description={error} title="Nie udało się wczytać przychodów" />
+          </View>
+        ) : filteredItems.length ? (
           <View style={styles.listSection}>
-            {Object.entries(groupedItems).map(([monthKey, items]) => (
-              <View key={monthKey} style={styles.monthGroup}>
-                <View style={styles.monthHeader}>
-                  <Text style={styles.monthLabel}>{monthKey}</Text>
-                  <View style={styles.monthActions}>
-                    <IconButton
-                      accessibilityLabel="Filtruj przychody"
-                      icon="filter-variant"
-                      onPress={handleFilterPress}
-                    />
-                    <IconButton
-                      accessibilityLabel="Wybierz miesiąc"
-                      icon="calendar-month-outline"
-                      onPress={handleCalendarPress}
-                    />
-                  </View>
-                </View>
-
-                <View style={styles.cards}>
-                  {items.map((item) => (
-                    <IncomeListItemCard
-                      amount={formatCurrencyAmount(item.amount)}
-                      currency={item.currency}
-                      key={item.id}
-                      metadata={item.metadata}
-                      onDelete={() => handleDeleteIncome(item.id)}
-                      onDuplicate={() => handleDuplicateIncome(item.id)}
-                      onEdit={() => handleEditIncome(item.id)}
-                      title={item.title}
-                      vatLabel={item.vatLabel}
-                    />
-                  ))}
-                </View>
+            <View style={styles.monthHeader}>
+              <Text style={styles.monthLabel}>{incomeListSummary?.monthLabel}</Text>
+              <View style={styles.monthActions}>
+                <IconButton
+                  accessibilityLabel="Filtruj przychody"
+                  icon="filter-variant"
+                  onPress={handleFilterPress}
+                />
+                <IconButton
+                  accessibilityLabel="Wybierz miesiąc"
+                  icon="calendar-month-outline"
+                  onPress={handleCalendarPress}
+                />
               </View>
-            ))}
+            </View>
+
+            <View style={styles.cards}>
+              {filteredItems.map((item) => (
+                <IncomeListItemCard
+                  amount={formatCurrencyAmount(item.amount)}
+                  currency={item.currency}
+                  key={item.id}
+                  metadata={item.metadata}
+                  onDelete={() => handleDeleteIncome(item.id)}
+                  onDuplicate={() => handleDuplicateIncome(item.id)}
+                  onEdit={() => handleEditIncome(item.id)}
+                  title={item.title}
+                  vatLabel={item.vatLabel}
+                />
+              ))}
+            </View>
           </View>
         ) : (
           <View style={styles.emptyStateCard}>
             <EmptyState
-              description="Spróbuj zmienić zapytanie albo dodaj nowy przychód, aby rozpocząć listę."
-              title="Brak wyników dla tego wyszukiwania"
+              description="Ten okres istnieje już w bazie, ale nie ma jeszcze zapisanych przychodów."
+              title="Brak przychodów w wybranym miesiącu"
             />
           </View>
         )}
@@ -173,9 +184,6 @@ const styles = StyleSheet.create({
   },
   listSection: {
     gap: spacing.xl,
-  },
-  monthGroup: {
-    gap: spacing.md,
   },
   monthHeader: {
     flexDirection: 'row',

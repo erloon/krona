@@ -5,6 +5,7 @@ import { colors, spacing, typography } from '@/shared/theme';
 
 type IncomeSummaryHeaderProps = {
   title: string;
+  monthLabel?: string;
   totalLabel: string;
   totalAmount: string;
   totalCurrency: string;
@@ -14,6 +15,7 @@ type IncomeSummaryHeaderProps = {
 
 export function IncomeSummaryHeader({
   title,
+  monthLabel,
   totalLabel,
   totalAmount,
   totalCurrency,
@@ -22,7 +24,10 @@ export function IncomeSummaryHeader({
 }: IncomeSummaryHeaderProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
+      <View style={styles.titleBlock}>
+        <Text style={styles.title}>{title}</Text>
+        {monthLabel ? <Text style={styles.monthLabel}>{monthLabel}</Text> : null}
+      </View>
 
       <View style={styles.totalRow}>
         <Text style={styles.totalLabel}>{totalLabel}</Text>
@@ -53,9 +58,16 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
     paddingTop: spacing.xs,
   },
+  titleBlock: {
+    gap: spacing.xs,
+  },
   title: {
     ...typography.heroTitle,
     color: colors.text.primary,
+  },
+  monthLabel: {
+    ...typography.bodyMedium,
+    color: colors.text.secondary,
   },
   totalRow: {
     gap: spacing.xs,
