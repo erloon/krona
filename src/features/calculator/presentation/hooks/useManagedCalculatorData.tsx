@@ -1,4 +1,12 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { createIncomeForPeriodUseCase } from '@/features/calculator/application/use-cases/createIncomeForPeriod';
 import { deleteIncomeFromPeriodUseCase } from '@/features/calculator/application/use-cases/deleteIncomeFromPeriod';
@@ -16,9 +24,13 @@ import {
 } from '@/features/calculator/domain/value-objects/MonthlyReportingPeriod';
 import type { SettingsRepository } from '@/features/settings/domain/repositories/SettingsRepository';
 
+import { hasBundleForSelectedPeriod } from './calculatorDataState';
+
 type CalculatorDataContextValue = {
   selectedPeriod: MonthlyReportingPeriod;
+  loadedPeriod: MonthlyReportingPeriod | null;
   bundle: ReportingPeriodBundle | null;
+  hasLoadedSelectedPeriod: boolean;
   isLoading: boolean;
   error: string | null;
   goToNextPeriod: () => void;
@@ -46,32 +58,50 @@ export function ManagedCalculatorDataProvider({
   const [selectedPeriod, setSelectedPeriod] = useState<MonthlyReportingPeriod>(() =>
     monthlyReportingPeriodFromDate(new Date())
   );
+  const [loadedPeriod, setLoadedPeriod] = useState<MonthlyReportingPeriod | null>(null);
   const [bundle, setBundle] = useState<ReportingPeriodBundle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const loadSequenceRef = useRef(0);
 
-  const loadBundle = useCallback(async () => {
+  const loadBundle = useCallback(async (period = selectedPeriod) => {
+    const requestId = ++loadSequenceRef.current;
+
     try {
       setIsLoading(true);
       setError(null);
       const nextBundle = await loadIncomesForPeriodUseCase(
         calculatorRepository,
         settingsRepository,
-        selectedPeriod
+        period
       );
+
+      if (requestId !== loadSequenceRef.current) {
+        return;
+      }
+
       setBundle(nextBundle);
+      setLoadedPeriod(period);
     } catch (loadError) {
+      if (requestId !== loadSequenceRef.current) {
+        return;
+      }
+
       const message =
         loadError instanceof Error
           ? loadError.message
           : 'Nie udało się wczytać danych dla wybranego okresu.';
       setError(message);
     } finally {
-      setIsLoading(false);
+      if (requestId === loadSequenceRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [calculatorRepository, selectedPeriod, settingsRepository]);
 
   useEffect(() => {
+    setIsLoading(true);
+    setError(null);
     void loadBundle();
   }, [loadBundle]);
 
@@ -86,6 +116,8 @@ export function ManagedCalculatorDataProvider({
         }
       );
       setBundle(nextBundle);
+      setLoadedPeriod(selectedPeriod);
+      setError(null);
     },
     [calculatorRepository, selectedPeriod, settingsRepository]
   );
@@ -102,6 +134,8 @@ export function ManagedCalculatorDataProvider({
         }
       );
       setBundle(nextBundle);
+      setLoadedPeriod(selectedPeriod);
+      setError(null);
     },
     [calculatorRepository, selectedPeriod, settingsRepository]
   );
@@ -117,6 +151,8 @@ export function ManagedCalculatorDataProvider({
         }
       );
       setBundle(nextBundle);
+      setLoadedPeriod(selectedPeriod);
+      setError(null);
     },
     [calculatorRepository, selectedPeriod, settingsRepository]
   );
@@ -132,14 +168,20 @@ export function ManagedCalculatorDataProvider({
         }
       );
       setBundle(nextBundle);
+      setLoadedPeriod(selectedPeriod);
+      setError(null);
     },
     [calculatorRepository, selectedPeriod, settingsRepository]
   );
 
+  const hasLoadedSelectedPeriod = hasBundleForSelectedPeriod(bundle, loadedPeriod, selectedPeriod);
+
   const value = useMemo<CalculatorDataContextValue>(
     () => ({
       selectedPeriod,
+      loadedPeriod,
       bundle,
+      hasLoadedSelectedPeriod,
       isLoading,
       error,
       goToNextPeriod: () => setSelectedPeriod((current) => getNextMonthlyReportingPeriod(current)),
@@ -157,7 +199,9 @@ export function ManagedCalculatorDataProvider({
       deleteIncome,
       duplicateIncome,
       error,
+      hasLoadedSelectedPeriod,
       isLoading,
+      loadedPeriod,
       loadBundle,
       selectedPeriod,
       updateIncome,

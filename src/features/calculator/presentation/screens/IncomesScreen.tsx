@@ -25,6 +25,10 @@ import {
   buildIncomeSummaryViewModel,
   formatCurrencyAmount,
 } from '../view-models/calculatorViewModels';
+import {
+  getSelectedPeriodLabel,
+  resolveIncomesScreenContentState,
+} from '../hooks/calculatorDataState';
 
 export function IncomesScreen() {
   const {
@@ -35,7 +39,9 @@ export function IncomesScreen() {
     error,
     goToNextPeriod,
     goToPreviousPeriod,
+    hasLoadedSelectedPeriod,
     isLoading,
+    selectedPeriod,
     updateIncome,
   } = useCalculatorData();
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -44,11 +50,19 @@ export function IncomesScreen() {
   const [editorVisible, setEditorVisible] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const incomeListItems = bundle ? buildIncomeListItems(bundle) : [];
-  const incomeListSummary = bundle ? buildIncomeSummaryViewModel(bundle) : null;
+  const incomeListItems = hasLoadedSelectedPeriod && bundle ? buildIncomeListItems(bundle) : [];
+  const incomeListSummary =
+    hasLoadedSelectedPeriod && bundle ? buildIncomeSummaryViewModel(bundle) : null;
+  const selectedPeriodLabel = React.useMemo(
+    () => getSelectedPeriodLabel(selectedPeriod),
+    [selectedPeriod]
+  );
   const editingIncome = React.useMemo(
-    () => bundle?.incomes.find((income) => income.id === editingIncomeId) ?? null,
-    [bundle?.incomes, editingIncomeId]
+    () =>
+      (hasLoadedSelectedPeriod
+        ? bundle?.incomes.find((income) => income.id === editingIncomeId)
+        : null) ?? null,
+    [bundle?.incomes, editingIncomeId, hasLoadedSelectedPeriod]
   );
   const editorInitialValues = React.useMemo<IncomeEditorValues>(
     () =>
@@ -61,6 +75,16 @@ export function IncomesScreen() {
         `${item.title} ${item.metadata}`.toLocaleLowerCase('pl-PL').includes(normalizedQuery)
       )
     : incomeListItems;
+  const contentState = resolveIncomesScreenContentState({
+    isLoading,
+    error,
+    hasLoadedSelectedPeriod,
+    itemCount: filteredItems.length,
+  });
+
+  React.useEffect(() => {
+    setSearchQuery('');
+  }, [selectedPeriod.key]);
 
   function handleAddIncome() {
     setEditorMode('create');
@@ -167,26 +191,25 @@ export function IncomesScreen() {
           }
         />
 
-        {bundle ? (
-          <>
-            <ReportingPeriodHeader
-              description="Przychody i snapshot miesięczny są zapisane pod wybranym okresem raportowym."
-              onNextPress={goToNextPeriod}
-              onPreviousPress={goToPreviousPeriod}
-              periodLabel={incomeListSummary?.monthLabel ?? ''}
-              title="Okres raportowy"
-            />
+        <ReportingPeriodHeader
+          description="Przychody i snapshot miesięczny są zapisane pod wybranym okresem raportowym."
+          onNextPress={goToNextPeriod}
+          onPreviousPress={goToPreviousPeriod}
+          periodLabel={selectedPeriodLabel}
+          statusLabel={isLoading ? 'Ładowanie okresu' : undefined}
+          title="Okres raportowy"
+        />
 
-            <IncomeSummaryHeader
-              monthLabel={incomeListSummary?.monthLabel}
-              pitAmount={formatCurrencyAmount(incomeListSummary?.pitAmount ?? 0)}
-              title="Przychody"
-              totalAmount={formatCurrencyAmount(incomeListSummary?.totalNetAmount ?? 0)}
-              totalCurrency="PLN"
-              totalLabel="Suma netto:"
-              vatAmount={formatCurrencyAmount(incomeListSummary?.vatAmount ?? 0)}
-            />
-          </>
+        {incomeListSummary ? (
+          <IncomeSummaryHeader
+            monthLabel={incomeListSummary.monthLabel}
+            pitAmount={formatCurrencyAmount(incomeListSummary.pitAmount)}
+            title="Przychody"
+            totalAmount={formatCurrencyAmount(incomeListSummary.totalNetAmount)}
+            totalCurrency="PLN"
+            totalLabel="Suma netto:"
+            vatAmount={formatCurrencyAmount(incomeListSummary.vatAmount)}
+          />
         ) : null}
 
         <SearchField
@@ -195,16 +218,21 @@ export function IncomesScreen() {
           value={searchQuery}
         />
 
-        {isLoading ? (
+        {contentState === 'loading' ? (
           <LoadingIndicator label="Ładowanie okresu raportowego..." />
-        ) : error ? (
+        ) : contentState === 'error' ? (
           <View style={styles.emptyStateCard}>
-            <EmptyState description={error} title="Nie udało się wczytać przychodów" />
+            <EmptyState
+              description={error ?? 'Nie udało się wczytać danych dla wybranego okresu.'}
+              title="Nie udało się wczytać przychodów"
+            />
           </View>
-        ) : filteredItems.length ? (
+        ) : contentState === 'list' ? (
           <View style={styles.listSection}>
             <View style={styles.monthHeader}>
-              <Text style={styles.monthLabel}>{incomeListSummary?.monthLabel}</Text>
+              <Text style={styles.monthLabel}>
+                {incomeListSummary?.monthLabel ?? selectedPeriodLabel}
+              </Text>
               <View style={styles.monthActions}>
                 <IconButton
                   accessibilityLabel="Filtruj przychody"
