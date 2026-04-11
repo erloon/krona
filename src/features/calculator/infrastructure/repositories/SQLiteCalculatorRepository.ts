@@ -8,6 +8,7 @@ import {
   reportingPeriodSettingsSnapshotsTable,
 } from '@/core/database/schema';
 import type { DrizzleDatabase } from '@/core/database/client';
+import type { Income } from '@/features/calculator/domain/entities/income';
 import type { MonthlyReportingPeriod } from '@/features/calculator/domain/value-objects/MonthlyReportingPeriod';
 import { calculateMonthlySnapshot } from '@/features/calculator/domain/services/calculateMonthlySnapshot';
 import type { MonthlyCalculationSnapshot } from '@/features/calculator/domain/entities/monthly-calculation-snapshot';
@@ -24,6 +25,7 @@ import {
   fromMonthlyCalculationSnapshotRecord,
   fromReportingPeriodRecord,
   fromReportingPeriodSettingsSnapshotRecord,
+  toIncomeRecord,
   toMonthlyCalculationSnapshotRecord,
   toReportingPeriodRecord,
   toReportingPeriodSettingsSnapshotRecord,
@@ -117,6 +119,41 @@ export class SQLiteCalculatorRepository implements CalculatorRepository {
       incomes,
       costs,
     };
+  }
+
+  async saveIncome(income: Income): Promise<Income> {
+    const existingPeriod = await this.database.query.reportingPeriodsTable.findFirst({
+      where: eq(reportingPeriodsTable.id, income.reportingPeriodId),
+    });
+
+    if (!existingPeriod) {
+      throw new Error(`Reporting period ${income.reportingPeriodId} does not exist.`);
+    }
+
+    const record = toIncomeRecord(income);
+
+    await this.database
+      .insert(incomesTable)
+      .values(record)
+      .onConflictDoUpdate({
+        target: incomesTable.id,
+        set: {
+          label: record.label,
+          description: record.description,
+          netAmount: record.netAmount,
+          currency: record.currency,
+          vatRate: record.vatRate,
+          updatedAt: record.updatedAt,
+        },
+      });
+
+    return income;
+  }
+
+  async deleteIncome(reportingPeriodId: string, incomeId: string): Promise<void> {
+    await this.database
+      .delete(incomesTable)
+      .where(and(eq(incomesTable.reportingPeriodId, reportingPeriodId), eq(incomesTable.id, incomeId)));
   }
 
   async saveMonthlyCalculationSnapshot(

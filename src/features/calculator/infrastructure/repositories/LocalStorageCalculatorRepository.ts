@@ -96,6 +96,40 @@ export class LocalStorageCalculatorRepository implements CalculatorRepository {
     };
   }
 
+  async saveIncome(income: Income): Promise<Income> {
+    const storage = this.readStorage();
+    const reportingPeriod = storage.reportingPeriods.find(
+      (candidate) => candidate.id === income.reportingPeriodId
+    );
+
+    if (!reportingPeriod) {
+      throw new Error(`Reporting period ${income.reportingPeriodId} does not exist.`);
+    }
+
+    const existingIndex = storage.incomes.findIndex((candidate) => candidate.id === income.id);
+
+    if (existingIndex >= 0) {
+      storage.incomes[existingIndex] = income;
+    } else {
+      storage.incomes.push(income);
+    }
+
+    this.writeStorage(storage);
+
+    return income;
+  }
+
+  async deleteIncome(reportingPeriodId: string, incomeId: string): Promise<void> {
+    const storage = this.readStorage();
+
+    storage.incomes = storage.incomes.filter(
+      (candidate) =>
+        !(candidate.reportingPeriodId === reportingPeriodId && candidate.id === incomeId)
+    );
+
+    this.writeStorage(storage);
+  }
+
   async saveMonthlyCalculationSnapshot(
     snapshot: MonthlyCalculationSnapshot
   ): Promise<MonthlyCalculationSnapshot> {

@@ -1,7 +1,10 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
+import { deleteIncomeUseCase } from '@/features/calculator/application/use-cases/deleteIncome';
 import { ensureReportingPeriodUseCase } from '@/features/calculator/application/use-cases/ensureReportingPeriod';
 import { getReportingPeriodBundleUseCase } from '@/features/calculator/application/use-cases/getReportingPeriodBundle';
+import { saveIncomeUseCase } from '@/features/calculator/application/use-cases/saveIncome';
+import type { Income } from '@/features/calculator/domain/entities/income';
 import type { ReportingPeriodBundle } from '@/features/calculator/domain/entities/reporting-period-bundle';
 import type { CalculatorRepository } from '@/features/calculator/domain/repositories/CalculatorRepository';
 import {
@@ -20,6 +23,8 @@ type CalculatorDataContextValue = {
   goToNextPeriod: () => void;
   goToPreviousPeriod: () => void;
   reload: () => Promise<void>;
+  saveIncome: (income: Income) => Promise<void>;
+  deleteIncome: (incomeId: string) => Promise<void>;
 };
 
 const CalculatorDataContext = createContext<CalculatorDataContextValue | null>(null);
@@ -64,6 +69,26 @@ export function ManagedCalculatorDataProvider({
     void loadBundle();
   }, [loadBundle]);
 
+  const saveIncome = useCallback(
+    async (income: Income) => {
+      await saveIncomeUseCase(calculatorRepository, income);
+      await loadBundle();
+    },
+    [calculatorRepository, loadBundle]
+  );
+
+  const deleteIncome = useCallback(
+    async (incomeId: string) => {
+      if (!bundle) {
+        return;
+      }
+
+      await deleteIncomeUseCase(calculatorRepository, bundle.reportingPeriod.id, incomeId);
+      await loadBundle();
+    },
+    [bundle, calculatorRepository, loadBundle]
+  );
+
   const value = useMemo<CalculatorDataContextValue>(
     () => ({
       selectedPeriod,
@@ -74,8 +99,10 @@ export function ManagedCalculatorDataProvider({
       goToPreviousPeriod: () =>
         setSelectedPeriod((current) => getPreviousMonthlyReportingPeriod(current)),
       reload: loadBundle,
+      saveIncome,
+      deleteIncome,
     }),
-    [bundle, error, isLoading, loadBundle, selectedPeriod]
+    [bundle, deleteIncome, error, isLoading, loadBundle, saveIncome, selectedPeriod]
   );
 
   return <CalculatorDataContext.Provider value={value}>{children}</CalculatorDataContext.Provider>;

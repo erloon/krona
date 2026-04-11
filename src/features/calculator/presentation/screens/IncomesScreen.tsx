@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 
+import { createIncome, type Income } from '@/features/calculator/domain/entities/income';
 import { useCalculatorData } from '@/features/calculator/presentation/hooks/useManagedCalculatorData';
 import { colors, radius, spacing, typography } from '@/shared/theme';
 import { ScreenContainer } from '@/shared/ui/layout/ScreenContainer';
@@ -11,6 +12,12 @@ import { IconButton } from '@/shared/ui/primitives/IconButton';
 import { LoadingIndicator } from '@/shared/ui/primitives/LoadingIndicator';
 import { SearchField } from '@/shared/ui/primitives/SearchField';
 
+import {
+  createEmptyIncomeEditorValues,
+  IncomeEditorModal,
+  incomeToEditorValues,
+  type IncomeEditorValues,
+} from '../components/IncomeEditorModal';
 import { IncomeListItemCard } from '../components/IncomeListItemCard';
 import { IncomeSummaryHeader } from '../components/IncomeSummaryHeader';
 import { ReportingPeriodHeader } from '../components/ReportingPeriodHeader';
@@ -18,15 +25,35 @@ import {
   buildIncomeListItems,
   buildIncomeSummaryViewModel,
   formatCurrencyAmount,
-  type IncomeListItemViewModel,
 } from '../view-models/calculatorViewModels';
 
 export function IncomesScreen() {
-  const { bundle, error, goToNextPeriod, goToPreviousPeriod, isLoading } = useCalculatorData();
+  const {
+    bundle,
+    deleteIncome,
+    error,
+    goToNextPeriod,
+    goToPreviousPeriod,
+    isLoading,
+    saveIncome,
+  } = useCalculatorData();
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [editorMode, setEditorMode] = React.useState<'create' | 'edit'>('create');
+  const [editingIncomeId, setEditingIncomeId] = React.useState<string | null>(null);
+  const [editorVisible, setEditorVisible] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const incomeListItems = bundle ? buildIncomeListItems(bundle) : [];
   const incomeListSummary = bundle ? buildIncomeSummaryViewModel(bundle) : null;
+  const editingIncome = React.useMemo(
+    () => bundle?.incomes.find((income) => income.id === editingIncomeId) ?? null,
+    [bundle?.incomes, editingIncomeId]
+  );
+  const editorInitialValues = React.useMemo<IncomeEditorValues>(
+    () =>
+      editingIncome ? incomeToEditorValues(editingIncome) : createEmptyIncomeEditorValues(),
+    [editingIncome]
+  );
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase('pl-PL');
   const filteredItems = normalizedQuery
     ? incomeListItems.filter((item) =>
@@ -35,7 +62,9 @@ export function IncomesScreen() {
     : incomeListItems;
 
   function handleAddIncome() {
-    // Placeholder for navigation to the income creation flow.
+    setEditorMode('create');
+    setEditingIncomeId(null);
+    setEditorVisible(true);
   }
 
   function handleFilterPress() {
@@ -46,16 +75,109 @@ export function IncomesScreen() {
     // Placeholder for opening month selection.
   }
 
-  function handleEditIncome(_id: string) {
-    // Placeholder for navigation to the income edit flow.
+  function handleEditIncome(id: string) {
+    setEditorMode('edit');
+    setEditingIncomeId(id);
+    setEditorVisible(true);
   }
 
-  function handleDuplicateIncome(_id: string) {
-    // Placeholder for income duplication logic.
+  async function handleDuplicateIncome(id: string) {
+    if (!bundle) {
+      return;
+    }
+
+    const sourceIncome = bundle.incomes.find((income) => income.id === id);
+
+    if (!sourceIncome) {
+      return;
+    }
+
+    const timestamp = new Date().toISOString();
+    const duplicateIncome = createIncome({
+      id: createIncomeId(),
+      reportingPeriodId: bundle.reportingPeriod.id,
+      label: `${sourceIncome.label} kopia`,
+      description: sourceIncome.description,
+      netAmount: sourceIncome.netAmount,
+      currency: sourceIncome.currency,
+      vatRate: sourceIncome.vatRate,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    });
+
+    try {
+      await saveIncome(duplicateIncome);
+    } catch (saveError) {
+      Alert.alert(
+        'Nie udało się zduplikować przychodu',
+        saveError instanceof Error ? saveError.message : 'Spróbuj ponownie.'
+      );
+    }
   }
 
-  function handleDeleteIncome(_id: string) {
-    // Placeholder for delete confirmation.
+  function handleDeleteIncome(id: string) {
+    Alert.alert('Usunąć przychód?', 'Ta operacja usuwa rekord tylko z bieżącego miesiąca.', [
+      {
+        style: 'cancel',
+        text: 'Anuluj',
+      },
+      {
+        style: 'destructive',
+        text: 'Usuń',
+        onPress: () => {
+          void deleteIncome(id).catch((deleteError) => {
+            Alert.alert(
+              'Nie udało się usunąć przychodu',
+              deleteError instanceof Error ? deleteError.message : 'Spróbuj ponownie.'
+            );
+          });
+        },
+      },
+    ]);
+  }
+
+  function closeEditor() {
+    if (isSubmitting) {
+      return;
+    }
+
+    setEditorVisible(false);
+    setEditingIncomeId(null);
+  }
+
+  async function handleSubmitIncome(values: IncomeEditorValues) {
+    if (!bundle) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const currentIncome = editorMode === 'edit' ? editingIncome : null;
+      const timestamp = new Date().toISOString();
+      const nextIncome: Income = createIncome({
+        id: currentIncome?.id ?? createIncomeId(),
+        reportingPeriodId: bundle.reportingPeriod.id,
+        label: values.label,
+        description: values.description,
+        netAmount: Number(values.netAmount),
+        currency: values.currency,
+        vatRate: values.vatRate,
+        createdAt: currentIncome?.createdAt ?? timestamp,
+        updatedAt: timestamp,
+      });
+
+      await saveIncome(nextIncome);
+      setEditorVisible(false);
+      setEditingIncomeId(null);
+    } catch (saveError) {
+      Alert.alert(
+        'Nie udało się zapisać przychodu',
+        saveError instanceof Error ? saveError.message : 'Spróbuj ponownie.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -154,8 +276,25 @@ export function IncomesScreen() {
         onPress={handleAddIncome}
         style={styles.fab}
       />
+
+      <IncomeEditorModal
+        initialValues={editorInitialValues}
+        isSubmitting={isSubmitting}
+        mode={editorMode}
+        onClose={closeEditor}
+        onSubmit={handleSubmitIncome}
+        visible={editorVisible}
+      />
     </View>
   );
+}
+
+function createIncomeId() {
+  if (typeof globalThis.crypto !== 'undefined' && 'randomUUID' in globalThis.crypto) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `income-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 const styles = StyleSheet.create({
