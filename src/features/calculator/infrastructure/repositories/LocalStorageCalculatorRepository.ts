@@ -148,6 +148,11 @@ export class LocalStorageCalculatorRepository implements CalculatorRepository {
     return snapshot;
   }
 
+  async hasAnyIncomes(): Promise<boolean> {
+    const storage = this.readStorage();
+    return storage.incomes.length > 0;
+  }
+
   private readStorage(): LocalStorageShape {
     const storage = getStorage();
     const rawValue = storage?.getItem(STORAGE_KEY);

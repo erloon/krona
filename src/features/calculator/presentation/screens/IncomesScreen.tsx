@@ -44,8 +44,10 @@ export function IncomesScreen() {
     error,
     goToNextPeriod,
     goToPreviousPeriod,
+    hasAnyRecordsEver,
     hasLoadedSelectedPeriod,
     isLoading,
+    reloadSelectedPeriod,
     selectPeriod,
     selectedPeriod,
   } = useCalculatorData();
@@ -80,6 +82,7 @@ export function IncomesScreen() {
     hasLoadedSelectedPeriod,
     hasAnyRecordsInPeriod: queryResult.hasAnyRecordsInPeriod,
     hasVisibleResults: queryResult.hasVisibleResults,
+    hasAnyRecordsEver,
   });
   const hasActiveFilters = hasActiveIncomeListFilters(filters);
   const hasSearchQuery = searchQuery.trim().length > 0;
@@ -87,6 +90,7 @@ export function IncomesScreen() {
   const shouldShowListSection =
     contentState === 'list' ||
     contentState === 'no-results' ||
+    contentState === 'first-use' ||
     queryResult.hasAnyRecordsInPeriod ||
     hasActiveFilters ||
     hasSearchQuery;
@@ -269,8 +273,11 @@ export function IncomesScreen() {
         ) : contentState === 'error' ? (
           <View style={styles.emptyStateCard}>
             <EmptyState
+              actionLabel="Spróbuj ponownie"
               description={error ?? 'Nie udało się wczytać danych dla wybranego okresu.'}
+              onAction={reloadSelectedPeriod}
               title="Nie udało się wczytać przychodów"
+              variant="error"
             />
           </View>
         ) : shouldShowListSection ? (
@@ -303,6 +310,16 @@ export function IncomesScreen() {
                 <EmptyState
                   description={buildNoResultsDescription(searchQuery, hasActiveFilters)}
                   title="Brak wyników dla bieżącego widoku"
+                />
+              </View>
+            ) : contentState === 'first-use' ? (
+              <View style={styles.emptyStateCard}>
+                <EmptyState
+                  actionLabel="Dodaj pierwszy przychód"
+                  description="Zacznij śledzić swoje przychody B2B. Dodaj fakturę lub wynagrodzenie, aby zobaczyć podsumowanie miesięczne."
+                  onAction={handleAddIncome}
+                  title="Witaj w Krona"
+                  variant="first-use"
                 />
               </View>
             ) : contentState === 'empty' ? (

@@ -187,6 +187,15 @@ export class SQLiteCalculatorRepository implements CalculatorRepository {
     return snapshot;
   }
 
+  async hasAnyIncomes(): Promise<boolean> {
+    const result = await this.database
+      .select({ count: incomesTable.id })
+      .from(incomesTable)
+      .limit(1);
+    
+    return result.length > 0;
+  }
+
   private async findReportingPeriod(period: MonthlyReportingPeriod) {
     const record = await this.database.query.reportingPeriodsTable.findFirst({
       where: and(

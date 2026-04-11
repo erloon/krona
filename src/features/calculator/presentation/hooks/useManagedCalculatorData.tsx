@@ -31,6 +31,7 @@ type CalculatorDataContextValue = {
   loadedPeriod: MonthlyReportingPeriod | null;
   bundle: ReportingPeriodBundle | null;
   hasLoadedSelectedPeriod: boolean;
+  hasAnyRecordsEver: boolean;
   isLoading: boolean;
   error: string | null;
   goToNextPeriod: () => void;
@@ -61,9 +62,35 @@ export function ManagedCalculatorDataProvider({
   );
   const [loadedPeriod, setLoadedPeriod] = useState<MonthlyReportingPeriod | null>(null);
   const [bundle, setBundle] = useState<ReportingPeriodBundle | null>(null);
+  const [hasAnyRecordsEver, setHasAnyRecordsEver] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const loadSequenceRef = useRef(0);
+
+  // Check if any income records exist in the entire database on initial load
+  useEffect(() => {
+    let isCancelled = false;
+
+    const checkAnyRecordsEver = async () => {
+      try {
+        const anyRecords = await calculatorRepository.hasAnyIncomes();
+        if (!isCancelled) {
+          setHasAnyRecordsEver(anyRecords);
+        }
+      } catch (error) {
+        // Ignore errors during this check, just keep as false
+        if (!isCancelled) {
+          setHasAnyRecordsEver(false);
+        }
+      }
+    };
+
+    checkAnyRecordsEver();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [calculatorRepository]);
 
   const loadBundle = useCallback(async (period = selectedPeriod) => {
     const requestId = ++loadSequenceRef.current;
@@ -83,6 +110,11 @@ export function ManagedCalculatorDataProvider({
 
       setBundle(nextBundle);
       setLoadedPeriod(period);
+      
+      // Update hasAnyRecordsEver if we now have any records
+      if (!hasAnyRecordsEver && nextBundle.incomes.length > 0) {
+        setHasAnyRecordsEver(true);
+      }
     } catch (loadError) {
       if (requestId !== loadSequenceRef.current) {
         return;
@@ -98,7 +130,7 @@ export function ManagedCalculatorDataProvider({
         setIsLoading(false);
       }
     }
-  }, [calculatorRepository, selectedPeriod, settingsRepository]);
+  }, [calculatorRepository, selectedPeriod, settingsRepository, hasAnyRecordsEver]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -118,6 +150,7 @@ export function ManagedCalculatorDataProvider({
       );
       setBundle(nextBundle);
       setLoadedPeriod(selectedPeriod);
+      setHasAnyRecordsEver(true); // We've now created an income record, so set to true
       setError(null);
     },
     [calculatorRepository, selectedPeriod, settingsRepository]
@@ -136,6 +169,7 @@ export function ManagedCalculatorDataProvider({
       );
       setBundle(nextBundle);
       setLoadedPeriod(selectedPeriod);
+      setHasAnyRecordsEver(true); // Make sure it stays true if it's already true
       setError(null);
     },
     [calculatorRepository, selectedPeriod, settingsRepository]
@@ -153,6 +187,7 @@ export function ManagedCalculatorDataProvider({
       );
       setBundle(nextBundle);
       setLoadedPeriod(selectedPeriod);
+      setHasAnyRecordsEver(true); // Make sure it stays true if it's already true
       setError(null);
     },
     [calculatorRepository, selectedPeriod, settingsRepository]
@@ -170,6 +205,11 @@ export function ManagedCalculatorDataProvider({
       );
       setBundle(nextBundle);
       setLoadedPeriod(selectedPeriod);
+      // Update hasAnyRecordsEver if we need to check if database is now empty
+      if (nextBundle.incomes.length === 0) {
+        const anyRecords = await calculatorRepository.hasAnyIncomes();
+        setHasAnyRecordsEver(anyRecords);
+      }
       setError(null);
     },
     [calculatorRepository, selectedPeriod, settingsRepository]
@@ -183,6 +223,7 @@ export function ManagedCalculatorDataProvider({
       loadedPeriod,
       bundle,
       hasLoadedSelectedPeriod,
+      hasAnyRecordsEver,
       isLoading,
       error,
       goToNextPeriod: () => setSelectedPeriod((current) => getNextMonthlyReportingPeriod(current)),
@@ -202,6 +243,7 @@ export function ManagedCalculatorDataProvider({
       duplicateIncome,
       error,
       hasLoadedSelectedPeriod,
+      hasAnyRecordsEver,
       isLoading,
       loadedPeriod,
       loadBundle,

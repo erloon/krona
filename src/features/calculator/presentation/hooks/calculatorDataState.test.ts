@@ -31,6 +31,7 @@ export function testResolveIncomesScreenContentStatePrioritizesLoadingAndError()
       hasLoadedSelectedPeriod: false,
       hasAnyRecordsInPeriod: false,
       hasVisibleResults: false,
+      hasAnyRecordsEver: false,
     }) === 'loading',
     'Loading selected period should render loading state.'
   );
@@ -42,12 +43,14 @@ export function testResolveIncomesScreenContentStatePrioritizesLoadingAndError()
       hasLoadedSelectedPeriod: false,
       hasAnyRecordsInPeriod: false,
       hasVisibleResults: false,
+      hasAnyRecordsEver: false,
     }) === 'error',
     'Failed load for the selected period should render error state.'
   );
 }
 
 export function testResolveIncomesScreenContentStateSeparatesEmptyAndList(): void {
+  // First-use state: no records ever in the entire database
   assert(
     resolveIncomesScreenContentState({
       isLoading: false,
@@ -55,8 +58,22 @@ export function testResolveIncomesScreenContentStateSeparatesEmptyAndList(): voi
       hasLoadedSelectedPeriod: true,
       hasAnyRecordsInPeriod: false,
       hasVisibleResults: false,
+      hasAnyRecordsEver: false,
+    }) === 'first-use',
+    'First time user with no records anywhere should render first-use state.'
+  );
+
+  // Empty state: current month empty but other months have data
+  assert(
+    resolveIncomesScreenContentState({
+      isLoading: false,
+      error: null,
+      hasLoadedSelectedPeriod: true,
+      hasAnyRecordsInPeriod: false,
+      hasVisibleResults: false,
+      hasAnyRecordsEver: true,
     }) === 'empty',
-    'Loaded month without records should render empty state.'
+    'Loaded month without records but other months have data should render empty state.'
   );
 
   assert(
@@ -66,6 +83,7 @@ export function testResolveIncomesScreenContentStateSeparatesEmptyAndList(): voi
       hasLoadedSelectedPeriod: true,
       hasAnyRecordsInPeriod: true,
       hasVisibleResults: true,
+      hasAnyRecordsEver: true,
     }) === 'list',
     'Loaded month with records should render list state.'
   );
@@ -77,6 +95,7 @@ export function testResolveIncomesScreenContentStateSeparatesEmptyAndList(): voi
       hasLoadedSelectedPeriod: true,
       hasAnyRecordsInPeriod: true,
       hasVisibleResults: false,
+      hasAnyRecordsEver: true,
     }) === 'no-results',
     'Loaded month with hidden records should render a no-results state.'
   );

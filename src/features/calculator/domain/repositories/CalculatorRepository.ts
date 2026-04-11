@@ -17,4 +17,5 @@ export interface CalculatorRepository {
   saveMonthlyCalculationSnapshot(
     snapshot: MonthlyCalculationSnapshot
   ): Promise<MonthlyCalculationSnapshot>;
+  hasAnyIncomes(): Promise<boolean>;
 }

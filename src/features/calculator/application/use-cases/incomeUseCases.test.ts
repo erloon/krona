@@ -445,6 +445,10 @@ class InMemoryCalculatorRepository implements CalculatorRepository {
     this.calculationSnapshots.set(snapshot.reportingPeriodId, snapshot);
     return snapshot;
   }
+
+  async hasAnyIncomes(): Promise<boolean> {
+    return this.incomes.size > 0;
+  }
 }
 
 function settingsSnapshotToAppSettings(snapshot: ReportingPeriodSettingsSnapshot) {
