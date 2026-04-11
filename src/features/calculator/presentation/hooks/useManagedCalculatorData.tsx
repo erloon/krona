@@ -35,6 +35,7 @@ type CalculatorDataContextValue = {
   error: string | null;
   goToNextPeriod: () => void;
   goToPreviousPeriod: () => void;
+  selectPeriod: (period: MonthlyReportingPeriod) => void;
   reloadSelectedPeriod: () => Promise<void>;
   createIncome: (input: IncomeEditorInput) => Promise<void>;
   updateIncome: (incomeId: string, input: IncomeEditorInput) => Promise<void>;
@@ -187,6 +188,7 @@ export function ManagedCalculatorDataProvider({
       goToNextPeriod: () => setSelectedPeriod((current) => getNextMonthlyReportingPeriod(current)),
       goToPreviousPeriod: () =>
         setSelectedPeriod((current) => getPreviousMonthlyReportingPeriod(current)),
+      selectPeriod: (period) => setSelectedPeriod(period),
       reloadSelectedPeriod: loadBundle,
       createIncome,
       updateIncome,

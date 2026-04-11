@@ -7,41 +7,66 @@ const fontFamily = Platform.select({
     'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
 });
 
+/**
+ * Creates a cross-platform shadow that uses boxShadow on web
+ * and native shadow props on iOS/Android.
+ */
+function createShadow(
+  config: { offsetY: number; blur: number; opacity: number },
+  elevation: number
+): ViewStyle {
+  if (Platform.OS === 'web') {
+    const alpha = Math.round(config.opacity * 255)
+      .toString(16)
+      .padStart(2, '0');
+    return {
+      boxShadow: `0 ${config.offsetY}px ${config.blur}px rgba(0, 0, 0, ${config.opacity})`,
+    } as ViewStyle;
+  }
+  return {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: config.offsetY },
+    shadowOpacity: config.opacity,
+    shadowRadius: config.blur,
+    elevation,
+  } as ViewStyle;
+}
+
 export const colors = {
+  brand: {
+    primary: '#005db2',
+    primaryActive: '#00468a',
+    destructive: '#ba1a1a',
+    destructiveActive: '#93000a',
+  },
   text: {
     primary: '#1a1c1c',
-    secondary: '#615d59',
-    muted: '#a39e98',
-    subtle: '#414753',
+    secondary: '#414753',
+    subtle: '#605e5c',
+    muted: '#717784',
     inverse: '#ffffff',
   },
   background: {
     page: '#faf9f8',
-    alt: '#f6f5f4',
-    paper: '#faf9f8',
-    soft: 'rgba(0, 0, 0, 0.05)',
-    badge: '#f2f9ff',
     surface: '#ffffff',
-    surfaceAlt: '#faf9f8',
+    alt: '#f4f3f2',
+    badge: '#d5e3ff',
+    glass: 'rgba(255, 255, 255, 0.8)',
     surfaceContainer: '#efeeed',
     surfaceContainerLow: '#f4f3f2',
-    surfaceContainerLowest: '#ffffff',
     surfaceContainerHigh: '#e9e8e7',
-    surfaceContainerHighest: '#e3e2e1',
-    glass: 'rgba(255, 255, 255, 0.8)',
+    surfaceContainerLowest: '#ffffff',
   },
   border: {
-    whisper: 'rgba(0, 0, 0, 0.1)',
-    subtle: 'rgba(0, 0, 0, 0.06)',
-    input: '#e3e2e1',
+    input: 'rgba(26, 28, 28, 0.10)',
+    subtle: 'rgba(26, 28, 28, 0.08)',
+    whisper: 'rgba(26, 28, 28, 0.12)',
   },
-  brand: {
-    primary: '#0075de',
-    primaryActive: '#005bab',
-    focus: '#097fe8',
-    destructive: '#dc2626',
-    destructiveActive: '#b91c1c',
-  },
+} as const;
+
+export const shadows = {
+  soft: createShadow({ offsetY: 4, blur: 12, opacity: 0.04 }, 3),
+  card: createShadow({ offsetY: 2, blur: 6, opacity: 0.03 }, 1),
 } as const;
 
 export const spacing = {
@@ -65,23 +90,6 @@ export const radius = {
   card: 12,
   featured: 16,
   pill: 9999,
-} as const;
-
-export const shadows = {
-  soft: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 12,
-    elevation: 3,
-  } satisfies ViewStyle,
-  card: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    elevation: 1,
-  } satisfies ViewStyle,
 } as const;
 
 export const typography = {

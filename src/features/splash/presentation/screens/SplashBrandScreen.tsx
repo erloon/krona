@@ -35,7 +35,7 @@ export function SplashBrandScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.screen}>
-        <View pointerEvents="none" style={styles.textureLayer}>
+        <View style={[styles.textureLayer, { pointerEvents: 'none' }]}>
           {dots.map((dot) => (
             <View
               key={dot.key}
@@ -44,7 +44,7 @@ export function SplashBrandScreen() {
           ))}
         </View>
 
-        <View pointerEvents="none" style={styles.hairline} />
+        <View style={[styles.hairline, { pointerEvents: 'none' }]} />
 
         <View style={styles.centerContent}>
           <BrandMark />

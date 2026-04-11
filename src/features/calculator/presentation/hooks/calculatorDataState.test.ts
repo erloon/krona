@@ -29,7 +29,8 @@ export function testResolveIncomesScreenContentStatePrioritizesLoadingAndError()
       isLoading: true,
       error: null,
       hasLoadedSelectedPeriod: false,
-      itemCount: 0,
+      hasAnyRecordsInPeriod: false,
+      hasVisibleResults: false,
     }) === 'loading',
     'Loading selected period should render loading state.'
   );
@@ -39,7 +40,8 @@ export function testResolveIncomesScreenContentStatePrioritizesLoadingAndError()
       isLoading: false,
       error: 'Boom',
       hasLoadedSelectedPeriod: false,
-      itemCount: 0,
+      hasAnyRecordsInPeriod: false,
+      hasVisibleResults: false,
     }) === 'error',
     'Failed load for the selected period should render error state.'
   );
@@ -51,7 +53,8 @@ export function testResolveIncomesScreenContentStateSeparatesEmptyAndList(): voi
       isLoading: false,
       error: null,
       hasLoadedSelectedPeriod: true,
-      itemCount: 0,
+      hasAnyRecordsInPeriod: false,
+      hasVisibleResults: false,
     }) === 'empty',
     'Loaded month without records should render empty state.'
   );
@@ -61,9 +64,21 @@ export function testResolveIncomesScreenContentStateSeparatesEmptyAndList(): voi
       isLoading: false,
       error: null,
       hasLoadedSelectedPeriod: true,
-      itemCount: 2,
+      hasAnyRecordsInPeriod: true,
+      hasVisibleResults: true,
     }) === 'list',
     'Loaded month with records should render list state.'
+  );
+
+  assert(
+    resolveIncomesScreenContentState({
+      isLoading: false,
+      error: null,
+      hasLoadedSelectedPeriod: true,
+      hasAnyRecordsInPeriod: true,
+      hasVisibleResults: false,
+    }) === 'no-results',
+    'Loaded month with hidden records should render a no-results state.'
   );
 }
 

@@ -9,10 +9,11 @@ type ResolveIncomesScreenContentStateParams = {
   isLoading: boolean;
   error: string | null;
   hasLoadedSelectedPeriod: boolean;
-  itemCount: number;
+  hasAnyRecordsInPeriod: boolean;
+  hasVisibleResults: boolean;
 };
 
-export type IncomesScreenContentState = 'loading' | 'error' | 'list' | 'empty';
+export type IncomesScreenContentState = 'loading' | 'error' | 'list' | 'empty' | 'no-results';
 
 export function hasBundleForSelectedPeriod(
   bundle: ReportingPeriodBundle | null,
@@ -34,7 +35,8 @@ export function resolveIncomesScreenContentState({
   isLoading,
   error,
   hasLoadedSelectedPeriod,
-  itemCount,
+  hasAnyRecordsInPeriod,
+  hasVisibleResults,
 }: ResolveIncomesScreenContentStateParams): IncomesScreenContentState {
   if (isLoading) {
     return 'loading';
@@ -48,5 +50,9 @@ export function resolveIncomesScreenContentState({
     return 'loading';
   }
 
-  return itemCount > 0 ? 'list' : 'empty';
+  if (hasVisibleResults) {
+    return 'list';
+  }
+
+  return hasAnyRecordsInPeriod ? 'no-results' : 'empty';
 }

@@ -11,9 +11,13 @@ export type IncomeListItemViewModel = {
   title: string;
   metadata: string;
   amount: number;
-  currency: string;
+  currency: Income['currency'];
+  vatRate: Income['vatRate'];
   vatLabel: string;
+  billingType: Income['billingType'];
   billingTypeLabel: string;
+  createdAt: string;
+  searchableText: string;
 };
 
 export type IncomeSummaryViewModel = {
@@ -61,15 +65,31 @@ export function buildIncomeSummaryViewModel(bundle: ReportingPeriodBundle): Inco
 }
 
 export function buildIncomeListItems(bundle: ReportingPeriodBundle): IncomeListItemViewModel[] {
-  return bundle.incomes.map((income) => ({
-    id: income.id,
-    title: income.label,
-    metadata: income.description || fallbackIncomeMetadata(income),
-    amount: income.baseAmount,
-    currency: income.currency,
-    vatLabel: toIncomeVatLabel(income),
-    billingTypeLabel: toIncomeBillingTypeLabel(income),
-  }));
+  return bundle.incomes.map((income) => {
+    const metadata = income.description || fallbackIncomeMetadata(income);
+
+    return {
+      id: income.id,
+      title: income.label,
+      metadata,
+      amount: income.baseAmount,
+      currency: income.currency,
+      vatRate: income.vatRate,
+      vatLabel: toIncomeVatLabel(income),
+      billingType: income.billingType,
+      billingTypeLabel: toIncomeBillingTypeLabel(income),
+      createdAt: income.createdAt,
+      searchableText: [
+        income.label,
+        income.description,
+        income.clientName,
+        income.invoiceNumber,
+        metadata,
+      ]
+        .filter(Boolean)
+        .join(' '),
+    };
+  });
 }
 
 export function buildCostSummaryViewModel(bundle: ReportingPeriodBundle): CostSummaryViewModel {

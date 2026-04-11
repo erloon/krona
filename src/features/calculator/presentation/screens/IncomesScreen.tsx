@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 
+import { createMonthlyReportingPeriod } from '@/features/calculator/domain/value-objects/MonthlyReportingPeriod';
 import { useCalculatorData } from '@/features/calculator/presentation/hooks/useManagedCalculatorData';
 import { colors, radius, spacing, typography } from '@/shared/theme';
 import { ScreenContainer } from '@/shared/ui/layout/ScreenContainer';
@@ -13,23 +14,27 @@ import { IconButton } from '@/shared/ui/primitives/IconButton';
 import { LoadingIndicator } from '@/shared/ui/primitives/LoadingIndicator';
 import { SearchField } from '@/shared/ui/primitives/SearchField';
 
-import {
-  IncomeEditorModal,
-  incomeToEditorValues,
-  type IncomeEditorValues,
-} from '../components/IncomeEditorModal';
+import type { IncomeEditorValues } from '../components/IncomeEditorModal';
+import { IncomeFiltersModal } from '../components/IncomeFiltersModal';
 import { IncomeListItemCard } from '../components/IncomeListItemCard';
 import { IncomeSummaryHeader } from '../components/IncomeSummaryHeader';
 import { ReportingPeriodHeader } from '../components/ReportingPeriodHeader';
+import { ReportingPeriodPickerModal } from '../components/ReportingPeriodPickerModal';
+import {
+  getSelectedPeriodLabel,
+  resolveIncomesScreenContentState,
+} from '../hooks/calculatorDataState';
 import {
   buildIncomeListItems,
   buildIncomeSummaryViewModel,
   formatCurrencyAmount,
 } from '../view-models/calculatorViewModels';
 import {
-  getSelectedPeriodLabel,
-  resolveIncomesScreenContentState,
-} from '../hooks/calculatorDataState';
+  defaultIncomeListFilters,
+  hasActiveIncomeListFilters,
+  queryIncomeListItems,
+  type IncomeListFilters,
+} from '../view-models/incomeListQuery';
 
 export function IncomesScreen() {
   const {
@@ -41,19 +46,23 @@ export function IncomesScreen() {
     goToPreviousPeriod,
     hasLoadedSelectedPeriod,
     isLoading,
+    selectPeriod,
     selectedPeriod,
-    updateIncome,
   } = useCalculatorData();
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [filters, setFilters] = React.useState<IncomeListFilters>(defaultIncomeListFilters);
+  const [draftFilters, setDraftFilters] = React.useState<IncomeListFilters>(defaultIncomeListFilters);
+  const [isFilterModalVisible, setIsFilterModalVisible] = React.useState(false);
+  const [isPeriodPickerVisible, setIsPeriodPickerVisible] = React.useState(false);
+  const [draftYear, setDraftYear] = React.useState(String(selectedPeriod.year));
+  const [draftMonth, setDraftMonth] = React.useState(String(selectedPeriod.month));
   const [deleteConfirmationVisible, setDeleteConfirmationVisible] = React.useState(false);
   const [pendingDeleteIncomeId, setPendingDeleteIncomeId] = React.useState<string | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   // const [editingIncomeId, setEditingIncomeId] = React.useState<string | null>(null);
   // const [editorVisible, setEditorVisible] = React.useState(false);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const isLastIncome = bundle?.incomes.length === 1;
-
   const incomeListItems = hasLoadedSelectedPeriod && bundle ? buildIncomeListItems(bundle) : [];
   const incomeListSummary =
     hasLoadedSelectedPeriod && bundle ? buildIncomeSummaryViewModel(bundle) : null;
@@ -61,44 +70,68 @@ export function IncomesScreen() {
     () => getSelectedPeriodLabel(selectedPeriod),
     [selectedPeriod]
   );
-  // const editingIncome = React.useMemo(
-  //   () =>
-  //     (hasLoadedSelectedPeriod
-  //       ? bundle?.incomes.find((income) => income.id === editingIncomeId)
-  //       : null) ?? null,
-  //   [bundle?.incomes, editingIncomeId, hasLoadedSelectedPeriod]
-  // );
-  // const editorInitialValues = React.useMemo<IncomeEditorValues>(
-  //   () => (editingIncome ? incomeToEditorValues(editingIncome) : incomeToEditorValuesPlaceholder),
-  //   [editingIncome]
-  // );
-  const normalizedQuery = searchQuery.trim().toLocaleLowerCase('pl-PL');
-  const filteredItems = normalizedQuery
-    ? incomeListItems.filter((item) =>
-        `${item.title} ${item.metadata}`.toLocaleLowerCase('pl-PL').includes(normalizedQuery)
-      )
-    : incomeListItems;
+  const queryResult = React.useMemo(
+    () => queryIncomeListItems(incomeListItems, searchQuery, filters),
+    [filters, incomeListItems, searchQuery]
+  );
   const contentState = resolveIncomesScreenContentState({
     isLoading,
     error,
     hasLoadedSelectedPeriod,
-    itemCount: filteredItems.length,
+    hasAnyRecordsInPeriod: queryResult.hasAnyRecordsInPeriod,
+    hasVisibleResults: queryResult.hasVisibleResults,
   });
-
-  React.useEffect(() => {
-    setSearchQuery('');
-  }, [selectedPeriod.key]);
+  const hasActiveFilters = hasActiveIncomeListFilters(filters);
+  const hasSearchQuery = searchQuery.trim().length > 0;
+  const listStatusLabel = buildListStatusLabel(searchQuery, queryResult.appliedFilterCount);
+  const shouldShowListSection =
+    contentState === 'list' ||
+    contentState === 'no-results' ||
+    queryResult.hasAnyRecordsInPeriod ||
+    hasActiveFilters ||
+    hasSearchQuery;
 
   function handleAddIncome() {
     router.push('/add-income');
   }
 
   function handleFilterPress() {
-    // Placeholder for opening list filters.
+    setDraftFilters(filters);
+    setIsFilterModalVisible(true);
   }
 
   function handleCalendarPress() {
-    // Placeholder for opening month selection.
+    setDraftYear(String(selectedPeriod.year));
+    setDraftMonth(String(selectedPeriod.month));
+    setIsPeriodPickerVisible(true);
+  }
+
+  function handleApplyFilters() {
+    setFilters(draftFilters);
+    setIsFilterModalVisible(false);
+  }
+
+  function handleClearFilters() {
+    setDraftFilters(defaultIncomeListFilters);
+    setFilters(defaultIncomeListFilters);
+    setIsFilterModalVisible(false);
+  }
+
+  function handleApplyPeriod() {
+    if (!/^\d{4}$/.test(draftYear)) {
+      Alert.alert('Nieprawidłowy rok', 'Podaj rok w formacie RRRR.');
+      return;
+    }
+
+    const month = Number(draftMonth);
+
+    if (!Number.isInteger(month) || month < 1 || month > 12) {
+      Alert.alert('Nieprawidłowy miesiąc', 'Wybierz miesiąc od 1 do 12.');
+      return;
+    }
+
+    selectPeriod(createMonthlyReportingPeriod(Number(draftYear), month));
+    setIsPeriodPickerVisible(false);
   }
 
   function handleEditIncome(id: string) {
@@ -240,15 +273,20 @@ export function IncomesScreen() {
               title="Nie udało się wczytać przychodów"
             />
           </View>
-        ) : contentState === 'list' ? (
+        ) : shouldShowListSection ? (
           <View style={styles.listSection}>
             <View style={styles.monthHeader}>
-              <Text style={styles.monthLabel}>
-                {incomeListSummary?.monthLabel ?? selectedPeriodLabel}
-              </Text>
+              <View style={styles.monthHeaderCopy}>
+                <Text style={styles.monthLabel}>
+                  {incomeListSummary?.monthLabel ?? selectedPeriodLabel}
+                </Text>
+                {listStatusLabel ? <Text style={styles.listStatusLabel}>{listStatusLabel}</Text> : null}
+              </View>
               <View style={styles.monthActions}>
                 <IconButton
                   accessibilityLabel="Filtruj przychody"
+                  color={hasActiveFilters ? colors.brand.primary : colors.text.secondary}
+                  filled={hasActiveFilters}
                   icon="filter-variant"
                   onPress={handleFilterPress}
                 />
@@ -260,22 +298,38 @@ export function IncomesScreen() {
               </View>
             </View>
 
-            <View style={styles.cards}>
-              {filteredItems.map((item) => (
-                <IncomeListItemCard
-                  amount={formatCurrencyAmount(item.amount)}
-                  currency={item.currency}
-                  deleteDisabled={isLoading || isDeleting}
-                  key={item.id}
-                  metadata={item.metadata}
-                  onDelete={() => handleDeleteIncome(item.id)}
-                  onDuplicate={() => handleDuplicateIncome(item.id)}
-                  onEdit={() => handleEditIncome(item.id)}
-                  title={item.title}
-                  vatLabel={item.vatLabel}
+            {contentState === 'no-results' ? (
+              <View style={styles.emptyStateCard}>
+                <EmptyState
+                  description={buildNoResultsDescription(searchQuery, hasActiveFilters)}
+                  title="Brak wyników dla bieżącego widoku"
                 />
-              ))}
-            </View>
+              </View>
+            ) : contentState === 'empty' ? (
+              <View style={styles.emptyStateCard}>
+                <EmptyState
+                  description="Ten okres istnieje już w bazie, ale nie ma jeszcze zapisanych przychodów."
+                  title="Brak przychodów w wybranym miesiącu"
+                />
+              </View>
+            ) : (
+              <View style={styles.cards}>
+                {queryResult.items.map((item) => (
+                  <IncomeListItemCard
+                    amount={formatCurrencyAmount(item.amount)}
+                    currency={item.currency}
+                    deleteDisabled={isLoading || isDeleting}
+                    key={item.id}
+                    metadata={item.metadata}
+                    onDelete={() => handleDeleteIncome(item.id)}
+                    onDuplicate={() => handleDuplicateIncome(item.id)}
+                    onEdit={() => handleEditIncome(item.id)}
+                    title={item.title}
+                    vatLabel={item.vatLabel}
+                  />
+                ))}
+              </View>
+            )}
           </View>
         ) : (
           <View style={styles.emptyStateCard}>
@@ -303,11 +357,27 @@ export function IncomesScreen() {
         onConfirm={confirmDelete}
         title="Usunąć przychód?"
         visible={deleteConfirmationVisible}
-        warningMessage={
-          isLastIncome
-            ? 'Po usunięciu okres raportowy będzie pusty.'
-            : undefined
-        }
+        warningMessage={isLastIncome ? 'Po usunięciu okres raportowy będzie pusty.' : undefined}
+      />
+
+      <IncomeFiltersModal
+        draftFilters={draftFilters}
+        onApply={handleApplyFilters}
+        onClear={handleClearFilters}
+        onClose={() => setIsFilterModalVisible(false)}
+        onDraftFiltersChange={setDraftFilters}
+        visible={isFilterModalVisible}
+      />
+
+      <ReportingPeriodPickerModal
+        draftMonth={draftMonth}
+        draftYear={draftYear}
+        onApply={handleApplyPeriod}
+        onClose={() => setIsPeriodPickerVisible(false)}
+        onDraftMonthChange={setDraftMonth}
+        onDraftYearChange={setDraftYear}
+        selectedPeriod={selectedPeriod}
+        visible={isPeriodPickerVisible}
       />
 
       {/* <IncomeEditorModal
@@ -351,14 +421,22 @@ const styles = StyleSheet.create({
   },
   monthHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: spacing.md,
     paddingTop: spacing.xs,
   },
+  monthHeaderCopy: {
+    flex: 1,
+    gap: spacing.xs,
+  },
   monthLabel: {
     ...typography.sectionLabel,
     color: colors.text.secondary,
+  },
+  listStatusLabel: {
+    ...typography.caption,
+    color: colors.text.subtle,
   },
   monthActions: {
     flexDirection: 'row',
@@ -395,3 +473,33 @@ const incomeToEditorValuesPlaceholder: IncomeEditorValues = {
   workingDaysPerMonth: '21',
   workingHoursPerDay: '8',
 };
+
+function buildListStatusLabel(searchQuery: string, appliedFilterCount: number) {
+  const bits: string[] = [];
+
+  if (searchQuery.trim()) {
+    bits.push(`Szukasz: "${searchQuery.trim()}"`);
+  }
+
+  if (appliedFilterCount > 0) {
+    bits.push(appliedFilterCount === 1 ? '1 aktywny filtr' : `${appliedFilterCount} aktywne filtry`);
+  }
+
+  return bits.join(' · ');
+}
+
+function buildNoResultsDescription(searchQuery: string, hasActiveFilters: boolean) {
+  if (searchQuery.trim() && hasActiveFilters) {
+    return 'Zmień frazę wyszukiwania albo wyczyść filtry, aby zobaczyć zapisane przychody.';
+  }
+
+  if (searchQuery.trim()) {
+    return 'Brak przychodów pasujących do tej frazy. Spróbuj innej nazwy klienta lub numeru faktury.';
+  }
+
+  if (hasActiveFilters) {
+    return 'Żaden zapisany przychód nie pasuje do aktywnych filtrów. Wyczyść filtry lub wybierz inne wartości.';
+  }
+
+  return 'Brak przychodów do wyświetlenia.';
+}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 
 import { colors, radius, spacing, typography } from '@/shared/theme';
 
@@ -94,6 +94,11 @@ const styles = StyleSheet.create({
 });
 
 function shallowShadow() {
+  if (Platform.OS === 'web') {
+    return {
+      boxShadow: '0 8px 16px rgba(0, 0, 0, 0.08)',
+    } as const;
+  }
   return {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 8 },
