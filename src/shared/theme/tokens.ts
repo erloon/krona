@@ -18,10 +18,15 @@ export const colors = {
   background: {
     page: '#ffffff',
     alt: '#f6f5f4',
+    paper: '#faf9f8',
     soft: 'rgba(0, 0, 0, 0.05)',
     badge: '#f2f9ff',
     surface: '#ffffff',
     surfaceAlt: '#faf9f8',
+    surfaceContainer: '#efeeed',
+    surfaceContainerLow: '#f6f5f4',
+    surfaceContainerLowest: '#ffffff',
+    surfaceContainerHigh: '#e9e8e7',
   },
   border: {
     whisper: 'rgba(0, 0, 0, 0.1)',
@@ -51,6 +56,7 @@ export const spacing = {
 export const radius = {
   micro: 4,
   subtle: 5,
+  paper: 6,
   standard: 8,
   card: 12,
   featured: 16,
@@ -61,16 +67,16 @@ export const shadows = {
   soft: {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
-    elevation: 6,
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 3,
   } satisfies ViewStyle,
   card: {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1,
   } satisfies ViewStyle,
 } as const;
 
@@ -130,9 +136,17 @@ export const typography = {
   caption: {
     fontFamily,
     fontSize: 11,
-    fontWeight: '500',
+    fontWeight: '600',
     lineHeight: 16,
     letterSpacing: 0.9,
+  } satisfies TextStyle,
+  sectionLabel: {
+    fontFamily,
+    fontSize: 11,
+    fontWeight: '600',
+    lineHeight: 14,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   } satisfies TextStyle,
   micro: {
     fontFamily,
