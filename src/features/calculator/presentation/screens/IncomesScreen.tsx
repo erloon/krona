@@ -1,5 +1,6 @@
 import React from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
 
 import { useCalculatorData } from '@/features/calculator/presentation/hooks/useManagedCalculatorData';
 import { colors, radius, spacing, typography } from '@/shared/theme';
@@ -12,7 +13,6 @@ import { LoadingIndicator } from '@/shared/ui/primitives/LoadingIndicator';
 import { SearchField } from '@/shared/ui/primitives/SearchField';
 
 import {
-  createEmptyIncomeEditorValues,
   IncomeEditorModal,
   incomeToEditorValues,
   type IncomeEditorValues,
@@ -33,7 +33,6 @@ import {
 export function IncomesScreen() {
   const {
     bundle,
-    createIncome,
     deleteIncome,
     duplicateIncome,
     error,
@@ -45,7 +44,6 @@ export function IncomesScreen() {
     updateIncome,
   } = useCalculatorData();
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [editorMode, setEditorMode] = React.useState<'create' | 'edit'>('create');
   const [editingIncomeId, setEditingIncomeId] = React.useState<string | null>(null);
   const [editorVisible, setEditorVisible] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -65,8 +63,7 @@ export function IncomesScreen() {
     [bundle?.incomes, editingIncomeId, hasLoadedSelectedPeriod]
   );
   const editorInitialValues = React.useMemo<IncomeEditorValues>(
-    () =>
-      editingIncome ? incomeToEditorValues(editingIncome) : createEmptyIncomeEditorValues(),
+    () => (editingIncome ? incomeToEditorValues(editingIncome) : incomeToEditorValuesPlaceholder),
     [editingIncome]
   );
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase('pl-PL');
@@ -87,9 +84,7 @@ export function IncomesScreen() {
   }, [selectedPeriod.key]);
 
   function handleAddIncome() {
-    setEditorMode('create');
-    setEditingIncomeId(null);
-    setEditorVisible(true);
+    router.push('/add-income');
   }
 
   function handleFilterPress() {
@@ -101,7 +96,6 @@ export function IncomesScreen() {
   }
 
   function handleEditIncome(id: string) {
-    setEditorMode('edit');
     setEditingIncomeId(id);
     setEditorVisible(true);
   }
@@ -158,12 +152,16 @@ export function IncomesScreen() {
         baseAmount: Number(values.baseAmount),
         currency: values.currency,
         vatRate: values.vatRate,
+        clientName: values.clientName,
+        invoiceNumber: values.invoiceNumber,
+        workParameters: {
+          workingDaysPerMonth: Number(values.workingDaysPerMonth),
+          workingHoursPerDay: Number(values.workingHoursPerDay),
+        },
       } as const;
 
-      if (editorMode === 'edit' && editingIncome) {
+      if (editingIncome) {
         await updateIncome(editingIncome.id, input);
-      } else {
-        await createIncome(input);
       }
 
       setEditorVisible(false);
@@ -282,7 +280,7 @@ export function IncomesScreen() {
       <IncomeEditorModal
         initialValues={editorInitialValues}
         isSubmitting={isSubmitting}
-        mode={editorMode}
+        mode="edit"
         onClose={closeEditor}
         onSubmit={handleSubmitIncome}
         visible={editorVisible}
@@ -351,3 +349,16 @@ const styles = StyleSheet.create({
     bottom: 104,
   },
 });
+
+const incomeToEditorValuesPlaceholder: IncomeEditorValues = {
+  label: '',
+  description: '',
+  baseAmount: '',
+  billingType: 'MONTHLY',
+  currency: 'PLN',
+  vatRate: '23',
+  clientName: '',
+  invoiceNumber: '',
+  workingDaysPerMonth: '21',
+  workingHoursPerDay: '8',
+};

@@ -75,12 +75,20 @@ export async function testCreateAndUpdateIncomeRecalculateSnapshot(): Promise<vo
         billingType: 'MONTHLY',
         currency: 'PLN',
         vatRate: '23',
+        clientName: 'Acme Corp',
+        invoiceNumber: 'FV/04/2026',
+        workParameters: {
+          workingDaysPerMonth: 21,
+          workingHoursPerDay: 8,
+        },
       },
     }
   );
 
   assert(createdBundle.incomes.length === 1, 'Expected a created income in the selected period.');
   assert(createdBundle.calculationSnapshot.revenueAmount === 10000, 'Revenue should reflect created income.');
+  assert(createdBundle.incomes[0].clientName === 'Acme Corp', 'Client should be persisted.');
+  assert(createdBundle.incomes[0].invoiceNumber === 'FV/04/2026', 'Invoice should be persisted.');
 
   const updatedBundle = await updateIncomeForPeriodUseCase(
     fixtures.calculatorRepository,
@@ -95,12 +103,23 @@ export async function testCreateAndUpdateIncomeRecalculateSnapshot(): Promise<vo
         billingType: 'MONTHLY',
         currency: 'PLN',
         vatRate: '23',
+        clientName: 'Acme Corp',
+        invoiceNumber: 'FV/04/2026/K',
+        workParameters: {
+          workingDaysPerMonth: 20,
+          workingHoursPerDay: 7,
+        },
       },
     }
   );
 
   assert(updatedBundle.incomes[0].baseAmount === 12000, 'Income amount should be updated.');
   assert(updatedBundle.calculationSnapshot.revenueAmount === 12000, 'Snapshot should be recalculated after update.');
+  assert(updatedBundle.incomes[0].invoiceNumber === 'FV/04/2026/K', 'Updated metadata should be saved.');
+  assert(
+    updatedBundle.incomes[0].workParameters.workingDaysPerMonth === 20,
+    'Updated work parameters should be saved.'
+  );
 }
 
 export async function testDuplicateIncomeCreatesNewRecord(): Promise<void> {
@@ -118,6 +137,12 @@ export async function testDuplicateIncomeCreatesNewRecord(): Promise<void> {
         billingType: 'MONTHLY',
         currency: 'PLN',
         vatRate: '23',
+        clientName: '',
+        invoiceNumber: '',
+        workParameters: {
+          workingDaysPerMonth: 21,
+          workingHoursPerDay: 8,
+        },
       },
     }
   );
@@ -158,6 +183,12 @@ export async function testDeleteIncomeKeepsOtherPeriodsUntouched(): Promise<void
         billingType: 'MONTHLY',
         currency: 'PLN',
         vatRate: '23',
+        clientName: '',
+        invoiceNumber: '',
+        workParameters: {
+          workingDaysPerMonth: 21,
+          workingHoursPerDay: 8,
+        },
       },
     }
   );
@@ -171,6 +202,12 @@ export async function testDeleteIncomeKeepsOtherPeriodsUntouched(): Promise<void
       billingType: 'MONTHLY',
       currency: 'PLN',
       vatRate: '23',
+      clientName: '',
+      invoiceNumber: '',
+      workParameters: {
+        workingDaysPerMonth: 21,
+        workingHoursPerDay: 8,
+      },
     },
   });
 
@@ -192,6 +229,70 @@ export async function testDeleteIncomeKeepsOtherPeriodsUntouched(): Promise<void
   assert(deletedBundle.calculationSnapshot.revenueAmount === 0, 'April snapshot should be cleared.');
   assert(mayBundle.incomes.length === 1, 'May data must remain untouched.');
   assert(mayBundle.calculationSnapshot.revenueAmount === 9000, 'May snapshot must remain intact.');
+}
+
+export async function testCreateDailyIncomeUsesWorkingDays(): Promise<void> {
+  const fixtures = createFixtures();
+  const period = createMonthlyReportingPeriod(2026, 4);
+
+  const bundle = await createIncomeForPeriodUseCase(
+    fixtures.calculatorRepository,
+    fixtures.settingsRepository,
+    {
+      period,
+      input: {
+        label: 'Daily contract',
+        description: '',
+        baseAmount: 1200,
+        billingType: 'DAILY',
+        currency: 'PLN',
+        vatRate: '23',
+        clientName: '',
+        invoiceNumber: '',
+        workParameters: {
+          workingDaysPerMonth: 18,
+          workingHoursPerDay: 8,
+        },
+      },
+    }
+  );
+
+  assert(
+    bundle.calculationSnapshot.revenueAmount === 21600,
+    'Daily income should normalize using working days.'
+  );
+}
+
+export async function testCreateHourlyIncomeUsesFullWorkParameters(): Promise<void> {
+  const fixtures = createFixtures();
+  const period = createMonthlyReportingPeriod(2026, 4);
+
+  const bundle = await createIncomeForPeriodUseCase(
+    fixtures.calculatorRepository,
+    fixtures.settingsRepository,
+    {
+      period,
+      input: {
+        label: 'Hourly contract',
+        description: '',
+        baseAmount: 180,
+        billingType: 'HOURLY',
+        currency: 'PLN',
+        vatRate: '23',
+        clientName: '',
+        invoiceNumber: '',
+        workParameters: {
+          workingDaysPerMonth: 20,
+          workingHoursPerDay: 8,
+        },
+      },
+    }
+  );
+
+  assert(
+    bundle.calculationSnapshot.revenueAmount === 28800,
+    'Hourly income should normalize using days and hours.'
+  );
 }
 
 function createFixtures() {

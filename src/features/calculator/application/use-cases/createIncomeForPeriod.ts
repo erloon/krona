@@ -27,6 +27,9 @@ export async function createIncomeForPeriodUseCase(
     baseAmount: command.input.baseAmount,
     currency: command.input.currency,
     vatRate: command.input.vatRate,
+    clientName: command.input.clientName,
+    invoiceNumber: command.input.invoiceNumber,
+    workParameters: command.input.workParameters,
     createdAt: timestamp,
     updatedAt: timestamp,
   });

@@ -33,6 +33,10 @@ export type IncomeEditorValues = {
   billingType: IncomeBillingType;
   currency: IncomeCurrency;
   vatRate: IncomeVatRate;
+  clientName: string;
+  invoiceNumber: string;
+  workingDaysPerMonth: string;
+  workingHoursPerDay: string;
 };
 
 type IncomeEditorModalProps = {
@@ -105,6 +109,8 @@ export function IncomeEditorModal({
       ...values,
       label: values.label.trim(),
       description: values.description.trim(),
+      clientName: values.clientName.trim(),
+      invoiceNumber: values.invoiceNumber.trim(),
       baseAmount: parsedAmount.toFixed(2),
     });
   }
@@ -203,6 +209,10 @@ export function incomeToEditorValues(income: Income): IncomeEditorValues {
     billingType: income.billingType,
     currency: income.currency,
     vatRate: income.vatRate,
+    clientName: income.clientName,
+    invoiceNumber: income.invoiceNumber,
+    workingDaysPerMonth: String(income.workParameters.workingDaysPerMonth),
+    workingHoursPerDay: String(income.workParameters.workingHoursPerDay),
   };
 }
 
@@ -214,6 +224,10 @@ export function createEmptyIncomeEditorValues(): IncomeEditorValues {
     billingType: 'MONTHLY',
     currency: 'PLN',
     vatRate: '23',
+    clientName: '',
+    invoiceNumber: '',
+    workingDaysPerMonth: '21',
+    workingHoursPerDay: '8',
   };
 }
 

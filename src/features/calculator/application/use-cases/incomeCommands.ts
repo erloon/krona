@@ -12,6 +12,12 @@ export type IncomeEditorInput = Readonly<{
   billingType: IncomeBillingType;
   currency: IncomeCurrency;
   vatRate: IncomeVatRate;
+  clientName: string;
+  invoiceNumber: string;
+  workParameters: {
+    workingDaysPerMonth: number;
+    workingHoursPerDay: number;
+  };
 }>;
 
 export type IncomePeriodCommand = Readonly<{
