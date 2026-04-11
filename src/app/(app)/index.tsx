@@ -1,7 +1,6 @@
 import React from 'react';
-
-import { AppPlaceholderScreen } from '@/features/shared/presentation/screens/AppPlaceholderScreen';
+import { Redirect } from 'expo-router';
 
 export default function AppIndexRoute() {
-  return <AppPlaceholderScreen />;
+  return <Redirect href="/(app)/dashboard" />;
 }

@@ -1,18 +1,27 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { startupSessionActions } from '@/core/store/startup-session';
 import { colors, layout, spacing } from '@/shared/theme';
 
 import { AuthCard } from '../components/AuthCard';
 import { GoogleSignInButton } from '../components/GoogleSignInButton';
 
 export function LoginScreen() {
+  const router = useRouter();
+
+  function handleSignIn() {
+    startupSessionActions.setAuthenticated(true);
+    router.replace('/(app)/dashboard');
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.screen}>
         <View style={styles.content}>
-          <AuthCard action={<GoogleSignInButton />} />
+          <AuthCard action={<GoogleSignInButton onPress={handleSignIn} />} />
         </View>
       </View>
     </SafeAreaView>

@@ -10,7 +10,7 @@ type GoogleSignInButtonProps = {
 
 export function GoogleSignInButton({
   onPress,
-  disabled = true,
+  disabled = false,
 }: GoogleSignInButtonProps) {
   return (
     <SecondaryButton
