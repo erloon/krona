@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html lang="pl"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#605e5c",
+                    "on-surface": "#1a1c1c",
+                    "on-tertiary-fixed": "#331100",
+                    "tertiary-container": "#c15600",
+                    "on-primary-fixed": "#001b3c",
+                    "on-secondary-fixed": "#1c1b1a",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-low": "#f4f3f2",
+                    "surface": "#faf9f8",
+                    "surface-bright": "#faf9f8",
+                    "error": "#ba1a1a",
+                    "error-container": "#ffdad6",
+                    "background": "#faf9f8",
+                    "on-surface-variant": "#414753",
+                    "primary-fixed": "#d5e3ff",
+                    "surface-variant": "#e3e2e1",
+                    "on-primary-fixed-variant": "#00468a",
+                    "outline-variant": "#c1c6d5",
+                    "on-primary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "primary-container": "#0075de",
+                    "inverse-surface": "#2f3130",
+                    "tertiary-fixed": "#ffdbca",
+                    "surface-container": "#efeeed",
+                    "inverse-on-surface": "#f1f0ef",
+                    "secondary-fixed": "#e6e2de",
+                    "surface-container-high": "#e9e8e7",
+                    "on-primary-container": "#fffeff",
+                    "outline": "#717784",
+                    "surface-tint": "#005eb4",
+                    "on-background": "#1a1c1c",
+                    "primary": "#005db2",
+                    "on-tertiary-container": "#fffeff",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary": "#9b4300",
+                    "primary-fixed-dim": "#a8c8ff",
+                    "secondary-container": "#e6e2de",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb68f",
+                    "surface-dim": "#dadad9",
+                    "on-secondary-fixed-variant": "#484644",
+                    "on-tertiary-fixed-variant": "#773200",
+                    "inverse-primary": "#a8c8ff",
+                    "secondary-fixed-dim": "#c9c6c3",
+                    "on-error": "#ffffff",
+                    "surface-container-highest": "#e3e2e1",
+                    "on-secondary-container": "#666462"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .glass-effect {
+            backdrop-filter: blur(20px);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+    </style>
+</head>
+<body class="bg-[#faf9f8] text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-[#faf9f8] dark:bg-stone-950 flex justify-between items-center px-6 py-4 w-full docked full-width top-0 sticky z-50 border-b border-outline-variant/15">
+<div class="flex items-center gap-4">
+<button class="hover:bg-stone-200/50 dark:hover:bg-stone-800/50 transition-colors active:scale-95 duration-150 p-2 rounded" style="">
+<span class="material-symbols-outlined text-[#0075de] dark:text-blue-400" data-icon="menu" style="">menu</span>
+</button>
+<h1 class="text-xl font-bold text-stone-900 dark:text-stone-100 font-['Inter'] tracking-[-0.02em]" style="">KRONA</h1>
+</div>
+<div class="flex items-center gap-3">
+<span class="hidden md:block text-on-surface-variant text-sm font-medium" style="">Dzień dobry, Jan</span>
+<div class="w-8 h-8 rounded-full bg-secondary-fixed overflow-hidden ring-1 ring-outline-variant/15">
+<img class="w-full h-full object-cover" data-alt="professional headshot of a business man with a friendly expression in a modern office environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpy_3LyhqUTOQtId5k58GpdRE2tzjwLi5P-RFBplin45UcpmIyKFMw_LFMZWGIpAIdExaumhAB3HjnW1k46eP3sP7dNH3l9cjS16sNcR0TxDBM7a0Aa_sILz8hPxdLpprR4LhVJ62A0w8uLnWznyeZTBGLPB6ofyAaNxhKQEMUJdWEEe2mpwTawpAsH5ffAuRuef2E34XQFa6YjuR2JPg-k3Jy2VKg_JrIuTNUsj2owWwL7AJLjsyp4alX-z3MD6p0Go1upgp25AE" style=""/>
+</div>
+</div>
+</header>
+<main class="px-6 pt-6 max-w-4xl mx-auto space-y-8">
+<!-- Welcome Section -->
+<section class="md:hidden">
+<h2 class="text-2xl font-bold tracking-tight text-on-surface" style="">Dzień dobry, Jan</h2>
+<p class="text-on-surface-variant text-sm mt-1" style="">Oto Twój aktualny bilans finansowy.</p>
+</section>
+<!-- Prominent Hero Card (Main Content) -->
+<section class="relative overflow-hidden bg-white rounded p-8 border border-black/10 shadow-[0_2px_4px_rgba(26,28,28,0.02)]">
+<div class="flex flex-col gap-2">
+<span class="text-on-surface-variant text-sm font-medium tracking-wide uppercase" style="">Na rękę w marcu</span>
+<div class="flex items-baseline gap-2">
+<span class="text-[40px] font-bold tracking-[-0.02em] text-[#0075de]" style="">12 450,00</span>
+<span class="text-xl font-semibold text-primary" style="">PLN</span>
+</div>
+</div>
+</section>
+<!-- Przychody & Koszty Sections -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="bg-white p-6 border border-black/10 rounded">
+<span class="text-on-surface-variant text-xs font-semibold uppercase tracking-widest" style="">Przychody</span>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="text-2xl font-bold text-on-surface" style="">18 500,00</span>
+<span class="text-xs font-medium text-on-surface-variant" style="">PLN</span>
+</div>
+</div>
+<div class="bg-white p-6 border border-black/10 rounded">
+<span class="text-on-surface-variant text-xs font-semibold uppercase tracking-widest" style="">Koszty</span>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="text-2xl font-bold text-on-surface" style="">6 050,00</span>
+<span class="text-xs font-medium text-on-surface-variant" style="">PLN</span>
+</div>
+</div>
+</section><section class="bg-white p-6 border border-black/10 rounded shadow-[0_2px_4px_rgba(26,28,28,0.01)]">
+<div class="flex justify-between items-center mb-3">
+<span class="text-[10px] font-bold tracking-widest text-on-surface-variant uppercase">Obciążenie całkowite</span>
+<span class="text-[10px] font-bold tracking-widest text-[#0075de] uppercase">34% Przychodu</span>
+</div>
+<div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#0075de] rounded-full" style="width: 34%;"></div>
+</div>
+</section>
+<!-- Action Buttons -->
+<section class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 bg-[#0075de] text-white py-4 rounded font-bold text-sm hover:bg-[#005eb4] transition-colors shadow-sm" style="">
+<span class="material-symbols-outlined text-sm" data-icon="add" style="">add</span>
+            DODAJ PRZYCHÓD
+        </button>
+<button class="flex items-center justify-center gap-2 bg-white text-on-surface border border-black/10 py-4 rounded font-bold text-sm hover:bg-surface-container-low transition-colors shadow-sm" style="">
+<span class="material-symbols-outlined text-sm" data-icon="remove" style="">remove</span>
+            DODAJ KOSZT
+        </button>
+</section>
+<!-- Podatki i składki (Expanded Section) -->
+<section>
+<div class="flex items-center justify-between mb-4 px-1">
+<h3 class="text-sm font-semibold text-on-surface-variant uppercase tracking-widest" style="">Podatki i składki</h3>
+</div>
+<div class="bg-white border border-black/10 rounded divide-y divide-black/5 overflow-hidden shadow-[0_2px_4px_rgba(26,28,28,0.01)]">
+<!-- Header/Summary Item (Simulating expanded state) -->
+<div class="px-5 py-4 flex items-center justify-between cursor-pointer bg-surface-container-low/30">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-bold text-on-surface" style="">Suma: 5670 PLN</span>
+</div>
+<span class="material-symbols-outlined text-lg" data-icon="expand_less" style="">expand_less</span>
+</div>
+<!-- Detailed Breakdown -->
+<div class="px-5 py-3.5 flex items-center justify-between hover:bg-surface/50 transition-colors">
+<span class="text-sm font-medium text-on-surface-variant" style="">PIT (Income Tax)</span>
+<span class="text-sm font-semibold text-on-surface" style="">850 PLN</span>
+</div>
+<div class="px-5 py-3.5 flex items-center justify-between hover:bg-surface/50 transition-colors">
+<span class="text-sm font-medium text-on-surface-variant" style="">VAT (Value Added Tax)</span>
+<span class="text-sm font-semibold text-on-surface" style="">2300 PLN</span>
+</div>
+<div class="px-5 py-3.5 flex items-center justify-between hover:bg-surface/50 transition-colors">
+<span class="text-sm font-medium text-on-surface-variant" style="">ZUS (Social Security)</span>
+<span class="text-sm font-semibold text-on-surface" style="">1780 PLN</span>
+</div>
+<div class="px-5 py-3.5 flex items-center justify-between hover:bg-surface/50 transition-colors">
+<span class="text-sm font-medium text-on-surface-variant" style="">Zdrowotna (Health Insurance)</span>
+<span class="text-sm font-semibold text-on-surface" style="">740 PLN</span>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 dark:bg-stone-900/80 backdrop-blur-md z-50 border-t border-outline-variant/15 shadow-[0_-4px_12px_rgba(26,28,28,0.02)]">
+<a class="flex flex-col items-center justify-center text-[#0075de] dark:text-blue-300 px-3 py-1.5 transition-all tap-highlight-none" href="#" style="">
+<span class="material-symbols-outlined" data-icon="dashboard" style='font-variation-settings: "FILL" 1;'>dashboard</span>
+<span class="text-[11px] font-medium font-['Inter'] mt-1" style="">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-3 py-1.5 hover:text-stone-800 dark:hover:text-stone-200 transition-all active:opacity-80" href="#" style="">
+<span class="material-symbols-outlined" data-icon="payments" style="">payments</span>
+<span class="text-[11px] font-medium font-['Inter'] mt-1" style="">Incomes</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-3 py-1.5 hover:text-stone-800 dark:hover:text-stone-200 transition-all active:opacity-80" href="#" style="">
+<span class="material-symbols-outlined" data-icon="receipt_long" style="">receipt_long</span>
+<span class="text-[11px] font-medium font-['Inter'] mt-1" style="">Costs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400 px-3 py-1.5 hover:text-stone-800 dark:hover:text-stone-200 transition-all active:opacity-80" href="#" style="">
+<span class="material-symbols-outlined" data-icon="settings" style="">settings</span>
+<span class="text-[11px] font-medium font-['Inter'] mt-1" style="">Settings</span>
+</a>
+</nav>
+</body></html>

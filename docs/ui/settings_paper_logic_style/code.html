@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pl"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Krona - Ustawienia</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0075de",
+                        "background": "#ffffff",
+                        "surface": "#f6f5f4",
+                        "outline-whisper": "rgba(0,0,0,0.1)",
+                        "on-background": "#1a1a1a",
+                        "on-surface-variant": "#666666",
+                    },
+                    fontFamily: {
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "4px",
+                        "sm": "2px",
+                        "md": "4px",
+                        "lg": "4px",
+                        "xl": "4px",
+                        "2xl": "4px",
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+            font-size: 20px;
+        }
+        body {
+            background-color: #ffffff;
+            color: #1a1a1a;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.011em;
+        }
+        /* Custom UI Elements - Paper Logic Style */
+        .whisper-border {
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .paper-input {
+            background-color: #ffffff;
+            border: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+        }
+        .paper-input:focus {
+            border-color: #0075de;
+            box-shadow: 0 0 0 1px #0075de;
+            outline: none;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #0075de;
+        }
+        .toggle-checkbox:checked + .toggle-label .toggle-dot {
+            transform: translateX(100%);
+        }
+        /* Tight Letter Spacing for Headlines */
+        .headline-tight {
+            letter-spacing: -0.022em;
+        }
+        /* Section Label Style */
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #666666;
+        }
+    </style>
+</head>
+<body class="font-body selection:bg-primary/10 selection:text-primary">
+<!-- TopAppBar -->
+<header class="bg-white/80 backdrop-blur-md top-0 z-50 fixed w-full border-b whisper-border">
+<div class="flex justify-between items-center w-full px-5 py-3.5 max-w-2xl mx-auto">
+<div class="flex items-center gap-2">
+<span class="font-bold text-lg headline-tight tracking-tight">Krona</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-on-background transition-colors">notifications</button>
+<div class="w-7 h-7 rounded-full bg-surface whisper-border flex items-center justify-center overflow-hidden">
+<img alt="User avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtWzXxwFXlNdspN8aj5w1LwVG-qwoz5wUFYkqbfUy2UJ3xMCrIbb-4NkpQFgtjAOygdjLOvW7hwZ28YWhT2Hk05fG9Gh7YQpvarI1xXRkQKI-ndh-QdZN1YkOj7KpcMTysuDCOhmIuHXKpUOy_LDR9F1_mULZAZNDWmLM56AfgOEGj1StnbkmHhX5G-rjNWYfvIklHz46nLRSjv8SteGrYwLKBQHgXSssxghKoOmfpkfDDaTlzJkD-_zlmFr-96yQqoDDlbamVyxNC"/>
+</div>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-32 px-5 max-w-2xl mx-auto space-y-10">
+<!-- Page Title -->
+<section>
+<h1 class="font-bold text-3xl headline-tight text-on-background">Ustawienia</h1>
+<p class="text-on-surface-variant text-sm mt-1.5">Konfiguracja profilu, podatków i preferencji</p>
+</section>
+<!-- 1. Profil Firmy -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 px-1">
+<h2 class="section-label">Profil Firmy</h2>
+</div>
+<div class="bg-surface whisper-border rounded-md p-5 space-y-4">
+<div class="flex flex-col gap-1.5">
+<label class="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Nazwa firmy</label>
+<input class="paper-input w-full px-3 py-2 rounded-md font-medium text-sm" type="text" value="Studio Projektowe ARCHI-TEK"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">NIP</label>
+<input class="paper-input w-full px-3 py-2 rounded-md font-medium text-sm" type="text" value="5251234567"/>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Adres siedziby</label>
+<textarea class="paper-input w-full px-3 py-2 rounded-md font-medium text-sm" rows="2">ul. Marszałkowska 12/4, 00-001 Warszawa</textarea>
+</div>
+</div>
+</section>
+<!-- 2. Forma Opodatkowania -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 px-1">
+<h2 class="section-label">Forma Opodatkowania</h2>
+</div>
+<div class="space-y-2">
+<!-- Skala -->
+<button class="w-full flex items-center justify-between p-4 bg-white whisper-border rounded-md hover:bg-surface transition-all">
+<div class="text-left">
+<div class="font-semibold text-sm">Skala Podatkowa</div>
+<div class="text-[11px] text-on-surface-variant">12% / 32% (Zasady ogólne)</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/30">radio_button_unchecked</span>
+</button>
+<!-- Liniowy -->
+<button class="w-full flex items-center justify-between p-4 bg-white border border-primary/50 ring-1 ring-primary/10 rounded-md">
+<div class="text-left">
+<div class="font-semibold text-sm text-primary">Podatek Liniowy</div>
+<div class="text-[11px] text-on-surface-variant">Stała stawka 19%</div>
+</div>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</button>
+<!-- Ryczałt -->
+<div class="p-4 bg-white whisper-border rounded-md space-y-4">
+<div class="flex items-center justify-between">
+<div class="text-left">
+<div class="font-semibold text-sm">Ryczałt</div>
+<div class="text-[11px] text-on-surface-variant">Ewidencjonowany (2% – 17%)</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/30">radio_button_unchecked</span>
+</div>
+<div class="pt-2 border-t whisper-border">
+<label class="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider mb-2 block">Stawka ryczałtu</label>
+<select class="paper-input w-full px-3 py-1.5 rounded-md text-xs font-medium bg-white">
+<option>12% - Usługi IT</option>
+<option>8.5% - Usługi projektowe</option>
+<option>17% - Wolne zawody</option>
+<option>5.5% - Działalność wytwórcza</option>
+</select>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. Składka Zdrowotna -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 px-1">
+<h2 class="section-label">Składka Zdrowotna</h2>
+</div>
+<div class="bg-surface whisper-border rounded-md p-5">
+<p class="text-[12px] text-on-surface-variant mb-4">Wysokość składki zależy od formy opodatkowania i przychodu.</p>
+<div class="space-y-4">
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-baseline">
+<span class="text-[11px] font-semibold">Progi przychodowe (Ryczałt)</span>
+<span class="text-[9px] font-bold text-primary tracking-widest uppercase">Rok 2026</span>
+</div>
+<div class="grid grid-cols-3 gap-1 h-1.5 rounded-full overflow-hidden bg-white whisper-border">
+<div class="bg-primary/20"></div>
+<div class="bg-primary"></div>
+<div class="bg-transparent"></div>
+</div>
+<div class="flex justify-between text-[9px] font-bold text-on-surface-variant uppercase tracking-wider">
+<span>&lt; 60k</span>
+<span>60k - 300k</span>
+<span>&gt; 300k</span>
+</div>
+</div>
+<div class="pt-3 border-t whisper-border flex justify-between items-center">
+<span class="text-xs font-medium">Bieżący poziom:</span>
+<span class="text-xs font-bold text-primary">60k - 300k PLN</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Status ZUS -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 px-1">
+<h2 class="section-label">Status ZUS</h2>
+</div>
+<div class="bg-white whisper-border rounded-md overflow-hidden divide-y whisper-border">
+<div class="p-4 flex items-center justify-between">
+<div>
+<div class="font-semibold text-sm">Ulga na Start</div>
+<div class="text-[11px] text-on-surface-variant">Pierwsze 6 m-cy</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/30">radio_button_unchecked</span>
+</div>
+<div class="p-4 flex items-center justify-between bg-surface/50">
+<div>
+<div class="font-semibold text-sm">Składka Preferencyjna</div>
+<div class="text-[11px] text-on-surface-variant">Zmniejszona podstawa (24 m-ce)</div>
+</div>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">radio_button_checked</span>
+</div>
+<div class="p-4 flex items-center justify-between">
+<div>
+<div class="font-semibold text-sm">Brak ulgi (Standard)</div>
+<div class="text-[11px] text-on-surface-variant">Pełna podstawa ZUS</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/30">radio_button_unchecked</span>
+</div>
+<div class="p-4 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-semibold text-sm">Dobrowolne chorobowe</span>
+<span class="text-[11px] text-on-surface-variant">Dodatkowe 2.45% składki</span>
+</div>
+<div class="relative inline-block w-8 h-4.5 transition duration-200 ease-in-out rounded-full cursor-pointer">
+<input checked="" class="absolute w-0 h-0 opacity-0 toggle-checkbox" id="toggle-sickness" type="checkbox"/>
+<label class="block h-4.5 rounded-full cursor-pointer bg-black/10 toggle-label transition-colors duration-200" for="toggle-sickness">
+<span class="absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white transition-transform duration-200 ease-in-out toggle-dot shadow-sm"></span>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. Ulgi Podatkowe -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 px-1">
+<h2 class="section-label">Ulgi Podatkowe (PIT-0)</h2>
+</div>
+<div class="bg-white whisper-border rounded-md divide-y whisper-border">
+<div class="p-4 space-y-4">
+<div class="flex items-center justify-between">
+<div>
+<div class="font-semibold text-sm">IP BOX (5%)</div>
+<div class="text-[11px] text-on-surface-variant">Ulga na kwalifikowane IP</div>
+</div>
+<div class="relative inline-block w-8 h-4.5 transition duration-200 ease-in-out rounded-full cursor-pointer">
+<input class="absolute w-0 h-0 opacity-0 toggle-checkbox" id="toggle-ipbox" type="checkbox"/>
+<label class="block h-4.5 rounded-full cursor-pointer bg-black/10 toggle-label transition-colors duration-200" for="toggle-ipbox">
+<span class="absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white transition-transform duration-200 ease-in-out toggle-dot shadow-sm"></span>
+</label>
+</div>
+</div>
+<div class="pl-3 border-l-2 border-primary/20 py-1">
+<label class="text-[10px] font-semibold text-on-surface-variant uppercase tracking-wider block mb-1">Udział dochodu (%)</label>
+<div class="flex items-center gap-2">
+<input class="paper-input w-20 px-2 py-1 rounded-md text-xs font-medium" type="number" value="100"/>
+<span class="text-xs font-bold text-primary">%</span>
+</div>
+</div>
+</div>
+<div class="p-4 flex items-center justify-between">
+<div>
+<div class="font-semibold text-sm">Ulga na powrót / 4+</div>
+<div class="text-[11px] text-on-surface-variant">Przychód zwolniony do limitu</div>
+</div>
+<div class="relative inline-block w-8 h-4.5 transition duration-200 ease-in-out rounded-full cursor-pointer">
+<input class="absolute w-0 h-0 opacity-0 toggle-checkbox" id="toggle-reliefs" type="checkbox"/>
+<label class="block h-4.5 rounded-full cursor-pointer bg-black/10 toggle-label transition-colors duration-200" for="toggle-reliefs">
+<span class="absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white transition-transform duration-200 ease-in-out toggle-dot shadow-sm"></span>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- 6. Status VAT -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 px-1">
+<h2 class="section-label">Podatek VAT</h2>
+</div>
+<div class="bg-surface whisper-border rounded-md p-5">
+<div class="flex items-center justify-between">
+<div>
+<div class="font-semibold text-sm">Czynny podatnik VAT</div>
+<div class="text-[11px] text-on-surface-variant leading-snug">Obowiązek naliczania i odliczania podatku</div>
+</div>
+<div class="relative inline-block w-8 h-4.5 transition duration-200 ease-in-out rounded-full cursor-pointer">
+<input checked="" class="absolute w-0 h-0 opacity-0 toggle-checkbox" id="toggle-vat" type="checkbox"/>
+<label class="block h-4.5 rounded-full cursor-pointer bg-black/10 toggle-label transition-colors duration-200" for="toggle-vat">
+<span class="absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white transition-transform duration-200 ease-in-out toggle-dot shadow-sm"></span>
+</label>
+</div>
+</div>
+<div class="mt-4 p-3 bg-white whisper-border rounded-md">
+<div class="flex gap-2 items-start">
+<span class="material-symbols-outlined text-primary text-[16px] mt-0.5">info</span>
+<p class="text-[11px] text-on-surface-variant leading-relaxed">Limit zwolnienia podmiotowego z VAT wynosi 200 000 PLN rocznie.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- 7. Preferencje -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 px-1">
+<h2 class="section-label">Preferencje</h2>
+</div>
+<div class="bg-white whisper-border rounded-md divide-y whisper-border">
+<div class="flex items-center justify-between p-4 hover:bg-surface transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant">translate</span>
+<span class="font-medium text-sm">Język aplikacji</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-xs font-semibold text-primary">Polski (PL)</span>
+<span class="material-symbols-outlined text-on-surface-variant/40 text-[16px]">chevron_right</span>
+</div>
+</div>
+<div class="flex items-center justify-between p-4 hover:bg-surface transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant">currency_exchange</span>
+<span class="font-medium text-sm">Waluta domyślna</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-xs font-semibold text-primary">PLN</span>
+<span class="material-symbols-outlined text-on-surface-variant/40 text-[16px]">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Danger Zone -->
+<section class="pt-6">
+<button class="w-full flex items-center justify-center gap-2 p-3 whisper-border text-on-background bg-white rounded-md hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all font-semibold text-sm">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+            Wyloguj się
+        </button>
+<p class="text-center text-[9px] text-on-surface-variant/50 mt-10 font-semibold tracking-widest uppercase">Krona v2.4.0 • 2026</p>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pt-3 bg-white/90 backdrop-blur-xl border-t whisper-border">
+<a class="flex flex-col items-center justify-center text-on-surface-variant/60 hover:text-on-background transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[9px] font-bold uppercase tracking-widest mt-1">Status</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/60 hover:text-on-background transition-colors" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-[9px] font-bold uppercase tracking-widest mt-1">Przychody</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant/60 hover:text-on-background transition-colors" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-[9px] font-bold uppercase tracking-widest mt-1">Koszty</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="text-[9px] font-bold uppercase tracking-widest mt-1">Opcje</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html lang="pl"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#ffdbca",
+                    "on-tertiary-container": "#fffeff",
+                    "on-tertiary-fixed-variant": "#773200",
+                    "on-background": "#1a1c1c",
+                    "secondary": "#605e5c",
+                    "on-secondary-fixed": "#1c1b1a",
+                    "on-primary-container": "#fffeff",
+                    "on-surface": "#1a1c1c",
+                    "on-primary-fixed": "#001b3c",
+                    "inverse-surface": "#2f3130",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#f1f0ef",
+                    "background": "#faf9f8",
+                    "surface-variant": "#e3e2e1",
+                    "surface-container-highest": "#e3e2e1",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#c15600",
+                    "tertiary": "#9b4300",
+                    "secondary-container": "#e6e2de",
+                    "surface-container-low": "#f4f3f2",
+                    "on-tertiary-fixed": "#331100",
+                    "surface-dim": "#dadad9",
+                    "surface-container": "#efeeed",
+                    "secondary-fixed-dim": "#c9c6c3",
+                    "surface-container-high": "#e9e8e7",
+                    "on-error-container": "#93000a",
+                    "surface": "#faf9f8",
+                    "on-error": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed-variant": "#00468a",
+                    "surface-container-lowest": "#ffffff",
+                    "outline-variant": "#c1c6d5",
+                    "on-secondary": "#ffffff",
+                    "surface-bright": "#faf9f8",
+                    "on-secondary-fixed-variant": "#484644",
+                    "error": "#ba1a1a",
+                    "secondary-fixed": "#e6e2de",
+                    "primary-fixed-dim": "#a8c8ff",
+                    "primary-fixed": "#d5e3ff",
+                    "surface-tint": "#005eb4",
+                    "inverse-primary": "#a8c8ff",
+                    "primary": "#005db2",
+                    "outline": "#717784",
+                    "on-surface-variant": "#414753",
+                    "tertiary-fixed-dim": "#ffb68f",
+                    "primary-container": "#0075de",
+                    "on-secondary-container": "#666462"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .paper-shadow {
+            box-shadow: 0px 2px 4px rgba(26, 28, 28, 0.04), 0px 12px 24px rgba(26, 28, 28, 0.06);
+        }
+    .scrollbar-hide::-webkit-scrollbar { display: none; } .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  .scrollbar-hide::-webkit-scrollbar { display: none; } .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }</style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-40 bg-[#faf9f8] dark:bg-[#1a1c1c] flex items-center px-4 h-16 w-full">
+<div class="flex items-center gap-4">
+<button class="hover:bg-[#efeeed] dark:hover:bg-[#2a2d2d] transition-colors p-2 rounded-full active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-[#005db2] dark:text-[#0075de]">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold text-[#1a1c1c] dark:text-[#faf9f8] font-['Inter'] tracking-tight">Add cost</h1>
+</div>
+</header>
+<main class="max-w-md mx-auto px-6 py-4 space-y-8">
+<!-- Large Net Amount Section -->
+<section class="space-y-2">
+<label class="text-[11px] font-medium font-['Inter'] uppercase tracking-wider text-on-surface-variant block ml-1">Kwota netto</label>
+<div class="flex items-baseline gap-2 bg-surface-container-lowest p-4 rounded-xl paper-shadow">
+<input class="w-full text-4xl font-bold bg-transparent border-none focus:ring-0 p-0 text-on-surface placeholder:text-surface-variant" placeholder="0,00" type="number"/>
+<span class="text-2xl font-semibold text-primary">PLN</span>
+</div>
+</section><!-- Currency Selector -->
+<section class="overflow-x-auto pb-1 scrollbar-hide">
+<div class="flex gap-2">
+<button class="bg-primary text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-all" style="">PLN</button>
+<button class="bg-surface-container-lowest border border-black/10 text-on-surface px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-surface-container transition-all" style="">USD</button>
+<button class="bg-surface-container-lowest border border-black/10 text-on-surface px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-surface-container transition-all" style="">EUR</button>
+<button class="bg-surface-container-lowest border border-black/10 text-on-surface px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-surface-container transition-all" style="">GBP</button>
+<button class="bg-surface-container-lowest border border-black/10 text-on-surface px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-surface-container transition-all" style="">CHF</button>
+</div>
+</section>
+<!-- VAT Rate Selection -->
+<section class="space-y-3">
+<label class="text-[11px] font-medium font-['Inter'] uppercase tracking-wider text-on-surface-variant block ml-1">Stawka VAT</label>
+<div class="flex flex-wrap gap-2">
+<button class="px-5 py-2.5 rounded-lg bg-primary text-on-primary font-semibold text-sm transition-all active:scale-95">23%</button>
+<button class="px-5 py-2.5 rounded-lg bg-surface-container-high text-on-surface-variant font-medium text-sm hover:bg-surface-container-highest transition-all">8%</button>
+<button class="px-5 py-2.5 rounded-lg bg-surface-container-high text-on-surface-variant font-medium text-sm hover:bg-surface-container-highest transition-all">5%</button>
+<button class="px-5 py-2.5 rounded-lg bg-surface-container-high text-on-surface-variant font-medium text-sm hover:bg-surface-container-highest transition-all">0%</button>
+<button class="px-5 py-2.5 rounded-lg bg-surface-container-high text-on-surface-variant font-medium text-sm hover:bg-surface-container-highest transition-all">NP</button>
+</div>
+</section>
+<!-- Cost Label -->
+<section class="space-y-2">
+<label class="text-[11px] font-medium font-['Inter'] uppercase tracking-wider text-on-surface-variant block ml-1">Nazwa kosztu</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg p-4 text-on-surface placeholder:text-outline/50 focus:bg-surface-container-lowest focus:ring-1 focus:ring-primary transition-all" placeholder="Np. Abonament Adobe" type="text"/>
+</section>
+<!-- Category & Deduction -->
+<section class="space-y-4">
+<label class="text-[11px] font-medium font-['Inter'] uppercase tracking-wider text-on-surface-variant block ml-1">Kategoria i odliczenie</label>
+<div class="space-y-3">
+<!-- Standard Item -->
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-xl border border-primary/20 paper-shadow">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">check</span>
+</div>
+<div>
+<p class="font-semibold text-on-surface">Standard</p>
+<p class="text-xs text-on-surface-variant">100% PIT, 100% VAT</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">radio_button_checked</span>
+</div>
+<!-- Car 50/50 Item -->
+<div class="flex items-center justify-between p-4 bg-surface-container rounded-xl hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-on-surface-variant/10 flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+<div>
+<p class="font-semibold text-on-surface">Samochód - 50/50</p>
+<p class="text-xs text-on-surface-variant">75% PIT, 50% VAT</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline/30">radio_button_unchecked</span>
+</div>
+<!-- Car 100% Item -->
+<div class="flex items-center justify-between p-4 bg-surface-container rounded-xl hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-on-surface-variant/10 flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">corporate_fare</span>
+</div>
+<div>
+<p class="font-semibold text-on-surface">Samochód - 100% Firma</p>
+<p class="text-xs text-on-surface-variant">100% PIT, 100% VAT</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline/30">radio_button_unchecked</span>
+</div>
+</div>
+</section>
+<!-- Attachment -->
+<section class="space-y-3">
+<label class="text-[11px] font-medium font-['Inter'] uppercase tracking-wider text-on-surface-variant block ml-1">Załącznik</label>
+<div class="border-2 border-dashed border-outline-variant rounded-xl p-8 flex flex-col items-center justify-center gap-3 bg-surface-container-low/30 hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-primary text-3xl">photo_camera</span>
+<p class="text-sm text-on-surface-variant text-center max-w-[200px]">Dodaj zdjęcie paragonu lub faktury</p>
+</div>
+</section>
+</main>
+<!-- Bottom Actions -->
+<div class="fixed bottom-0 left-0 w-full bg-surface/80 backdrop-blur-xl p-6 flex flex-col gap-3 z-50">
+<button class="w-full bg-primary py-4 rounded-lg text-on-primary font-bold text-base shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform">
+            Zapisz koszt
+        </button>
+<button class="w-full py-3 rounded-lg text-primary font-semibold text-sm transition-opacity active:opacity-60">
+            Anuluj
+        </button>
+</div>
+<!-- Background Decoration (Paper Feel) -->
+<div class="fixed inset-0 pointer-events-none opacity-[0.03] mix-blend-multiply z-[-1]" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDwWBtDaDcGjqzot3qnh_krdamLhBFQHwPQaVm9xEcbxs8Vq4CR8YHpHHyQOy0oDMQ2y3bMNfvioU2t3HLVOJ0knpbIrfeZudTnXYohkOoj1lfwbM45A78qab1QT33pSzdxF3FWaafclRunViMItYvq3-OicPOGDRa5rPpuv2sN9v_Ub-NNHrKeg4nBcojFf5Pqs0uMP4raZDkbCyR7_ud53nYytaHe9POlf0ZAY0k2-lPfLKivyOYC_d1fQigleBCJHulC8A1jxss');"></div>
+</body></html>

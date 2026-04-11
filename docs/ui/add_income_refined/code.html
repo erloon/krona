@@ -1,0 +1,174 @@
+<!DOCTYPE html><html lang="pl"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#0075de",
+                        "background": "#f6f5f4",
+                        "surface": "#ffffff",
+                        "on-surface": "#1a1c1c",
+                        "on-surface-variant": "#666462",
+                        "outline-variant": "rgba(0,0,0,0.1)",
+                        "surface-container-low": "#f6f5f4",
+                        "surface-container": "#efeeed",
+                        "surface-container-high": "#e9e8e7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f6f5f4; color: #1a1c1c; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        input:focus { outline: none; border-color: transparent !important; }
+        .whisper-border { border: 1px solid rgba(0,0,0,0.1); }
+        .tight-tracking { letter-spacing: -0.02em; }
+    </style>
+</head>
+<body class="bg-background text-on-surface flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-background/80 backdrop-blur-md flex items-center justify-between px-6 py-4 w-full fixed top-0 z-50">
+<div class="flex items-center gap-4">
+<button class="active:scale-95 duration-200 transition-all text-on-surface" style="">
+<span class="material-symbols-outlined text-2xl" data-icon="arrow_back" style="">arrow_back</span>
+</button>
+<h1 class="font-bold tracking-tight text-lg" style="">Dodaj przychód</h1>
+</div>
+<button class="active:scale-95 duration-200 transition-all text-primary font-bold" style=""><br></button>
+</header>
+<main class="mt-20 mb-10 px-6 flex-grow max-w-lg mx-auto w-full space-y-8">
+<!-- 1. Primary Information: Total Gross Headline -->
+<section class="text-center py-6">
+<label class="text-on-surface-variant font-bold text-[10px] tracking-[0.1em] uppercase block mb-1" style="">Łącznie Brutto</label>
+<div class="flex items-baseline justify-center gap-2">
+<span class="text-6xl font-black tight-tracking" style="">0,00</span>
+<span class="text-2xl font-bold text-primary" style="">PLN</span>
+</div>
+<div class="mt-6 grid grid-cols-2 gap-4 pt-6 border-t border-black/5">
+<div class="text-left">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider" style="">Netto</p>
+<p class="text-lg font-bold" style="">0,00 PLN</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider" style="">VAT (23%)</p>
+<p class="text-lg font-bold" style="">0,00 PLN</p>
+</div>
+</div>
+</section>
+<!-- 2. Input Field: Kwota Netto (Secondary to Headline) -->
+<section>
+<label class="text-on-surface-variant font-bold text-[11px] tracking-wide mb-2 block uppercase" style="">Kwota Netto (Edytuj)</label>
+<div class="relative bg-white whisper-border rounded-xl p-4 flex items-center justify-between">
+<input class="w-full bg-transparent border-none text-3xl font-extrabold tight-tracking text-on-surface p-0 focus:ring-0 placeholder-surface-container-high" type="text" value="0,00">
+<span class="text-xl font-bold text-on-surface-variant opacity-50" style="">PLN</span>
+</div>
+</section>
+<!-- 3. Currency Selector -->
+<section class="overflow-x-auto pb-1 scrollbar-hide">
+<div class="flex gap-2">
+<button class="bg-primary text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-all" style="">PLN</button>
+<button class="bg-white whisper-border text-on-surface px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-surface-container transition-all" style="">USD</button>
+<button class="bg-white whisper-border text-on-surface px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-surface-container transition-all" style="">EUR</button>
+<button class="bg-white whisper-border text-on-surface px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-surface-container transition-all" style="">GBP</button>
+<button class="bg-white whisper-border text-on-surface px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-surface-container transition-all" style="">CHF</button>
+</div>
+</section>
+<!-- 4. Typ Rozliczenia -->
+<section class="space-y-3">
+<label class="text-on-surface-variant font-bold text-[11px] tracking-wide block uppercase" style="">Typ Rozliczenia</label>
+<div class="grid grid-cols-1 gap-3">
+<button class="flex items-center gap-4 p-4 rounded-xl bg-white whisper-border border-primary/40 shadow-sm transition-all text-left" style="">
+<div class="bg-primary/10 w-12 h-12 flex items-center justify-center rounded-lg text-primary">
+<span class="material-symbols-outlined" data-icon="calendar_month" style="">calendar_month</span>
+</div>
+<div class="flex-grow">
+<p class="font-bold text-sm" style="">Miesięczny</p>
+<p class="text-xs text-on-surface-variant" style="">Stała kwota za miesiąc pracy</p>
+</div>
+<span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: &quot;FILL&quot; 1;">check_circle</span>
+</button>
+<button class="flex items-center gap-4 p-4 rounded-xl bg-white/50 whisper-border transition-all hover:bg-white text-left" style="">
+<div class="bg-surface-container w-12 h-12 flex items-center justify-center rounded-lg text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="light_mode" style="">light_mode</span>
+</div>
+<div>
+<p class="font-bold text-sm" style="">Dzienny</p>
+<p class="text-xs text-on-surface-variant" style="">Stawka za jeden dzień roboczy</p>
+</div>
+</button>
+<button class="flex items-center gap-4 p-4 rounded-xl bg-white/50 whisper-border transition-all hover:bg-white text-left" style="">
+<div class="bg-surface-container w-12 h-12 flex items-center justify-center rounded-lg text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="schedule" style="">schedule</span>
+</div>
+<div>
+<p class="font-bold text-sm" style="">Godzinowy</p>
+<p class="text-xs text-on-surface-variant" style="">Stawka za każdą zaraportowaną godzinę</p>
+</div>
+</button>
+</div>
+</section>
+<!-- 5. Parametry Pracy -->
+<section class="grid grid-cols-2 gap-4">
+<div>
+<label class="text-on-surface-variant font-bold text-[11px] tracking-wide mb-2 block uppercase" style="">Dni / Mies.</label>
+<div class="bg-white whisper-border rounded-lg px-4 py-3 focus-within:ring-1 focus-within:ring-primary/20 transition-all">
+<input class="w-full bg-transparent border-none p-0 focus:ring-0 font-bold text-on-surface" type="number" value="20">
+</div>
+</div>
+<div>
+<label class="text-on-surface-variant font-bold text-[11px] tracking-wide mb-2 block uppercase" style="">Godz. / Dzień</label>
+<div class="bg-white whisper-border rounded-lg px-4 py-3 focus-within:ring-1 focus-within:ring-primary/20 transition-all">
+<input class="w-full bg-transparent border-none p-0 focus:ring-0 font-bold text-on-surface" type="number" value="8">
+</div>
+</div>
+</section>
+<!-- 6. Stawka VAT -->
+<section class="space-y-4">
+<div>
+<label class="text-on-surface-variant font-bold text-[11px] tracking-wide mb-2 block uppercase" style="">KLIENT</label>
+<div class="bg-white whisper-border rounded-lg px-4 py-3 focus-within:ring-1 focus-within:ring-primary/20 transition-all">
+<input class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-medium text-on-surface" placeholder="Np. Acme Corp" type="text">
+</div>
+</div>
+<div>
+<label class="text-on-surface-variant font-bold text-[11px] tracking-wide mb-2 block uppercase" style="">Numer</label>
+<div class="bg-white whisper-border rounded-lg px-4 py-3 focus-within:ring-1 focus-within:ring-primary/20 transition-all">
+<input class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-medium text-on-surface" placeholder="Np. FV/2024/01" type="text">
+</div>
+</div>
+<div>
+<label class="text-on-surface-variant font-bold text-[11px] tracking-wide mb-2 block uppercase" style="">Opis</label>
+<div class="bg-white whisper-border rounded-lg px-4 py-3 focus-within:ring-1 focus-within:ring-primary/20 transition-all">
+<textarea class="w-full bg-transparent border-none p-0 focus:ring-0 text-sm font-medium text-on-surface h-20 resize-none" placeholder="Dodatkowe informacje..."></textarea>
+</div>
+</div>
+</section>
+<!-- 7. Opis -->
+<!-- Action Button -->
+<button class="w-full bg-primary text-white py-4 rounded-xl font-bold tracking-tight shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform flex items-center justify-center gap-2" style="">
+<span class="material-symbols-outlined text-xl" data-icon="add_task" style="">add_task</span>
+            Zapisz przychód
+        </button>
+</main>
+</body></html>

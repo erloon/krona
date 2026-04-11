@@ -1,0 +1,235 @@
+<!DOCTYPE html><html lang="pl"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Koszty - The Editorial Calculator</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary": "#ffffff",
+                      "primary": "#005db2",
+                      "outline-variant": "#c1c6d5",
+                      "error-container": "#ffdad6",
+                      "background": "#faf9f8",
+                      "on-background": "#1a1c1c",
+                      "on-primary": "#ffffff",
+                      "secondary": "#605e5c",
+                      "on-secondary-fixed": "#1c1b1a",
+                      "inverse-surface": "#2f3130",
+                      "on-error-container": "#93000a",
+                      "inverse-primary": "#a8c8ff",
+                      "secondary-fixed": "#e6e2de",
+                      "on-secondary": "#ffffff",
+                      "secondary-fixed-dim": "#c9c6c3",
+                      "tertiary-fixed": "#ffdbca",
+                      "on-primary-container": "#fffeff",
+                      "on-tertiary-container": "#fffeff",
+                      "on-tertiary-fixed-variant": "#773200",
+                      "on-surface": "#1a1c1c",
+                      "surface-bright": "#faf9f8",
+                      "on-primary-fixed": "#001b3c",
+                      "on-secondary-container": "#666462",
+                      "on-error": "#ffffff",
+                      "tertiary": "#9b4300",
+                      "surface-tint": "#005eb4",
+                      "error": "#ba1a1a",
+                      "surface-container-highest": "#e3e2e1",
+                      "outline": "#717784",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-high": "#e9e8e7",
+                      "surface-variant": "#e3e2e1",
+                      "on-tertiary-fixed": "#331100",
+                      "secondary-container": "#e6e2de",
+                      "surface-dim": "#dadad9",
+                      "primary-fixed": "#d5e3ff",
+                      "surface": "#faf9f8",
+                      "on-primary-fixed-variant": "#00468a",
+                      "on-secondary-fixed-variant": "#484644",
+                      "surface-container": "#efeeed",
+                      "on-surface-variant": "#414753",
+                      "primary-container": "#0075de",
+                      "tertiary-fixed-dim": "#ffb68f",
+                      "tertiary-container": "#c15600",
+                      "primary-fixed-dim": "#a8c8ff",
+                      "surface-container-low": "#f4f3f2",
+                      "inverse-on-surface": "#f1f0ef"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "fontFamily": {
+                      "headline": ["Inter"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="bg-[#faf9f8] dark:bg-stone-950 flex justify-between items-center px-6 h-16 w-full max-w-xl mx-auto sticky top-0 z-50">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="professional portrait of a business man in a suit with clean studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASJ0-SkpvWjzjL4VsWFfZaHp5gWtnj9HFq5ko4yNvAzH922vQYiUz7QcuGJ4z49M0Rg510mDH61AjY4xJpMiXF7IDiuiDcpgAU0CgtavFMS-KypBexm3CbvJUOLgbuYfX_Do7WZ6V-s2WhOuoW9a85eCYSTgZ8GNDDhqmj5jkWq1Ya9byIEAWtFHglR21gWO3EpuNmx-hZcTT-HfZ6sLd9Sm_ejNda29IfkHqSZZWUE1gDA0JzXBpnFqNgye0cqQ2Sh8dhggShhgo" style="">
+</div>
+<h1 class="font-['Inter'] tracking-[-0.02em] font-bold text-stone-900 dark:text-stone-100 text-lg" style="">KRONA</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 transition-colors duration-200 ease-in-out hover:bg-stone-200/50 dark:hover:bg-stone-800/50 rounded-full" style="">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="search" style="">search</span>
+</button>
+</div>
+</header>
+<main class="max-w-xl mx-auto px-6 py-4">
+<!-- Summary Dashboard (Editorial Style) -->
+<section class="mb-8 rounded-xl border-outline-variant/15 pt-4">
+<div class="space-y-6">
+<h2 class="text-5xl font-extrabold tracking-tighter text-on-surface" style="">Koszty</h2>
+<div class="flex items-baseline gap-3">
+<span class="text-on-surface-variant text-lg font-medium" style="">Suma netto:</span>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-bold tracking-tight text-primary" style="">3.228,05</span>
+<span class="text-xl font-bold text-primary" style="">PLN</span>
+</div>
+</div>
+<div class="flex items-center gap-8 pt-2">
+<div class="flex items-baseline gap-2">
+<span class="text-on-surface-variant text-sm font-bold uppercase tracking-widest" style="">VAT:</span>
+<span class="text-lg font-bold text-on-surface" style="">482,41</span>
+<span class="text-xs font-bold text-on-surface-variant" style="">PLN</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-on-surface-variant text-sm font-bold uppercase tracking-widest" style="">PIT:</span>
+<span class="text-lg font-bold text-on-surface" style="">512,14</span>
+<span class="text-xs font-bold text-on-surface-variant" style="">PLN</span>
+</div>
+</div>
+</div>
+</section>
+<!-- List Section -->
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-xl font-bold tracking-tight" style="">Lista wydatków</h3>
+<button class="text-primary font-semibold text-sm hover:underline" style="">Filtruj</button>
+</div>
+<div class="space-y-4">
+<!-- Item 1: Leasing auta -->
+<article class="bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-5 transition-shadow hover:shadow-sm">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="inline-block bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-md mb-2" style="">AUTO – MIESZANE (50/50)</span>
+<h4 class="text-lg font-bold text-on-surface" style="">Leasing auta</h4>
+</div>
+<div class="text-right">
+<div class="text-xl font-bold text-on-surface" style="">2.450,00 PLN</div>
+<div class="text-[11px] text-on-surface-variant font-medium" style="">VAT 23% | Netto: 1.991,87 PLN</div>
+</div>
+</div>
+<div class="bg-surface-container-low px-3 py-2 rounded-md mb-5 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="info" style="">info</span>
+<span class="text-[11px] font-medium text-on-surface-variant uppercase tracking-wide" style="">Odliczenie: PIT 75% | VAT 50%</span>
+</div>
+<div class="flex items-center justify-between border-t border-surface-container pt-4">
+<div class="flex gap-3">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface-container-high text-on-surface font-bold text-[10px] uppercase tracking-wider transition hover:bg-surface-container-highest" style="">
+<span class="material-symbols-outlined text-[14px]" data-icon="edit" style="">edit</span>
+                            EDYTUJ
+                        </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface-container-high text-on-surface font-bold text-[10px] uppercase tracking-wider transition hover:bg-surface-container-highest" style="">
+<span class="material-symbols-outlined text-[14px]" data-icon="content_copy" style="">content_copy</span>
+                            DUPLIKUJ
+                        </button>
+</div>
+<button class="w-8 h-8 flex items-center justify-center text-error hover:bg-error/5 rounded-full transition-colors" style="">
+<span class="material-symbols-outlined" data-icon="delete" style="">delete</span>
+</button>
+</div>
+</article>
+<!-- Item 2: Biuro -->
+<article class="bg-surface-container-lowest border border-outline-variant/30 rounded-lg p-5 transition-shadow hover:shadow-sm">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="inline-block bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-md mb-2 uppercase" style="">Standard</span>
+<h4 class="text-lg font-bold text-on-surface" style="">Biuro</h4>
+</div>
+<div class="text-right">
+<div class="text-xl font-bold text-on-surface" style="">1.200,00 PLN</div>
+<div class="text-[11px] text-on-surface-variant font-medium" style="">VAT 23% | Netto: 975,61 PLN</div>
+</div>
+</div>
+<div class="bg-surface-container-low px-3 py-2 rounded-md mb-5 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="info" style="">info</span>
+<span class="text-[11px] font-medium text-on-surface-variant uppercase tracking-wide" style="">Odliczenie: PIT 100% | VAT 100%</span>
+</div>
+<div class="flex items-center justify-between border-t border-surface-container pt-4">
+<div class="flex gap-3">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface-container-high text-on-surface font-bold text-[10px] uppercase tracking-wider transition hover:bg-surface-container-highest" style="">
+<span class="material-symbols-outlined text-[14px]" data-icon="edit" style="">edit</span>
+                            EDYTUJ
+                        </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface-container-high text-on-surface font-bold text-[10px] uppercase tracking-wider transition hover:bg-surface-container-highest" style="">
+<span class="material-symbols-outlined text-[14px]" data-icon="content_copy" style="">content_copy</span>
+                            DUPLIKUJ
+                        </button>
+</div>
+<button class="w-8 h-8 flex items-center justify-center text-error hover:bg-error/5 rounded-full transition-colors" style="">
+<span class="material-symbols-outlined" data-icon="delete" style="">delete</span>
+</button>
+</div>
+</article>
+</div>
+<!-- Asymmetric Decorative Element (Paper Logic Design) -->
+<div class="mt-12 opacity-50 select-none pointer-events-none">
+<div class="h-px w-3/4 bg-gradient-to-r from-outline-variant to-transparent mb-1"></div>
+<p class="text-[10px] font-bold tracking-[0.2em] uppercase text-on-surface-variant" style="">Raport kosztów wygenerowany automatycznie</p>
+</div>
+</main>
+<!-- FAB -->
+<button class="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-b from-primary to-primary-container text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform duration-150 backdrop-blur-md bg-opacity-80 z-40" style="">
+<span class="material-symbols-outlined text-3xl" data-icon="add" style="">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-2 pb-6 bg-white/80 dark:bg-stone-900/80 backdrop-blur-md shadow-[0px_-2px_10px_rgba(26,28,28,0.04)] border-t border-stone-200/15 dark:border-stone-800/15">
+<a class="flex flex-col items-center justify-center text-[#414753] dark:text-stone-400 px-3 py-1 hover:text-stone-900 dark:hover:text-stone-100 transition-colors duration-200" href="#" style="">
+<span class="material-symbols-outlined" data-icon="dashboard" style="">dashboard</span>
+<span class="font-['Inter'] text-[11px] font-medium tracking-tight mt-1" style="">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#414753] dark:text-stone-400 px-3 py-1 hover:text-stone-900 dark:hover:text-stone-100 transition-colors duration-200" href="#" style="">
+<span class="material-symbols-outlined" data-icon="payments" style="">payments</span>
+<span class="font-['Inter'] text-[11px] font-medium tracking-tight mt-1" style="">Incomes</span>
+</a>
+<!-- Active Tab: Costs (Koszty) -->
+<a class="flex flex-col items-center justify-center text-[#005db2] dark:text-[#0075de] bg-[#0075de]/10 dark:bg-[#0075de]/20 rounded-xl px-3 py-1 transition-colors duration-200" href="#" style="">
+<span class="material-symbols-outlined" data-icon="receipt_long" style="">receipt_long</span>
+<span class="font-['Inter'] text-[11px] font-medium tracking-tight mt-1" style="">Costs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#414753] dark:text-stone-400 px-3 py-1 hover:text-stone-900 dark:hover:text-stone-100 transition-colors duration-200" href="#" style="">
+<span class="material-symbols-outlined" data-icon="settings" style="">settings</span>
+<span class="font-['Inter'] text-[11px] font-medium tracking-tight mt-1" style="">Settings</span>
+</a>
+</nav>
+</body></html>
