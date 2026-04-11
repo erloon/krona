@@ -56,6 +56,25 @@ This Expo project uses a pragmatic clean architecture so routing, UI, business l
 ## Build, Test, and Development Commands
 Use `npm install` to sync dependencies. `npm run start` launches Expo locally, and `npm run web` starts the web target. `npm run android` builds and runs the Android app through Expo. `npm run lint` runs the Expo lint configuration and should pass before opening a PR. `npm run reset-project` restores the starter scaffold and should only be used intentionally.
 
+## Tech Stack Snapshot
+- Mobile app stack is **Expo + React Native** with **TypeScript strict mode** and **Expo Router** for file-based navigation.
+- Data is **local-first only**: use `expo-sqlite` for on-device SQLite storage and **Drizzle ORM** for typed database access.
+- Use **Zustand** only for ephemeral global UI state; persistent business data belongs in SQLite repositories.
+- Styling uses **NativeWind**; icons use **Expo Vector Icons** and **Lucide React Native**.
+- Delivery uses **EAS Build** and **EAS Update**; treat the app as offline-first with no server or hosted database dependency.
+
+## Documentation Map For Agents
+- Start with `docs/project-descriptiom.md` for product purpose, core flows, and overall app intent.
+- Use `docs/project-structure.md` for architecture and folder-level guidance when placing code.
+- Use `docs/stack.md` for stack constraints and implementation choices.
+- Use `docs/features/b2b-calculator-core.md` for the calculator MVP scope and high-level business behavior.
+- Use `docs/features/` for detailed feature rules, calculation logic, tax/ZUS behavior, and expected outputs.
+- Use `docs/ui/components.md` for shared UI patterns and component-level references.
+- Use `docs/ui/<screen-name>/screen.png` to see how a screen should look.
+- Use `docs/ui/<screen-name>/code.html` to inspect the prototype structure and visual details for that screen.
+- Use `docs/ui/paper_logic/DESIGN.md` for the main visual language and styling direction.
+- Before changing a screen or feature, check the matching `docs/features/*` and `docs/ui/*` entries first.
+
 ## Coding Style & Naming Conventions
 This project uses TypeScript with `strict` mode enabled in [`tsconfig.json`](C:/Playground/krona/tsconfig.json). Follow the existing style: 2-space indentation, semicolons, single quotes, and grouped imports with `@/` path aliases. Use PascalCase for React components (`ThemedView.tsx`), camelCase for hooks and helpers (`useTheme.ts`), and kebab-case only for asset-style filenames such as `animated-icon.module.css`. Prefer functional components and keep route files aligned with Expo Router naming.
 

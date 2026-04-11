@@ -7,12 +7,16 @@ type BrandMarkProps = {
   title?: string;
   subtitle?: string;
   iconSize?: number;
+  showSubtitle?: boolean;
+  variant?: 'splash' | 'compact';
 };
 
 export function BrandMark({
   title = 'KRONA',
   subtitle = 'Kalkulator B2B',
   iconSize = 76,
+  showSubtitle = true,
+  variant = 'splash',
 }: BrandMarkProps) {
   const tileSize = iconSize;
   const walletWidth = iconSize * 0.46;
@@ -27,8 +31,8 @@ export function BrandMark({
         </View>
       </View>
 
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.subtitle}>{subtitle}</Text>
+      <Text style={variant === 'compact' ? styles.titleCompact : styles.title}>{title}</Text>
+      {showSubtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
     </View>
   );
 }
@@ -73,6 +77,11 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.screenTitle,
+    color: colors.text.primary,
+    textAlign: 'center',
+  },
+  titleCompact: {
+    ...typography.brandCompact,
     color: colors.text.primary,
     textAlign: 'center',
   },

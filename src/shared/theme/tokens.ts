@@ -12,6 +12,7 @@ export const colors = {
     primary: 'rgba(0, 0, 0, 0.95)',
     secondary: '#615d59',
     muted: '#a39e98',
+    subtle: '#414753',
     inverse: '#ffffff',
   },
   background: {
@@ -19,10 +20,13 @@ export const colors = {
     alt: '#f6f5f4',
     soft: 'rgba(0, 0, 0, 0.05)',
     badge: '#f2f9ff',
+    surface: '#ffffff',
+    surfaceAlt: '#faf9f8',
   },
   border: {
     whisper: 'rgba(0, 0, 0, 0.1)',
     subtle: 'rgba(0, 0, 0, 0.06)',
+    input: '#e3e2e1',
   },
   brand: {
     primary: '#0075de',
@@ -61,6 +65,13 @@ export const shadows = {
     shadowRadius: 18,
     elevation: 6,
   } satisfies ViewStyle,
+  card: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+  } satisfies ViewStyle,
 } as const;
 
 export const typography = {
@@ -78,6 +89,20 @@ export const typography = {
     lineHeight: 36,
     letterSpacing: -1.5,
   } satisfies TextStyle,
+  authHeadline: {
+    fontFamily,
+    fontSize: 26,
+    fontWeight: '700',
+    lineHeight: 32,
+    letterSpacing: -0.625,
+  } satisfies TextStyle,
+  brandCompact: {
+    fontFamily,
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 28,
+    letterSpacing: -0.4,
+  } satisfies TextStyle,
   body: {
     fontFamily,
     fontSize: 16,
@@ -89,6 +114,18 @@ export const typography = {
     fontSize: 16,
     fontWeight: '500',
     lineHeight: 24,
+  } satisfies TextStyle,
+  bodySmall: {
+    fontFamily,
+    fontSize: 15,
+    fontWeight: '400',
+    lineHeight: 22,
+  } satisfies TextStyle,
+  button: {
+    fontFamily,
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 20,
   } satisfies TextStyle,
   caption: {
     fontFamily,
@@ -109,6 +146,7 @@ export const typography = {
 export const layout = {
   maxWidth: 1200,
   splashNarrowWidth: 360,
+  authNarrowWidth: 400,
 } as const;
 
 export const theme = {
