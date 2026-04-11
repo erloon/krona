@@ -18,6 +18,7 @@ type IconButtonProps = {
   color?: string;
   size?: number;
   filled?: boolean;
+  disabled?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -28,22 +29,25 @@ export function IconButton({
   color = colors.text.secondary,
   size = 20,
   filled = false,
+  disabled = false,
   style,
 }: IconButtonProps) {
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
+      disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
         filled ? styles.filled : null,
-        pressed ? styles.pressed : null,
+        pressed && !disabled ? styles.pressed : null,
+        disabled ? styles.disabled : null,
         style,
       ]}
     >
       <View style={styles.iconWrap}>
-        <MaterialCommunityIcons color={color} name={icon} size={size} />
+        <MaterialCommunityIcons color={disabled ? colors.text.muted : color} name={icon} size={size} />
       </View>
     </Pressable>
   );
@@ -63,6 +67,9 @@ const styles = StyleSheet.create({
   pressed: {
     backgroundColor: colors.background.surfaceContainerHigh,
     transform: [{ scale: 0.96 }],
+  },
+  disabled: {
+    opacity: 0.5,
   },
   iconWrap: {
     alignItems: 'center',

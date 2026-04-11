@@ -10,12 +10,14 @@ type RecordActionRowProps = {
   onEdit?: () => void;
   onDuplicate?: () => void;
   onDelete?: () => void;
+  deleteDisabled?: boolean;
 };
 
 export function RecordActionRow({
   onEdit,
   onDuplicate,
   onDelete,
+  deleteDisabled = false,
 }: RecordActionRowProps) {
   return (
     <View style={styles.row}>
@@ -40,6 +42,7 @@ export function RecordActionRow({
       <IconButton
         accessibilityLabel="Usuń przychód"
         color={colors.text.muted}
+        disabled={deleteDisabled}
         icon="trash-can-outline"
         onPress={onDelete}
         style={styles.deleteButton}

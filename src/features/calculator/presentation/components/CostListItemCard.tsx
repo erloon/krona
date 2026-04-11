@@ -15,6 +15,7 @@ type CostListItemCardProps = {
   onEdit?: () => void;
   onDuplicate?: () => void;
   onDelete?: () => void;
+  deleteDisabled?: boolean;
 };
 
 export function CostListItemCard({
@@ -26,6 +27,7 @@ export function CostListItemCard({
   onEdit,
   onDuplicate,
   onDelete,
+  deleteDisabled = false,
 }: CostListItemCardProps) {
   return (
     <View style={styles.card}>
@@ -44,7 +46,7 @@ export function CostListItemCard({
         </View>
       </View>
 
-      <RecordActionRow onDelete={onDelete} onDuplicate={onDuplicate} onEdit={onEdit} />
+      <RecordActionRow deleteDisabled={deleteDisabled} onDelete={onDelete} onDuplicate={onDuplicate} onEdit={onEdit} />
     </View>
   );
 }

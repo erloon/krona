@@ -39,6 +39,8 @@ export const colors = {
     primary: '#0075de',
     primaryActive: '#005bab',
     focus: '#097fe8',
+    destructive: '#dc2626',
+    destructiveActive: '#b91c1c',
   },
 } as const;
 

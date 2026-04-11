@@ -15,6 +15,7 @@ type IncomeListItemCardProps = {
   onEdit?: () => void;
   onDuplicate?: () => void;
   onDelete?: () => void;
+  deleteDisabled?: boolean;
 };
 
 export function IncomeListItemCard({
@@ -26,6 +27,7 @@ export function IncomeListItemCard({
   onEdit,
   onDuplicate,
   onDelete,
+  deleteDisabled = false,
 }: IncomeListItemCardProps) {
   return (
     <View style={styles.card}>
@@ -44,7 +46,7 @@ export function IncomeListItemCard({
         </View>
       </View>
 
-      <RecordActionRow onDelete={onDelete} onDuplicate={onDuplicate} onEdit={onEdit} />
+      <RecordActionRow deleteDisabled={deleteDisabled} onDelete={onDelete} onDuplicate={onDuplicate} onEdit={onEdit} />
     </View>
   );
 }

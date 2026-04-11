@@ -6,6 +6,7 @@ import { useCalculatorData } from '@/features/calculator/presentation/hooks/useM
 import { colors, radius, spacing, typography } from '@/shared/theme';
 import { ScreenContainer } from '@/shared/ui/layout/ScreenContainer';
 import { AppTopBar } from '@/shared/ui/primitives/AppTopBar';
+import { ConfirmationModal } from '@/shared/ui/primitives/ConfirmationModal';
 import { EmptyState } from '@/shared/ui/primitives/EmptyState';
 import { FloatingActionButton } from '@/shared/ui/primitives/FloatingActionButton';
 import { IconButton } from '@/shared/ui/primitives/IconButton';
@@ -44,9 +45,14 @@ export function IncomesScreen() {
     updateIncome,
   } = useCalculatorData();
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [deleteConfirmationVisible, setDeleteConfirmationVisible] = React.useState(false);
+  const [pendingDeleteIncomeId, setPendingDeleteIncomeId] = React.useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
   // const [editingIncomeId, setEditingIncomeId] = React.useState<string | null>(null);
   // const [editorVisible, setEditorVisible] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const isLastIncome = bundle?.incomes.length === 1;
 
   const incomeListItems = hasLoadedSelectedPeriod && bundle ? buildIncomeListItems(bundle) : [];
   const incomeListSummary =
@@ -111,24 +117,34 @@ export function IncomesScreen() {
   }
 
   function handleDeleteIncome(id: string) {
-    Alert.alert('Usunąć przychód?', 'Ta operacja usuwa rekord tylko z bieżącego miesiąca.', [
-      {
-        style: 'cancel',
-        text: 'Anuluj',
-      },
-      {
-        style: 'destructive',
-        text: 'Usuń',
-        onPress: () => {
-          void deleteIncome(id).catch((deleteError) => {
-            Alert.alert(
-              'Nie udało się usunąć przychodu',
-              deleteError instanceof Error ? deleteError.message : 'Spróbuj ponownie.'
-            );
-          });
-        },
-      },
-    ]);
+    setPendingDeleteIncomeId(id);
+    setDeleteConfirmationVisible(true);
+  }
+
+  async function confirmDelete() {
+    if (!pendingDeleteIncomeId) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      await deleteIncome(pendingDeleteIncomeId);
+      setDeleteConfirmationVisible(false);
+      setPendingDeleteIncomeId(null);
+    } catch (deleteError) {
+      Alert.alert(
+        'Nie udało się usunąć przychodu',
+        deleteError instanceof Error ? deleteError.message : 'Spróbuj ponownie.'
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  function cancelDelete() {
+    setDeleteConfirmationVisible(false);
+    setPendingDeleteIncomeId(null);
   }
 
   // function closeEditor() {
@@ -249,6 +265,7 @@ export function IncomesScreen() {
                 <IncomeListItemCard
                   amount={formatCurrencyAmount(item.amount)}
                   currency={item.currency}
+                  deleteDisabled={isLoading || isDeleting}
                   key={item.id}
                   metadata={item.metadata}
                   onDelete={() => handleDeleteIncome(item.id)}
@@ -274,6 +291,23 @@ export function IncomesScreen() {
         accessibilityLabel="Dodaj przychód"
         onPress={handleAddIncome}
         style={styles.fab}
+      />
+
+      <ConfirmationModal
+        cancelLabel="Anuluj"
+        confirmLabel="Usuń"
+        destructive
+        loading={isDeleting}
+        message="Rekord zostanie usunięty z bieżącego miesiąca."
+        onCancel={cancelDelete}
+        onConfirm={confirmDelete}
+        title="Usunąć przychód?"
+        visible={deleteConfirmationVisible}
+        warningMessage={
+          isLastIncome
+            ? 'Po usunięciu okres raportowy będzie pusty.'
+            : undefined
+        }
       />
 
       {/* <IncomeEditorModal

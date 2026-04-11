@@ -2,7 +2,6 @@ import React from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  PressableStateCallbackType,
   StyleSheet,
   Text,
   View,
@@ -13,7 +12,7 @@ import {
 
 import { colors, radius, spacing, typography } from '@/shared/theme';
 
-type PrimaryButtonProps = {
+type DestructiveButtonProps = {
   label: string;
   onPress?: ((event: GestureResponderEvent) => void) | undefined;
   disabled?: boolean;
@@ -23,7 +22,7 @@ type PrimaryButtonProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function PrimaryButton({
+export function DestructiveButton({
   label,
   onPress,
   disabled = false,
@@ -31,7 +30,7 @@ export function PrimaryButton({
   loading = false,
   leadingAccessory,
   style,
-}: PrimaryButtonProps) {
+}: DestructiveButtonProps) {
   const isDisabled = disabled || loading;
 
   return (
@@ -68,15 +67,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
-    backgroundColor: colors.brand.primary,
+    backgroundColor: colors.brand.destructive,
   },
   fullWidth: {
     width: '100%',
   },
   pressed: {
-    backgroundColor: colors.brand.primaryActive,
+    backgroundColor: colors.brand.destructiveActive,
     transform: [{ scale: 0.98 }],
-  } satisfies StyleProp<ViewStyle> | PressableStateCallbackType,
+  },
   disabled: {
     opacity: 0.5,
   },
