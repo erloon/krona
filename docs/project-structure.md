@@ -1,65 +1,144 @@
-# Project Structure: Pragmatic Clean Architecture
+# Project Structure: Expo + Pragmatic Clean Architecture
 
-## Philosophy
-This project follows a pragmatic approach to Clean Architecture adapted for React Native and Expo Router. The core principle is the Separation of Concerns: the UI (Presentation) should not know how data is saved (Data Layer), and the Database layer should not care about how things are displayed.
+## Goal
+This structure keeps Expo Router simple, while separating business rules, models, and persistence so the app can grow without mixing screen code with calculations.
 
-## Directory Tree
+It is designed for:
+- easy addition of new screens and flows,
+- isolated business logic for the B2B calculator,
+- future local database work with `expo-sqlite` and Drizzle,
+- reusable UI without coupling it to tax calculations.
+
+## Main Rules
+1. `src/app` is only for routing and screen entry points.
+2. Business models and rules live outside the UI layer.
+3. Feature-specific code stays inside its feature folder.
+4. Shared UI and utilities live in `src/shared`.
+5. Infrastructure code is the only place that should know about SQLite, storage, or external integrations.
+
+## Recommended Directory Tree
 
 ```text
-my-offline-app/
-├── app/                      # 1. PRESENTATION (ROUTING) - Expo Router
-│   ├── (tabs)/               # Tab navigation routes
-│   │   ├── index.tsx         # e.g., Home Screen
-│   │   └── settings.tsx      # e.g., Settings Screen
-│   ├── _layout.tsx           # Global app layout & providers
-│   └── +not-found.tsx        # 404 fallback
+src/
+├── app/                                 # Expo Router routes only
+│   ├── _layout.tsx
+│   ├── index.tsx
+│   ├── explore.tsx
+│   ├── (app)/                           # future authenticated/main app routes
+│   │   ├── calculator/
+│   │   └── settings/
+│   └── (modals)/                        # future modal routes
 │
-├── src/                      # CORE APPLICATION CODE
-│   ├── domain/               # 2. DOMAIN LAYER (Business Rules & Types)
-│   │   ├── models/           # Core TypeScript types/interfaces (e.g., User, Note)
-│   │   └── exceptions/       # Custom error classes
-│   │
-│   ├── data/                 # 3. DATA LAYER (Storage & Infrastructure)
-│   │   ├── database/         # SQLite connection setup
-│   │   ├── schema/           # Drizzle ORM schemas (Tables definition)
-│   │   ├── migrations/       # SQL migration files
-│   │   └── repositories/     # Functions interacting with Drizzle (e.g., NoteRepository)
-│   │
-│   ├── application/          # 4. APPLICATION LAYER (State & Use Cases)
-│   │   ├── stores/           # Zustand stores (Global UI/App state)
-│   │   └── useCases/         # Complex business logic combining multiple repositories
-│   │
-│   └── ui/                   # 5. PRESENTATION (COMPONENTS & DESIGN)
-│       ├── components/       # Reusable, "dumb" UI components (Buttons, Cards)
-│       ├── theme/            # NativeWind design tokens, colors, typography
-│       └── utils/            # Simple formatting helpers (e.g., formatDate)
+├── core/                                # app-wide technical setup
+│   ├── config/                          # env, constants tied to runtime/app config
+│   ├── database/                        # db client bootstrap, migrations entry
+│   ├── providers/                       # React providers mounted near app root
+│   └── store/                           # global app stores (theme, app shell state)
 │
-├── .eslintrc.js              
-├── babel.config.js           
-├── drizzle.config.ts         # Drizzle configuration
-├── package.json
-└── tsconfig.json
+├── shared/                              # reusable across all features
+│   ├── constants/                       # shared app constants
+│   ├── lib/                             # pure helpers, formatters, utility functions
+│   ├── theme/                           # design tokens, theme primitives
+│   ├── types/                           # cross-feature shared types
+│   └── ui/
+│       ├── layout/                      # page shells, sections, wrappers
+│       └── primitives/                  # buttons, inputs, cards, text, icons
+│
+├── features/
+│   ├── calculator/                      # main MVP feature
+│   │   ├── application/                 # use cases and app-facing orchestration
+│   │   │   ├── services/
+│   │   │   └── use-cases/
+│   │   ├── domain/                      # pure business layer
+│   │   │   ├── entities/                # income, cost, tax settings, results
+│   │   │   ├── repositories/            # repository contracts/interfaces
+│   │   │   ├── services/                # tax calculation rules
+│   │   │   └── value-objects/           # money, rate, vat rate, contribution types
+│   │   ├── infrastructure/              # storage and mapping details
+│   │   │   ├── mappers/
+│   │   │   ├── repositories/
+│   │   │   └── sqlite/
+│   │   └── presentation/                # feature UI only
+│   │       ├── components/
+│   │       ├── hooks/
+│   │       ├── screens/
+│   │       └── view-models/
+│   │
+│   ├── settings/                        # app preferences and tax defaults later
+│   │   └── presentation/
+│   │       ├── components/
+│   │       └── screens/
+│   │
+│   └── shared/                          # future cross-feature domain pieces
+│       └── domain/
+│           └── value-objects/
+│
+├── components/                          # current starter components, migrate gradually
+├── constants/                           # current starter constants, migrate gradually
+└── hooks/                               # current starter hooks, migrate gradually
 ```
 
 ## Layer Responsibilities
 
-### 1. `app/` (Expo Router Routes)
-* **Rule:** Contains almost zero business logic.
-* **Role:** Connects URLs/paths to screens. It reads state from `src/application/stores` and displays components from `src/ui/components`.
+### `src/app`
+- Keep route files thin.
+- A route should import a screen from `src/features/.../presentation/screens`.
+- Avoid placing tax calculations, mapping logic, or storage code here.
 
-### 2. `src/domain/`
-* **Rule:** Completely independent. Cannot import from `data`, `application`, or `ui`.
-* **Role:** Holds the raw TypeScript definitions of what objects look like in your app (e.g., `type Task = { id: string, title: string, isDone: boolean }`).
+### `src/core`
+- Holds app bootstrapping concerns.
+- Good place for app providers, database initialization, and global Zustand stores.
+- Should not contain feature business rules.
 
-### 3. `src/data/`
-* **Rule:** The only place where `expo-sqlite` and `drizzle-orm` are imported.
-* **Role:** Defines the database structure. Repositories act as a bridge: they take raw data from SQLite and return clean `domain` models to the rest of the app.
+### `src/shared`
+- Reusable code that does not belong to one feature.
+- Use this for design system pieces, generic helpers, formatting, and common types.
+- Shared code must stay generic and not depend on calculator-specific rules.
 
-### 4. `src/application/`
-* **Rule:** The orchestrator. Imports from `domain` and `data`.
-* **Role:** Contains Zustand stores. If a user clicks "Add Task", the UI calls a function here. This layer validates the input, calls the `TaskRepository` to save it to SQLite, and updates the Zustand state so the UI reflects the change.
+### `src/features/*/domain`
+- Pure business models and rules.
+- No React, no Expo APIs, no database imports.
+- This is where the calculator formulas and domain types should live.
 
-### 5. `src/ui/`
-* **Rule:** Reusable visual building blocks. Cannot import from `data` or `application`.
-* **Role:** Buttons, inputs, and layout wrappers styled with NativeWind. They just take `props` and emit `events`.
-```
+### `src/features/*/application`
+- Coordinates domain logic for the app.
+- Calls repositories, orchestrates use cases, prepares data for UI/state layers.
+- Good place for actions like `calculateMonthlyNetIncome` or `saveCalculatorSnapshot`.
+
+### `src/features/*/infrastructure`
+- Concrete implementations for persistence and device integrations.
+- SQLite repositories, DTO mapping, import/export, and future NBP rate caching belong here.
+
+### `src/features/*/presentation`
+- Components, screen containers, hooks, and view-model shaping for a single feature.
+- Can use React, Expo Router, Zustand selectors, and shared UI primitives.
+- Must not contain low-level persistence logic.
+
+## How To Add New Work
+
+### Add a new screen
+1. Create a route file in `src/app/...`.
+2. Create the screen in `src/features/<feature>/presentation/screens`.
+3. Reuse primitives from `src/shared/ui`.
+
+### Add new business logic
+1. Put models in `domain/entities` or `domain/value-objects`.
+2. Put pure calculations in `domain/services`.
+3. Put the app action flow in `application/use-cases`.
+
+### Add local persistence
+1. Define repository contract in `domain/repositories`.
+2. Implement it in `infrastructure/repositories`.
+3. Keep SQLite-specific setup inside `core/database` or feature `infrastructure/sqlite`.
+
+## Suggested MVP Mapping
+- Revenue sources: `features/calculator/domain/entities`
+- Costs and VAT categories: `features/calculator/domain/entities`
+- Tax form, ZUS status, reliefs: `features/calculator/domain/value-objects`
+- Monthly/annual calculation engine: `features/calculator/domain/services`
+- Calculator state orchestration: `features/calculator/application/use-cases`
+- Calculator form sections and result cards: `features/calculator/presentation/components`
+- Main calculator screen: `features/calculator/presentation/screens`
+
+## Migration Note
+The current starter folders `src/components`, `src/constants`, and `src/hooks` are left in place so the app stays stable. New code should target the new structure, and the starter files can be moved gradually into `src/shared` or `src/features` as implementation grows.
