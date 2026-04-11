@@ -115,6 +115,50 @@
   --transition-slow: 260ms ease;
 }
 
+[data-theme='light'] {
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-text-primary: rgba(255, 255, 255, 0.95);
+  --color-text-secondary: #c3bdb7;
+  --color-text-muted: #8e8780;
+  --color-text-inverse: #0f0e0d;
+  --color-bg-page: #191816;
+  --color-bg-alt: #23211f;
+  --color-bg-dark: #0f0e0d;
+  --color-bg-soft: rgba(255, 255, 255, 0.08);
+  --color-bg-badge: rgba(9, 127, 232, 0.16);
+  --color-border-whisper: rgba(255, 255, 255, 0.12);
+  --color-border-input: rgba(255, 255, 255, 0.16);
+  --color-primary: #62aef0;
+  --color-primary-active: #3291e6;
+  --color-link-light: #8ac5f5;
+  --color-focus: #62aef0;
+  --color-badge-text: #8ac5f5;
+  --color-brand-navy: #9eb2ff;
+  --color-success: #53c56d;
+  --color-success-soft: #58b9b6;
+  --color-warning: #ff9a52;
+  --color-pink: #ff8bd7;
+  --color-purple: #b39cff;
+  --color-brown: #c79f6f;
+
+  --shadow-soft:
+    rgba(0, 0, 0, 0.32) 0px 10px 30px,
+    rgba(0, 0, 0, 0.2) 0px 4px 12px,
+    rgba(0, 0, 0, 0.12) 0px 1px 3px;
+  --shadow-deep:
+    rgba(0, 0, 0, 0.42) 0px 18px 48px,
+    rgba(0, 0, 0, 0.24) 0px 8px 24px,
+    rgba(0, 0, 0, 0.16) 0px 2px 8px;
+  --shadow-focus:
+    0 0 0 2px rgba(98, 174, 240, 0.28),
+    0 0 0 4px rgba(98, 174, 240, 0.1);
+}
+
 *,
 *::before,
 *::after {
@@ -139,6 +183,13 @@ body {
   font-family: var(--font-ui);
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
+}
+
+[data-theme='dark'] body,
+body[data-theme='dark'] {
+  background:
+    radial-gradient(circle at top left, rgba(35, 33, 31, 0.94), transparent 34%),
+    linear-gradient(180deg, #161513 0%, #191816 68%, #11100f 100%);
 }
 
 body,
@@ -648,6 +699,12 @@ a.link-light {
   background-color: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+[data-theme='dark'] .nav,
+body[data-theme='dark'] .nav {
+  background-color: rgba(25, 24, 22, 0.88);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
 .nav-inner {
