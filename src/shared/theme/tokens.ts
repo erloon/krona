@@ -9,14 +9,14 @@ const fontFamily = Platform.select({
 
 export const colors = {
   text: {
-    primary: 'rgba(0, 0, 0, 0.95)',
+    primary: '#1a1c1c',
     secondary: '#615d59',
     muted: '#a39e98',
     subtle: '#414753',
     inverse: '#ffffff',
   },
   background: {
-    page: '#ffffff',
+    page: '#faf9f8',
     alt: '#f6f5f4',
     paper: '#faf9f8',
     soft: 'rgba(0, 0, 0, 0.05)',
@@ -24,9 +24,11 @@ export const colors = {
     surface: '#ffffff',
     surfaceAlt: '#faf9f8',
     surfaceContainer: '#efeeed',
-    surfaceContainerLow: '#f6f5f4',
+    surfaceContainerLow: '#f4f3f2',
     surfaceContainerLowest: '#ffffff',
     surfaceContainerHigh: '#e9e8e7',
+    surfaceContainerHighest: '#e3e2e1',
+    glass: 'rgba(255, 255, 255, 0.8)',
   },
   border: {
     whisper: 'rgba(0, 0, 0, 0.1)',
@@ -95,6 +97,27 @@ export const typography = {
     lineHeight: 36,
     letterSpacing: -1.5,
   } satisfies TextStyle,
+  heroTitle: {
+    fontFamily,
+    fontSize: 48,
+    fontWeight: '800',
+    lineHeight: 52,
+    letterSpacing: -1.6,
+  } satisfies TextStyle,
+  metricValue: {
+    fontFamily,
+    fontSize: 36,
+    fontWeight: '700',
+    lineHeight: 40,
+    letterSpacing: -1.2,
+  } satisfies TextStyle,
+  metricValueCompact: {
+    fontFamily,
+    fontSize: 24,
+    fontWeight: '700',
+    lineHeight: 30,
+    letterSpacing: -0.6,
+  } satisfies TextStyle,
   authHeadline: {
     fontFamily,
     fontSize: 26,
@@ -161,6 +184,7 @@ export const layout = {
   maxWidth: 1200,
   splashNarrowWidth: 360,
   authNarrowWidth: 400,
+  contentMaxWidth: 720,
 } as const;
 
 export const theme = {
