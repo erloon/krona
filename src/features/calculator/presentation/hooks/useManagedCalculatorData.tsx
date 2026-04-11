@@ -1,10 +1,11 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { deleteIncomeUseCase } from '@/features/calculator/application/use-cases/deleteIncome';
-import { ensureReportingPeriodUseCase } from '@/features/calculator/application/use-cases/ensureReportingPeriod';
-import { getReportingPeriodBundleUseCase } from '@/features/calculator/application/use-cases/getReportingPeriodBundle';
-import { saveIncomeUseCase } from '@/features/calculator/application/use-cases/saveIncome';
-import type { Income } from '@/features/calculator/domain/entities/income';
+import { createIncomeForPeriodUseCase } from '@/features/calculator/application/use-cases/createIncomeForPeriod';
+import { deleteIncomeFromPeriodUseCase } from '@/features/calculator/application/use-cases/deleteIncomeFromPeriod';
+import { duplicateIncomeInPeriodUseCase } from '@/features/calculator/application/use-cases/duplicateIncomeInPeriod';
+import type { IncomeEditorInput } from '@/features/calculator/application/use-cases/incomeCommands';
+import { loadIncomesForPeriodUseCase } from '@/features/calculator/application/use-cases/loadIncomesForPeriod';
+import { updateIncomeForPeriodUseCase } from '@/features/calculator/application/use-cases/updateIncomeForPeriod';
 import type { ReportingPeriodBundle } from '@/features/calculator/domain/entities/reporting-period-bundle';
 import type { CalculatorRepository } from '@/features/calculator/domain/repositories/CalculatorRepository';
 import {
@@ -22,8 +23,10 @@ type CalculatorDataContextValue = {
   error: string | null;
   goToNextPeriod: () => void;
   goToPreviousPeriod: () => void;
-  reload: () => Promise<void>;
-  saveIncome: (income: Income) => Promise<void>;
+  reloadSelectedPeriod: () => Promise<void>;
+  createIncome: (input: IncomeEditorInput) => Promise<void>;
+  updateIncome: (incomeId: string, input: IncomeEditorInput) => Promise<void>;
+  duplicateIncome: (incomeId: string) => Promise<void>;
   deleteIncome: (incomeId: string) => Promise<void>;
 };
 
@@ -51,8 +54,11 @@ export function ManagedCalculatorDataProvider({
     try {
       setIsLoading(true);
       setError(null);
-      await ensureReportingPeriodUseCase(calculatorRepository, settingsRepository, selectedPeriod);
-      const nextBundle = await getReportingPeriodBundleUseCase(calculatorRepository, selectedPeriod);
+      const nextBundle = await loadIncomesForPeriodUseCase(
+        calculatorRepository,
+        settingsRepository,
+        selectedPeriod
+      );
       setBundle(nextBundle);
     } catch (loadError) {
       const message =
@@ -69,24 +75,65 @@ export function ManagedCalculatorDataProvider({
     void loadBundle();
   }, [loadBundle]);
 
-  const saveIncome = useCallback(
-    async (income: Income) => {
-      await saveIncomeUseCase(calculatorRepository, income);
-      await loadBundle();
+  const createIncome = useCallback(
+    async (input: IncomeEditorInput) => {
+      const nextBundle = await createIncomeForPeriodUseCase(
+        calculatorRepository,
+        settingsRepository,
+        {
+          period: selectedPeriod,
+          input,
+        }
+      );
+      setBundle(nextBundle);
     },
-    [calculatorRepository, loadBundle]
+    [calculatorRepository, selectedPeriod, settingsRepository]
+  );
+
+  const updateIncome = useCallback(
+    async (incomeId: string, input: IncomeEditorInput) => {
+      const nextBundle = await updateIncomeForPeriodUseCase(
+        calculatorRepository,
+        settingsRepository,
+        {
+          period: selectedPeriod,
+          incomeId,
+          input,
+        }
+      );
+      setBundle(nextBundle);
+    },
+    [calculatorRepository, selectedPeriod, settingsRepository]
+  );
+
+  const duplicateIncome = useCallback(
+    async (incomeId: string) => {
+      const nextBundle = await duplicateIncomeInPeriodUseCase(
+        calculatorRepository,
+        settingsRepository,
+        {
+          period: selectedPeriod,
+          incomeId,
+        }
+      );
+      setBundle(nextBundle);
+    },
+    [calculatorRepository, selectedPeriod, settingsRepository]
   );
 
   const deleteIncome = useCallback(
     async (incomeId: string) => {
-      if (!bundle) {
-        return;
-      }
-
-      await deleteIncomeUseCase(calculatorRepository, bundle.reportingPeriod.id, incomeId);
-      await loadBundle();
+      const nextBundle = await deleteIncomeFromPeriodUseCase(
+        calculatorRepository,
+        settingsRepository,
+        {
+          period: selectedPeriod,
+          incomeId,
+        }
+      );
+      setBundle(nextBundle);
     },
-    [bundle, calculatorRepository, loadBundle]
+    [calculatorRepository, selectedPeriod, settingsRepository]
   );
 
   const value = useMemo<CalculatorDataContextValue>(
@@ -98,11 +145,23 @@ export function ManagedCalculatorDataProvider({
       goToNextPeriod: () => setSelectedPeriod((current) => getNextMonthlyReportingPeriod(current)),
       goToPreviousPeriod: () =>
         setSelectedPeriod((current) => getPreviousMonthlyReportingPeriod(current)),
-      reload: loadBundle,
-      saveIncome,
+      reloadSelectedPeriod: loadBundle,
+      createIncome,
+      updateIncome,
+      duplicateIncome,
       deleteIncome,
     }),
-    [bundle, deleteIncome, error, isLoading, loadBundle, saveIncome, selectedPeriod]
+    [
+      bundle,
+      createIncome,
+      deleteIncome,
+      duplicateIncome,
+      error,
+      isLoading,
+      loadBundle,
+      selectedPeriod,
+      updateIncome,
+    ]
   );
 
   return <CalculatorDataContext.Provider value={value}>{children}</CalculatorDataContext.Provider>;

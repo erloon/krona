@@ -1,7 +1,6 @@
 import React from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 
-import { createIncome, type Income } from '@/features/calculator/domain/entities/income';
 import { useCalculatorData } from '@/features/calculator/presentation/hooks/useManagedCalculatorData';
 import { colors, radius, spacing, typography } from '@/shared/theme';
 import { ScreenContainer } from '@/shared/ui/layout/ScreenContainer';
@@ -30,12 +29,14 @@ import {
 export function IncomesScreen() {
   const {
     bundle,
+    createIncome,
     deleteIncome,
+    duplicateIncome,
     error,
     goToNextPeriod,
     goToPreviousPeriod,
     isLoading,
-    saveIncome,
+    updateIncome,
   } = useCalculatorData();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [editorMode, setEditorMode] = React.useState<'create' | 'edit'>('create');
@@ -82,41 +83,8 @@ export function IncomesScreen() {
   }
 
   async function handleDuplicateIncome(id: string) {
-    if (!bundle) {
-      return;
-    }
-
-    const sourceIncome = bundle.incomes.find((income) => income.id === id);
-
-    if (!sourceIncome) {
-      return;
-    }
-
-    const timestamp = new Date().toISOString();
-    const duplicateIncome = createIncome({
-      id: createIncomeId(),
-      reportingPeriodId: bundle.reportingPeriod.id,
-      label: `${sourceIncome.label} kopia`,
-      description: sourceIncome.description,
-      billingType: sourceIncome.billingType,
-      baseAmount: sourceIncome.baseAmount,
-      currency: sourceIncome.currency,
-      vatRate: sourceIncome.vatRate,
-      workParameters: sourceIncome.workParameters,
-      exchangeRate: sourceIncome.exchangeRate,
-      exchangeRateSource: sourceIncome.exchangeRateSource,
-      exchangeRateEffectiveDate: sourceIncome.exchangeRateEffectiveDate,
-      lumpSumRate: sourceIncome.lumpSumRate,
-      ipBoxQualifiedIncomePercent: sourceIncome.ipBoxQualifiedIncomePercent,
-      isActive: sourceIncome.isActive,
-      clientName: sourceIncome.clientName,
-      invoiceNumber: sourceIncome.invoiceNumber,
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    });
-
     try {
-      await saveIncome(duplicateIncome);
+      await duplicateIncome(id);
     } catch (saveError) {
       Alert.alert(
         'Nie udało się zduplikować przychodu',
@@ -156,38 +124,24 @@ export function IncomesScreen() {
   }
 
   async function handleSubmitIncome(values: IncomeEditorValues) {
-    if (!bundle) {
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      const currentIncome = editorMode === 'edit' ? editingIncome : null;
-      const timestamp = new Date().toISOString();
-      const nextIncome: Income = createIncome({
-        id: currentIncome?.id ?? createIncomeId(),
-        reportingPeriodId: bundle.reportingPeriod.id,
+      const input = {
         label: values.label,
         description: values.description,
         billingType: values.billingType,
         baseAmount: Number(values.baseAmount),
         currency: values.currency,
         vatRate: values.vatRate,
-        workParameters: currentIncome?.workParameters,
-        exchangeRate: currentIncome?.exchangeRate,
-        exchangeRateSource: currentIncome?.exchangeRateSource,
-        exchangeRateEffectiveDate: currentIncome?.exchangeRateEffectiveDate,
-        lumpSumRate: currentIncome?.lumpSumRate,
-        ipBoxQualifiedIncomePercent: currentIncome?.ipBoxQualifiedIncomePercent,
-        isActive: currentIncome?.isActive,
-        clientName: currentIncome?.clientName,
-        invoiceNumber: currentIncome?.invoiceNumber,
-        createdAt: currentIncome?.createdAt ?? timestamp,
-        updatedAt: timestamp,
-      });
+      } as const;
 
-      await saveIncome(nextIncome);
+      if (editorMode === 'edit' && editingIncome) {
+        await updateIncome(editingIncome.id, input);
+      } else {
+        await createIncome(input);
+      }
+
       setEditorVisible(false);
       setEditingIncomeId(null);
     } catch (saveError) {
@@ -307,14 +261,6 @@ export function IncomesScreen() {
       />
     </View>
   );
-}
-
-function createIncomeId() {
-  if (typeof globalThis.crypto !== 'undefined' && 'randomUUID' in globalThis.crypto) {
-    return globalThis.crypto.randomUUID();
-  }
-
-  return `income-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 const styles = StyleSheet.create({
