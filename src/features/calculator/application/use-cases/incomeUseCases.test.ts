@@ -167,6 +167,60 @@ export async function testDuplicateIncomeCreatesNewRecord(): Promise<void> {
   );
 }
 
+export async function testDuplicateIncomeResetsInvoiceNumberAndDate(): Promise<void> {
+  const fixtures = createFixtures();
+  const period = createMonthlyReportingPeriod(2026, 4);
+  const createdBundle = await createIncomeForPeriodUseCase(
+    fixtures.calculatorRepository,
+    fixtures.settingsRepository,
+    {
+      period,
+      input: {
+        label: 'Contract B',
+        description: 'Consulting work',
+        baseAmount: 15000,
+        billingType: 'MONTHLY',
+        currency: 'EUR',
+        vatRate: 'NP',
+        clientName: 'Client XYZ',
+        invoiceNumber: 'FV/04/2026/001',
+        workParameters: {
+          workingDaysPerMonth: 21,
+          workingHoursPerDay: 8,
+        },
+      },
+    }
+  );
+
+  const sourceIncome = createdBundle.incomes[0];
+  assert(sourceIncome.invoiceNumber === 'FV/04/2026/001', 'Source should have invoice number.');
+  assert(sourceIncome.clientName === 'Client XYZ', 'Source should have client name.');
+  assert(sourceIncome.currency === 'EUR', 'Source should be EUR currency.');
+  assert(sourceIncome.exchangeRateEffectiveDate === '2026-04-01', 'Source date from fixture.');
+
+  const duplicatedBundle = await duplicateIncomeInPeriodUseCase(
+    fixtures.calculatorRepository,
+    fixtures.settingsRepository,
+    {
+      period,
+      incomeId: sourceIncome.id,
+    }
+  );
+
+  const duplicate = duplicatedBundle.incomes.find((i) => i.id !== sourceIncome.id);
+  assert(duplicate !== undefined, 'Duplicate should exist.');
+  assert(duplicate.invoiceNumber === '', 'Invoice number must be reset to empty for duplicate.');
+  assert(
+    duplicate.exchangeRateEffectiveDate !== sourceIncome.exchangeRateEffectiveDate,
+    'Exchange rate date must be reset to current date.'
+  );
+  assert(duplicate.clientName === 'Client XYZ', 'Client name should be copied.');
+  assert(duplicate.label === 'Contract B kopia', 'Label should have kopia suffix.');
+  assert(duplicate.currency === 'EUR', 'Currency should be copied.');
+  assert(duplicate.vatRate === 'NP', 'VAT rate should be copied.');
+  assert(duplicate.baseAmount === 15000, 'Base amount should be copied.');
+}
+
 export async function testDeleteIncomeKeepsOtherPeriodsUntouched(): Promise<void> {
   const fixtures = createFixtures();
   const april = createMonthlyReportingPeriod(2026, 4);
