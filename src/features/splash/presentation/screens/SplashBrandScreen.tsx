@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.page,
   },
   textureLayer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     opacity: 0.18,
   },
   textureDot: {

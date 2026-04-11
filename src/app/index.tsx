@@ -31,7 +31,7 @@ export default function HomeScreen() {
     }
 
     if (phase === 'app') {
-      router.replace('/(app)/index');
+      router.replace('/(app)');
     }
   }, [phase, router]);
 
