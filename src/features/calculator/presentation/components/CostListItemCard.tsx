@@ -10,6 +10,7 @@ import { RecordActionRow } from './RecordActionRow';
 type CostListItemCardProps = {
   title: string;
   amount: string;
+  currency?: string;
   netAmount: string;
   fxLabel?: string | null;
   vatLabel: string;
@@ -26,6 +27,7 @@ type CostListItemCardProps = {
 export function CostListItemCard({
   title,
   amount,
+  currency = 'PLN',
   netAmount,
   fxLabel,
   vatLabel,
@@ -47,7 +49,10 @@ export function CostListItemCard({
         </View>
 
         <View style={styles.amountWrap}>
-          <Text style={styles.amount}>{amount}</Text>
+          <View style={styles.amountRow}>
+            <Text style={styles.amount}>{amount}</Text>
+            <Text style={styles.currency}>{currency}</Text>
+          </View>
           <Text style={styles.metadata}>{vatLabel} | Netto: {netAmount} PLN</Text>
           {fxLabel ? <Text style={styles.metadata}>{fxLabel}</Text> : null}
         </View>
@@ -101,9 +106,18 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     maxWidth: '44%',
   },
+  amountRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: spacing.xs,
+  },
   amount: {
     ...typography.metricValueCompact,
     color: colors.text.primary,
     textAlign: 'right',
+  },
+  currency: {
+    ...typography.caption,
+    color: colors.text.secondary,
   },
 });

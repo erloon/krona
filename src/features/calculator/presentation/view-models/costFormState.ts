@@ -7,6 +7,7 @@ import type {
   CostVatRate,
 } from '@/features/calculator/domain/entities/cost';
 import type { IncomeExchangeRateSource } from '@/features/calculator/domain/entities/income';
+import { convertCostEnteredAmountPreservingPln } from '@/features/calculator/application/services/fxMath';
 import {
   calculateCostPreview,
   type CostPreview,
@@ -26,6 +27,7 @@ export type CostFormState = Readonly<{
   category: CostCategory;
   exchangeRate: string;
   exchangeRateSource: IncomeExchangeRateSource;
+  exchangeRateReferenceDate: string;
   exchangeRateEffectiveDate: string;
   attachment: CostAttachment | null;
 }>;
@@ -40,6 +42,7 @@ export function createDefaultCostFormState(now = new Date()): CostFormState {
     category: 'STANDARD',
     exchangeRate: '1',
     exchangeRateSource: 'STATIC',
+    exchangeRateReferenceDate: now.toISOString().slice(0, 10),
     exchangeRateEffectiveDate: now.toISOString().slice(0, 10),
     attachment: null,
   };
@@ -55,6 +58,7 @@ export function costToFormState(cost: Cost): CostFormState {
     category: cost.category,
     exchangeRate: normalizeExchangeRateValue(cost.exchangeRate),
     exchangeRateSource: cost.exchangeRateSource,
+    exchangeRateReferenceDate: cost.exchangeRateReferenceDate,
     exchangeRateEffectiveDate: cost.exchangeRateEffectiveDate,
     attachment: cost.attachment,
   };
@@ -70,6 +74,7 @@ export function applyCostFormCurrency(
     currency,
     exchangeRate: currency === 'PLN' ? '1' : form.exchangeRate === '1' ? '' : form.exchangeRate,
     exchangeRateSource: currency === 'PLN' ? 'STATIC' : 'NBP_TABLE_A',
+    exchangeRateReferenceDate: now.toISOString().slice(0, 10),
     exchangeRateEffectiveDate: now.toISOString().slice(0, 10),
   };
 }
@@ -95,6 +100,7 @@ export function buildCostValidationInput(form: CostFormState): CostValidationInp
     vatRate: form.vatRate,
     category: form.category,
     exchangeRate: parseDecimalInput(form.exchangeRate),
+    exchangeRateReferenceDate: form.exchangeRateReferenceDate,
     attachmentUri: form.attachment?.uri ?? null,
   };
 }
@@ -117,6 +123,7 @@ export function buildCostEditorInput(form: CostFormState): CostEditorInput {
     category: form.category,
     exchangeRate: parseDecimalInput(form.exchangeRate),
     exchangeRateSource: form.exchangeRateSource,
+    exchangeRateReferenceDate: form.exchangeRateReferenceDate,
     exchangeRateEffectiveDate: form.exchangeRateEffectiveDate,
     attachment: form.attachment,
   };
@@ -137,6 +144,16 @@ export function resolvePlnNetAmount(form: Pick<CostFormState, 'enteredNetAmount'
   const enteredNetAmount = parseDecimalInput(form.enteredNetAmount);
   const exchangeRate = parseDecimalInput(form.exchangeRate);
   return roundMoney(enteredNetAmount * exchangeRate);
+}
+
+export function convertCostFormAmountForCurrencyChange(
+  form: Pick<CostFormState, 'enteredNetAmount' | 'exchangeRate'>,
+  nextExchangeRate: number
+) {
+  return convertCostEnteredAmountPreservingPln({
+    currentPlnAmount: resolvePlnNetAmount(form),
+    nextExchangeRate,
+  });
 }
 
 export function attachCostReference(

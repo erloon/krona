@@ -37,6 +37,7 @@ export async function duplicateIncomeInPeriodUseCase(
     workParameters: sourceIncome.workParameters,
     exchangeRate: sourceIncome.exchangeRate,
     exchangeRateSource: sourceIncome.exchangeRateSource,
+    exchangeRateReferenceDate: timestamp.slice(0, 10),
     exchangeRateEffectiveDate: timestamp.slice(0, 10), // Reset to current date
     lumpSumRate: sourceIncome.lumpSumRate,
     ipBoxQualifiedIncomePercent: sourceIncome.ipBoxQualifiedIncomePercent,

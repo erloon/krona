@@ -156,6 +156,7 @@ export function toMonthlyCalculationSnapshotRecord(
     annualResidualTaxableIncomeAmount: snapshot.annualResidualTaxableIncomeAmount,
     ipBoxNexusRatio: snapshot.ipBoxNexusRatio,
     ipBoxWarning: snapshot.ipBoxWarning,
+    fxAudit: snapshot.fxAudit,
   };
 
   return {
@@ -195,6 +196,7 @@ export function fromMonthlyCalculationSnapshotRecord(
     annualResidualTaxableIncomeAmount: parsed.annualResidualTaxableIncomeAmount ?? 0,
     ipBoxNexusRatio: parsed.ipBoxNexusRatio ?? 0,
     ipBoxWarning: parsed.ipBoxWarning ?? null,
+    fxAudit: parsed.fxAudit,
     calculatedAt: record.calculatedAt,
   });
 }
@@ -214,6 +216,7 @@ export function toIncomeRecord(income: Income): IncomeInsertRecord {
     workingHoursPerDay: income.workParameters.workingHoursPerDay,
     exchangeRate: income.exchangeRate,
     exchangeRateSource: income.exchangeRateSource,
+    exchangeRateReferenceDate: income.exchangeRateReferenceDate,
     exchangeRateEffectiveDate: income.exchangeRateEffectiveDate,
     lumpSumRate: income.lumpSumRate,
     ipBoxQualifiedIncomePercent: income.ipBoxQualifiedIncomePercent,
@@ -241,6 +244,7 @@ export function fromIncomeRecord(record: IncomeRecord): Income {
     },
     exchangeRate: record.exchangeRate,
     exchangeRateSource: record.exchangeRateSource as Income['exchangeRateSource'],
+    exchangeRateReferenceDate: record.exchangeRateReferenceDate,
     exchangeRateEffectiveDate: record.exchangeRateEffectiveDate,
     lumpSumRate: record.lumpSumRate,
     ipBoxQualifiedIncomePercent: record.ipBoxQualifiedIncomePercent,
@@ -265,6 +269,7 @@ export function toCostRecord(cost: Cost): CostInsertRecord {
     category: cost.category,
     exchangeRate: cost.exchangeRate,
     exchangeRateSource: cost.exchangeRateSource,
+    exchangeRateReferenceDate: cost.exchangeRateReferenceDate,
     exchangeRateEffectiveDate: cost.exchangeRateEffectiveDate,
     attachmentPayload: cost.attachment ? JSON.stringify(cost.attachment) : null,
     createdAt: cost.createdAt,
@@ -287,6 +292,7 @@ export function fromCostRecord(record: CostRecord): Cost {
     category: record.category as Cost['category'],
     exchangeRate: record.exchangeRate,
     exchangeRateSource: record.exchangeRateSource as Cost['exchangeRateSource'],
+    exchangeRateReferenceDate: record.exchangeRateReferenceDate,
     exchangeRateEffectiveDate: record.exchangeRateEffectiveDate,
     attachment,
     createdAt: record.createdAt,
@@ -326,6 +332,10 @@ export function createDefaultEmptyCalculationSnapshot(
     zusAmount: 0,
     healthContributionAmount: 0,
     netToHandAmount: 0,
+    fxAudit: {
+      incomes: [],
+      costs: [],
+    },
   });
 }
 

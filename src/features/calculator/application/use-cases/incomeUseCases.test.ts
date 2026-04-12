@@ -84,6 +84,7 @@ export async function testCreateAndUpdateIncomeRecalculateSnapshot(): Promise<vo
         },
         exchangeRate: 1,
         exchangeRateSource: 'STATIC',
+        exchangeRateReferenceDate: '2026-04-01',
         exchangeRateEffectiveDate: '2026-04-01',
       },
     }
@@ -115,6 +116,7 @@ export async function testCreateAndUpdateIncomeRecalculateSnapshot(): Promise<vo
         },
         exchangeRate: 1,
         exchangeRateSource: 'STATIC',
+        exchangeRateReferenceDate: '2026-04-01',
         exchangeRateEffectiveDate: '2026-04-01',
       },
     }
@@ -153,6 +155,7 @@ export async function testUpdateIncomeAllowsFxMetadataChanges(): Promise<void> {
         },
         exchangeRate: 3.9,
         exchangeRateSource: 'NBP_TABLE_A',
+        exchangeRateReferenceDate: '2026-04-01',
         exchangeRateEffectiveDate: '2026-04-01',
       },
     }
@@ -179,6 +182,7 @@ export async function testUpdateIncomeAllowsFxMetadataChanges(): Promise<void> {
         },
         exchangeRate: 4.21,
         exchangeRateSource: 'CUSTOM',
+        exchangeRateReferenceDate: '2026-04-05',
         exchangeRateEffectiveDate: '2026-04-05',
       },
     }
@@ -219,6 +223,7 @@ export async function testDuplicateIncomeCreatesNewRecord(): Promise<void> {
         },
         exchangeRate: 1,
         exchangeRateSource: 'STATIC',
+        exchangeRateReferenceDate: '2026-04-01',
         exchangeRateEffectiveDate: '2026-04-01',
       },
     }
@@ -267,6 +272,7 @@ export async function testDuplicateIncomeResetsInvoiceNumberAndDate(): Promise<v
         },
         exchangeRate: 4.25,
         exchangeRateSource: 'NBP_TABLE_A',
+        exchangeRateReferenceDate: '2026-04-01',
         exchangeRateEffectiveDate: '2026-04-01',
       },
     }
@@ -325,6 +331,7 @@ export async function testDeleteIncomeKeepsOtherPeriodsUntouched(): Promise<void
         },
         exchangeRate: 1,
         exchangeRateSource: 'STATIC',
+        exchangeRateReferenceDate: '2026-04-01',
         exchangeRateEffectiveDate: '2026-04-01',
       },
     }
@@ -347,6 +354,7 @@ export async function testDeleteIncomeKeepsOtherPeriodsUntouched(): Promise<void
       },
       exchangeRate: 1,
       exchangeRateSource: 'STATIC',
+      exchangeRateReferenceDate: '2026-04-01',
       exchangeRateEffectiveDate: '2026-04-01',
     },
   });
@@ -395,6 +403,7 @@ export async function testCreateDailyIncomeUsesWorkingDays(): Promise<void> {
         },
         exchangeRate: 1,
         exchangeRateSource: 'STATIC',
+        exchangeRateReferenceDate: '2026-04-01',
         exchangeRateEffectiveDate: '2026-04-01',
       },
     }
@@ -430,6 +439,7 @@ export async function testCreateHourlyIncomeUsesFullWorkParameters(): Promise<vo
         },
         exchangeRate: 1,
         exchangeRateSource: 'STATIC',
+        exchangeRateReferenceDate: '2026-04-01',
         exchangeRateEffectiveDate: '2026-04-01',
       },
     }
@@ -454,6 +464,9 @@ function createFixtures() {
     },
     async updateSettings() {
       return settings;
+    },
+    async clearSettings() {
+      settings = createDefaultAppSettings('2026-04-01T08:00:00.000Z');
     },
   };
 
@@ -552,12 +565,29 @@ class InMemoryCalculatorRepository implements CalculatorRepository {
     return snapshot;
   }
 
+  async listReportingPeriods(): Promise<readonly ReportingPeriod[]> {
+    return [...this.reportingPeriods.values()];
+  }
+
+  async saveReportingPeriodSettingsSnapshot(snapshot: ReportingPeriodSettingsSnapshot) {
+    this.settingsSnapshots.set(snapshot.reportingPeriodId, snapshot);
+    return snapshot;
+  }
+
   async hasAnyIncomes(): Promise<boolean> {
     return this.incomes.size > 0;
   }
 
   async hasAnyCosts(): Promise<boolean> {
     return this.costs.size > 0;
+  }
+
+  async clearAllData(): Promise<void> {
+    this.reportingPeriods.clear();
+    this.settingsSnapshots.clear();
+    this.calculationSnapshots.clear();
+    this.incomes.clear();
+    this.costs.clear();
   }
 }
 

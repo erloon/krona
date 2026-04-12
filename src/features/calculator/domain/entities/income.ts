@@ -43,6 +43,7 @@ export type Income = Readonly<{
   workParameters: IncomeWorkParameters;
   exchangeRate: number;
   exchangeRateSource: IncomeExchangeRateSource;
+  exchangeRateReferenceDate: string;
   exchangeRateEffectiveDate: string;
   lumpSumRate: string | null;
   ipBoxQualifiedIncomePercent: string | null;
@@ -65,6 +66,7 @@ export function createIncome(params: {
   workParameters?: Partial<IncomeWorkParameters>;
   exchangeRate?: number;
   exchangeRateSource?: IncomeExchangeRateSource;
+  exchangeRateReferenceDate?: string;
   exchangeRateEffectiveDate?: string;
   lumpSumRate?: string | null;
   ipBoxQualifiedIncomePercent?: string | null;
@@ -80,7 +82,9 @@ export function createIncome(params: {
   const currency = params.currency ?? 'PLN';
   const vatRate = params.vatRate ?? '23';
   const exchangeRateSource = params.exchangeRateSource ?? defaultExchangeRateSource(currency);
-  const exchangeRateEffectiveDate = params.exchangeRateEffectiveDate ?? timestamp.slice(0, 10);
+  const exchangeRateReferenceDate = params.exchangeRateReferenceDate ?? timestamp.slice(0, 10);
+  const exchangeRateEffectiveDate =
+    params.exchangeRateEffectiveDate ?? exchangeRateReferenceDate;
   const exchangeRate = params.exchangeRate ?? defaultExchangeRate(currency);
   const metadata = createIncomeSourceMetadata({
     label: params.label,
@@ -104,6 +108,12 @@ export function createIncome(params: {
   assertPositiveAmount(params.baseAmount, 'baseAmount');
   assertPositiveAmount(exchangeRate, 'exchangeRate');
 
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(exchangeRateReferenceDate)) {
+    throw new Error(
+      `Invalid exchangeRateReferenceDate "${exchangeRateReferenceDate}". Expected format YYYY-MM-DD.`
+    );
+  }
+
   if (!/^\d{4}-\d{2}-\d{2}$/.test(exchangeRateEffectiveDate)) {
     throw new Error(
       `Invalid exchangeRateEffectiveDate "${exchangeRateEffectiveDate}". Expected format YYYY-MM-DD.`
@@ -125,6 +135,7 @@ export function createIncome(params: {
     workParameters,
     exchangeRate: normalizeMoney(exchangeRate),
     exchangeRateSource,
+    exchangeRateReferenceDate,
     exchangeRateEffectiveDate,
     lumpSumRate: normalizeOptionalString(params.lumpSumRate),
     ipBoxQualifiedIncomePercent: normalizeOptionalString(params.ipBoxQualifiedIncomePercent),

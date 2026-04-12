@@ -2,6 +2,8 @@ import { calculateMonthlySnapshot } from '@/features/calculator/domain/services/
 import { createIncome, type Income } from '@/features/calculator/domain/entities/income';
 import type { ReportingPeriodBundle } from '@/features/calculator/domain/entities/reporting-period-bundle';
 import type { CalculatorRepository } from '@/features/calculator/domain/repositories/CalculatorRepository';
+import type { ExchangeRateProvider } from '@/features/calculator/application/services/ExchangeRateProvider';
+import { resolveIncomeEditorFx } from '@/features/calculator/application/services/resolveFxInput';
 import type { SettingsRepository } from '@/features/settings/domain/repositories/SettingsRepository';
 
 import type { CreateIncomeForPeriodCommand } from './incomeCommands';
@@ -10,29 +12,37 @@ import { loadIncomesForPeriodUseCase } from './loadIncomesForPeriod';
 export async function createIncomeForPeriodUseCase(
   calculatorRepository: CalculatorRepository,
   settingsRepository: SettingsRepository,
-  command: CreateIncomeForPeriodCommand
+  exchangeRateProviderOrCommand: ExchangeRateProvider | CreateIncomeForPeriodCommand,
+  maybeCommand?: CreateIncomeForPeriodCommand
 ): Promise<ReportingPeriodBundle> {
+  const exchangeRateProvider = maybeCommand
+    ? (exchangeRateProviderOrCommand as ExchangeRateProvider)
+    : undefined;
+  const command = maybeCommand ??
+    (exchangeRateProviderOrCommand as CreateIncomeForPeriodCommand);
   const bundle = await loadIncomesForPeriodUseCase(
     calculatorRepository,
     settingsRepository,
     command.period
   );
   const timestamp = new Date().toISOString();
+  const resolvedInput = await resolveIncomeEditorFx(command.input, exchangeRateProvider);
   const income = createIncome({
     id: createIncomeId(),
     reportingPeriodId: bundle.reportingPeriod.id,
-    label: command.input.label,
-    description: command.input.description,
-    billingType: command.input.billingType,
-    baseAmount: command.input.baseAmount,
-    currency: command.input.currency,
-    vatRate: command.input.vatRate,
-    clientName: command.input.clientName,
-    invoiceNumber: command.input.invoiceNumber,
-    workParameters: command.input.workParameters,
-    exchangeRate: command.input.exchangeRate,
-    exchangeRateSource: command.input.exchangeRateSource,
-    exchangeRateEffectiveDate: command.input.exchangeRateEffectiveDate,
+    label: resolvedInput.label,
+    description: resolvedInput.description,
+    billingType: resolvedInput.billingType,
+    baseAmount: resolvedInput.baseAmount,
+    currency: resolvedInput.currency,
+    vatRate: resolvedInput.vatRate,
+    clientName: resolvedInput.clientName,
+    invoiceNumber: resolvedInput.invoiceNumber,
+    workParameters: resolvedInput.workParameters,
+    exchangeRate: resolvedInput.exchangeRate,
+    exchangeRateSource: resolvedInput.exchangeRateSource,
+    exchangeRateReferenceDate: resolvedInput.exchangeRateReferenceDate,
+    exchangeRateEffectiveDate: resolvedInput.exchangeRateEffectiveDate,
     createdAt: timestamp,
     updatedAt: timestamp,
   });

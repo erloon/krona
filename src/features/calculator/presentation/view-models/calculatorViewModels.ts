@@ -17,8 +17,10 @@ export type IncomeListItemViewModel = {
   invoiceNumber: string;
   amount: number;
   currency: Income['currency'];
+  originalAmount: number;
   vatRate: Income['vatRate'];
   vatLabel: string;
+  fxLabel?: string | null;
   billingType: Income['billingType'];
   billingTypeLabel: string;
   createdAt: string;
@@ -160,9 +162,11 @@ export function buildIncomeListItems(bundle: ReportingPeriodBundle): IncomeListI
       clientName: income.clientName || income.label,
       invoiceNumber: income.invoiceNumber || fallbackIncomeInvoiceNumber(income),
       amount: resolveIncomeMonthlyNetAmount(income),
-      currency: income.currency,
+      currency: 'PLN',
+      originalAmount: income.baseAmount,
       vatRate: income.vatRate,
       vatLabel: toIncomeVatLabel(income),
+      fxLabel: toIncomeFxLabel(income),
       billingType: income.billingType,
       billingTypeLabel: toIncomeBillingTypeLabel(income),
       createdAt: income.createdAt,
@@ -466,7 +470,15 @@ function toCostFxLabel(cost: Cost) {
     return null;
   }
 
-  return `${amountFormatter.format(cost.enteredNetAmount)} ${cost.currency} · kurs ${cost.exchangeRate.toFixed(4)}`;
+  return `Kurs ${cost.exchangeRate.toFixed(4)} · ${cost.exchangeRateEffectiveDate}`;
+}
+
+function toIncomeFxLabel(income: Income) {
+  if (income.currency === 'PLN') {
+    return null;
+  }
+
+  return `Kurs ${income.exchangeRate.toFixed(4)} · ${income.exchangeRateEffectiveDate}`;
 }
 
 function parseCostVatRate(vatRate: Cost['vatRate']) {

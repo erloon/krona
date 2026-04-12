@@ -13,6 +13,7 @@ type IncomeListItemCardProps = {
   invoiceNumber: string;
   amount: string;
   currency: string;
+  fxLabel?: string | null;
   vatLabel: string;
   warnings?: readonly IncomeValidationWarning[];
   onEdit?: () => void;
@@ -28,6 +29,7 @@ export function IncomeListItemCard({
   invoiceNumber,
   amount,
   currency,
+  fxLabel,
   vatLabel,
   warnings = [],
   onEdit,
@@ -57,6 +59,7 @@ export function IncomeListItemCard({
             <Text style={styles.currency}>{currency}</Text>
           </View>
           <StatusTag label={vatLabel} />
+          {fxLabel ? <Text style={styles.fxLabel}>{fxLabel}</Text> : null}
         </View>
       </View>
 
@@ -127,5 +130,10 @@ const styles = StyleSheet.create({
   currency: {
     ...typography.caption,
     color: colors.text.secondary,
+  },
+  fxLabel: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    textAlign: 'right',
   },
 });

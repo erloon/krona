@@ -69,6 +69,7 @@ export type IncomeValidationInput = Readonly<{
   workingDaysPerMonth: number;
   workingHoursPerDay: number;
   exchangeRate: number;
+  exchangeRateReferenceDate: string;
   exchangeRateEffectiveDate: string;
   ipBoxQualifiedIncomePercent: string | null;
   lumpSumRate: string | null;
@@ -108,6 +109,7 @@ export function validateIncomeInputBusinessRules(input: IncomeValidationInput): 
   validateCurrencyAndExchangeRate(
     input.currency,
     input.exchangeRate,
+    input.exchangeRateReferenceDate,
     input.exchangeRateEffectiveDate,
     errors,
     warnings
@@ -269,6 +271,7 @@ function validateWorkParameters(
 function validateCurrencyAndExchangeRate(
   currency: IncomeCurrency,
   exchangeRate: number,
+  exchangeRateReferenceDate: string,
   exchangeRateEffectiveDate: string,
   errors: IncomeValidationError[],
   warnings: IncomeValidationWarning[]
@@ -280,6 +283,14 @@ function validateCurrencyAndExchangeRate(
         code: INCOME_ERROR_CODES.INVALID_EXCHANGE_RATE,
         message: 'Kurs wymiany musi być większy od zera.',
         field: 'exchangeRate',
+      });
+    }
+
+    if (!exchangeRateReferenceDate || !/^\d{4}-\d{2}-\d{2}$/.test(exchangeRateReferenceDate)) {
+      errors.push({
+        code: INCOME_ERROR_CODES.INVALID_EXCHANGE_RATE_DATE,
+        message: 'Data referencyjna kursu musi być w formacie RRRR-MM-DD.',
+        field: 'exchangeRateReferenceDate',
       });
     }
 

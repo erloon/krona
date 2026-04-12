@@ -16,7 +16,7 @@
         "foregroundImage": "./assets/images/logo.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.maciejkryca.krona"
+      "package": "com.sparkdatapl.krona"
     },
     "web": {
       "output": "static",

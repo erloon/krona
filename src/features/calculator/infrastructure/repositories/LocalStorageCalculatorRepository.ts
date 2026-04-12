@@ -288,12 +288,15 @@ function migrateStoredReportingPeriod(
     return null;
   }
 
+  const normalizedYear = Number(year);
+  const normalizedMonth = Number(month);
+
   return createReportingPeriod({
     id:
       reportingPeriod.id ??
-      createReportingPeriodId(year, month),
-    year,
-    month,
+      createReportingPeriodId(normalizedYear, normalizedMonth),
+    year: normalizedYear,
+    month: normalizedMonth,
     status: reportingPeriod.status ?? REPORTING_PERIOD_STATUS.open,
     createdAt: reportingPeriod.createdAt,
     updatedAt: reportingPeriod.updatedAt,
@@ -330,6 +333,7 @@ function migrateStoredIncome(income: Partial<Income> & { netAmount?: number }): 
     workParameters: income.workParameters,
     exchangeRate: income.exchangeRate,
     exchangeRateSource: income.exchangeRateSource,
+    exchangeRateReferenceDate: income.exchangeRateReferenceDate,
     exchangeRateEffectiveDate: income.exchangeRateEffectiveDate,
     lumpSumRate: income.lumpSumRate,
     ipBoxQualifiedIncomePercent: income.ipBoxQualifiedIncomePercent,
@@ -354,6 +358,7 @@ function migrateStoredCost(cost: Partial<Cost> & { enteredNetAmount?: number }):
     category: cost.category,
     exchangeRate: cost.exchangeRate,
     exchangeRateSource: cost.exchangeRateSource,
+    exchangeRateReferenceDate: cost.exchangeRateReferenceDate,
     exchangeRateEffectiveDate: cost.exchangeRateEffectiveDate,
     attachment: cost.attachment,
     createdAt: cost.createdAt,

@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-const DATABASE_VERSION = 4;
+const DATABASE_VERSION = 5;
 
 export async function initializeDatabase(database: SQLiteDatabase) {
   await database.execAsync('PRAGMA journal_mode = WAL;');
@@ -110,6 +110,12 @@ export async function initializeDatabase(database: SQLiteDatabase) {
     await ensureColumn(
       database,
       'incomes',
+      'exchange_rate_reference_date',
+      "TEXT NOT NULL DEFAULT '1970-01-01'"
+    );
+    await ensureColumn(
+      database,
+      'incomes',
       'exchange_rate_effective_date',
       "TEXT NOT NULL DEFAULT '1970-01-01'"
     );
@@ -133,6 +139,10 @@ export async function initializeDatabase(database: SQLiteDatabase) {
         exchange_rate_source = CASE
           WHEN exchange_rate_source = 'STATIC' AND currency <> 'PLN' THEN 'NBP_TABLE_A'
           ELSE exchange_rate_source
+        END,
+        exchange_rate_reference_date = CASE
+          WHEN exchange_rate_reference_date = '1970-01-01' THEN substr(created_at, 1, 10)
+          ELSE exchange_rate_reference_date
         END,
         exchange_rate_effective_date = CASE
           WHEN exchange_rate_effective_date = '1970-01-01' THEN substr(created_at, 1, 10)
@@ -176,6 +186,12 @@ export async function initializeDatabase(database: SQLiteDatabase) {
     await ensureColumn(
       database,
       'costs',
+      'exchange_rate_reference_date',
+      "TEXT NOT NULL DEFAULT '1970-01-01'"
+    );
+    await ensureColumn(
+      database,
+      'costs',
       'exchange_rate_effective_date',
       "TEXT NOT NULL DEFAULT '1970-01-01'"
     );
@@ -191,6 +207,10 @@ export async function initializeDatabase(database: SQLiteDatabase) {
         exchange_rate = CASE
           WHEN exchange_rate <= 0 THEN 1
           ELSE exchange_rate
+        END,
+        exchange_rate_reference_date = CASE
+          WHEN exchange_rate_reference_date = '1970-01-01' THEN substr(created_at, 1, 10)
+          ELSE exchange_rate_reference_date
         END,
         exchange_rate_effective_date = CASE
           WHEN exchange_rate_effective_date = '1970-01-01' THEN substr(created_at, 1, 10)

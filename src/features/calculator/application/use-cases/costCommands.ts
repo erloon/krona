@@ -17,6 +17,7 @@ export type CostEditorInput = Readonly<{
   category: CostCategory;
   exchangeRate: number;
   exchangeRateSource: IncomeExchangeRateSource;
+  exchangeRateReferenceDate: string;
   exchangeRateEffectiveDate: string;
   attachment: CostAttachment | null;
 }>;

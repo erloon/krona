@@ -31,6 +31,7 @@ export async function duplicateCostInPeriodUseCase(
     category: sourceCost.category,
     exchangeRate: sourceCost.exchangeRate,
     exchangeRateSource: sourceCost.exchangeRateSource,
+    exchangeRateReferenceDate: sourceCost.exchangeRateReferenceDate,
     exchangeRateEffectiveDate: sourceCost.exchangeRateEffectiveDate,
     attachment: sourceCost.attachment,
     createdAt: timestamp,

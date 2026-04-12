@@ -21,6 +21,7 @@ export type IncomeEditorInput = Readonly<{
   };
   exchangeRate: number;
   exchangeRateSource: IncomeExchangeRateSource;
+  exchangeRateReferenceDate: string;
   exchangeRateEffectiveDate: string;
 }>;
 

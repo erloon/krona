@@ -27,11 +27,11 @@ import { ValidationWarningsList } from '@/shared/ui/primitives/ValidationWarning
 import { AttachmentDropzone } from '../components/AttachmentDropzone';
 import { DeductionModeSelector } from '../components/DeductionModeSelector';
 import {
-  applyCostFormCurrency,
   attachCostReference,
   buildCostEditorInput,
   buildCostPreview,
   buildCostValidationResult,
+  convertCostFormAmountForCurrencyChange,
   costToFormState,
   detachCostReference,
   normalizeDecimalInput,
@@ -50,14 +50,18 @@ const vatOptions: ChipSelectorOption<CostVatRate>[] = COST_VAT_RATES.map((vatRat
 }));
 
 export function EditCostScreen() {
-  const { bundle, hasLoadedSelectedPeriod, updateCost } = useCalculatorData();
+  const { bundle, getExchangeRate, hasLoadedSelectedPeriod, selectedPeriod, updateCost } =
+    useCalculatorData();
   const { id: costId } = useLocalSearchParams<{ id?: string }>();
   const [form, setForm] = React.useState<CostFormState | null>(null);
   const [validationMessage, setValidationMessage] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isResolvingFx, setIsResolvingFx] = React.useState(false);
   const [isAttachmentEditorVisible, setIsAttachmentEditorVisible] = React.useState(false);
   const [attachmentUriDraft, setAttachmentUriDraft] = React.useState('');
   const [attachmentNameDraft, setAttachmentNameDraft] = React.useState('');
+  const [fxMessage, setFxMessage] = React.useState<string | null>(null);
+  const [fxErrorMessage, setFxErrorMessage] = React.useState<string | null>(null);
 
   const costEntity = bundle?.costs.find((cost) => cost.id === costId) ?? null;
   const settingsSnapshot = bundle?.settingsSnapshot ?? null;
@@ -117,6 +121,78 @@ export function EditCostScreen() {
     setForm((current) => (current ? { ...current, [key]: value } : current));
   }
 
+  async function handleCurrencyChange(nextCurrency: CostCurrency) {
+    if (!form) {
+      return;
+    }
+
+    setIsResolvingFx(true);
+    setFxErrorMessage(null);
+
+    try {
+      const resolvedRate = await getExchangeRate(nextCurrency, form.exchangeRateReferenceDate);
+      const nextEnteredNetAmount =
+        nextCurrency === form.currency
+          ? form.enteredNetAmount
+          : formatMoneyInput(convertCostFormAmountForCurrencyChange(form, resolvedRate.exchangeRate));
+
+      setForm({
+        ...form,
+        currency: nextCurrency,
+        enteredNetAmount: nextEnteredNetAmount,
+        exchangeRate: formatRateInput(resolvedRate.exchangeRate),
+        exchangeRateSource: resolvedRate.exchangeRateSource,
+        exchangeRateReferenceDate: resolvedRate.exchangeRateReferenceDate,
+        exchangeRateEffectiveDate: resolvedRate.exchangeRateEffectiveDate,
+      });
+      setFxMessage(
+        `Przeliczono po kursie ${formatRateDisplay(resolvedRate.exchangeRate)} ${nextCurrency}/PLN z dnia ${resolvedRate.exchangeRateEffectiveDate}.`
+      );
+    } catch (error) {
+      setFxErrorMessage(
+        error instanceof Error ? error.message : 'Nie udało się pobrać kursu NBP dla wybranej waluty.'
+      );
+    } finally {
+      setIsResolvingFx(false);
+    }
+  }
+
+  async function handleReferenceDateChange(value: string) {
+    updateForm('exchangeRateReferenceDate', value);
+    setFxMessage(null);
+
+    if (!form || !isValidReferenceDate(value, selectedPeriod) || form.currency === 'PLN') {
+      return;
+    }
+
+    setIsResolvingFx(true);
+    setFxErrorMessage(null);
+
+    try {
+      const resolvedRate = await getExchangeRate(form.currency, value);
+      setForm((current) =>
+        current
+          ? {
+              ...current,
+              exchangeRate: formatRateInput(resolvedRate.exchangeRate),
+              exchangeRateSource: resolvedRate.exchangeRateSource,
+              exchangeRateReferenceDate: resolvedRate.exchangeRateReferenceDate,
+              exchangeRateEffectiveDate: resolvedRate.exchangeRateEffectiveDate,
+            }
+          : current
+      );
+      setFxMessage(
+        `Odświeżono kurs ${form.currency}/PLN do ${formatRateDisplay(resolvedRate.exchangeRate)} z tabeli NBP ${resolvedRate.exchangeRateEffectiveDate}.`
+      );
+    } catch (error) {
+      setFxErrorMessage(
+        error instanceof Error ? error.message : 'Nie udało się odświeżyć kursu dla wskazanej daty.'
+      );
+    } finally {
+      setIsResolvingFx(false);
+    }
+  }
+
   function handleOpenAttachmentEditor() {
     setAttachmentUriDraft(activeForm.attachment?.uri ?? '');
     setAttachmentNameDraft(activeForm.attachment?.fileName ?? '');
@@ -142,6 +218,11 @@ export function EditCostScreen() {
   }
 
   async function handleSave() {
+    if (!isValidReferenceDate(activeForm.exchangeRateReferenceDate, selectedPeriod)) {
+      setValidationMessage('Data referencyjna kursu musi należeć do aktywnego miesiąca raportowego.');
+      return;
+    }
+
     if (!validationResult?.isValid) {
       setValidationMessage(validationResult?.errors[0]?.message ?? 'Nieprawidłowe dane kosztu.');
       return;
@@ -174,9 +255,9 @@ export function EditCostScreen() {
 
       <ChipSelector
         label="WALUTA"
-        onValueChange={(value) =>
-          setForm((current) => (current ? applyCostFormCurrency(current, value) : current))
-        }
+        onValueChange={(value) => {
+          void handleCurrencyChange(value);
+        }}
         options={currencyOptions}
         value={activeForm.currency}
       />
@@ -191,13 +272,35 @@ export function EditCostScreen() {
       />
 
       {activeForm.currency !== 'PLN' ? (
-        <TextField
-          keyboardType="decimal-pad"
-          label="KURS PRZELICZENIA DO PLN"
-          onChangeText={(value) => updateForm('exchangeRate', normalizeDecimalInput(value))}
-          placeholder="Np. 4,1234"
-          value={activeForm.exchangeRate}
-        />
+        <View style={styles.fxSection}>
+          <TextField
+            autoCapitalize="none"
+            label="DATA REFERENCYJNA KURSU"
+            onChangeText={(value) => {
+              void handleReferenceDateChange(value);
+            }}
+            placeholder={`${selectedPeriod.key}-01`}
+            value={activeForm.exchangeRateReferenceDate}
+          />
+          <TextField
+            keyboardType="decimal-pad"
+            label="KURS PRZELICZENIA DO PLN"
+            onChangeText={(value) => {
+              updateForm('exchangeRate', normalizeDecimalInput(value));
+              updateForm('exchangeRateSource', 'CUSTOM');
+              setFxMessage('Używasz kursu własnego. Zapis zostanie przeliczony z tym kursem.');
+            }}
+            placeholder="Np. 4,1234"
+            value={activeForm.exchangeRate}
+          />
+          <Text style={styles.infoText}>
+            Źródło: {activeForm.exchangeRateSource} · data referencyjna: {activeForm.exchangeRateReferenceDate} ·
+            kurs zastosowany: {activeForm.exchangeRateEffectiveDate}
+          </Text>
+          {fxMessage ? <Text style={styles.fxInfo}>{fxMessage}</Text> : null}
+          {fxErrorMessage ? <Text style={styles.validation}>{fxErrorMessage}</Text> : null}
+          {isResolvingFx ? <Text style={styles.infoText}>Pobieranie kursu NBP...</Text> : null}
+        </View>
       ) : null}
 
       <ChipSelector
@@ -274,7 +377,7 @@ export function EditCostScreen() {
       ) : null}
 
       <PrimaryButton
-        disabled={isSubmitting}
+        disabled={isSubmitting || isResolvingFx}
         label={isSubmitting ? 'ZAPISYWANIE...' : 'ZAPISZ KOSZT'}
         leadingAccessory={
           <MaterialCommunityIcons color={colors.text.inverse} name="check-circle-outline" size={20} />
@@ -298,6 +401,9 @@ const styles = StyleSheet.create({
   infoCard: {
     gap: spacing.xs,
   },
+  fxSection: {
+    gap: spacing.sm,
+  },
   infoTitle: {
     ...typography.bodyMedium,
     color: colors.text.primary,
@@ -306,6 +412,10 @@ const styles = StyleSheet.create({
   infoText: {
     ...typography.bodySmall,
     color: colors.text.secondary,
+  },
+  fxInfo: {
+    ...typography.caption,
+    color: colors.brand.primary,
   },
   attachmentEditor: {
     gap: spacing.md,
@@ -318,3 +428,22 @@ const styles = StyleSheet.create({
     color: colors.brand.destructive,
   },
 });
+
+function isValidReferenceDate(value: string, period: { key: string }) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) && value.startsWith(`${period.key}-`);
+}
+
+function formatMoneyInput(value: number) {
+  return value.toFixed(2).replace('.', ',');
+}
+
+function formatRateInput(value: number) {
+  return value.toFixed(4).replace(/0+$/, '').replace(/[,.]$/, '').replace('.', ',');
+}
+
+function formatRateDisplay(value: number) {
+  return value.toLocaleString('pl-PL', {
+    minimumFractionDigits: 4,
+    maximumFractionDigits: 4,
+  });
+}

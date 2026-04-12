@@ -297,6 +297,7 @@ export function IncomesScreen() {
                     currency={item.currency}
                     deleteDisabled={isLoading || isDeleting}
                     duplicateLoading={pendingDuplicateIncomeId === item.id}
+                    fxLabel={item.fxLabel}
                     invoiceNumber={item.invoiceNumber}
                     key={item.id}
                     onDelete={() => handleDeleteIncome(item.id)}

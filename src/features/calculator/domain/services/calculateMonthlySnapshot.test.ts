@@ -46,6 +46,7 @@ describe('calculateMonthlySnapshot IP Box', () => {
           },
           exchangeRate: 1,
           exchangeRateSource: 'STATIC',
+          exchangeRateReferenceDate: '2026-04-01',
           exchangeRateEffectiveDate: '2026-04-01',
           createdAt: '2026-04-01T00:00:00.000Z',
           updatedAt: '2026-04-01T00:00:00.000Z',
@@ -64,6 +65,7 @@ describe('calculateMonthlySnapshot IP Box', () => {
           category: 'STANDARD',
           exchangeRate: 1,
           exchangeRateSource: 'STATIC',
+          exchangeRateReferenceDate: '2026-04-01',
           exchangeRateEffectiveDate: '2026-04-01',
           createdAt: '2026-04-01T00:00:00.000Z',
           updatedAt: '2026-04-01T00:00:00.000Z',
@@ -77,6 +79,8 @@ describe('calculateMonthlySnapshot IP Box', () => {
     assert.equal(snapshot.annualIpBoxTaxGainAmount, 29486.05);
     assert.equal(snapshot.ipBoxNexusRatio, 1);
     assert.equal(snapshot.ipBoxWarning, null);
+    assert.equal(snapshot.fxAudit.incomes[0]?.exchangeRateReferenceDate, '2026-04-01');
+    assert.equal(snapshot.fxAudit.costs[0]?.convertedPlnAmount, 2000);
   });
 
   it('disables IP Box estimate when qualified costs are all zero', () => {
@@ -117,6 +121,7 @@ describe('calculateMonthlySnapshot IP Box', () => {
           },
           exchangeRate: 1,
           exchangeRateSource: 'STATIC',
+          exchangeRateReferenceDate: '2026-04-01',
           exchangeRateEffectiveDate: '2026-04-01',
           createdAt: '2026-04-01T00:00:00.000Z',
           updatedAt: '2026-04-01T00:00:00.000Z',

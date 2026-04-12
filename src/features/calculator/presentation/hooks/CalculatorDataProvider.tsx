@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 
+import { NbpExchangeRateProvider } from '@/features/calculator/infrastructure/services/NbpExchangeRateProvider';
 import { LocalStorageCalculatorRepository } from '@/features/calculator/infrastructure/repositories/LocalStorageCalculatorRepository';
 import { LocalStorageSettingsRepository } from '@/features/settings/infrastructure/repositories/LocalStorageSettingsRepository';
 
@@ -12,10 +13,12 @@ type CalculatorDataProviderProps = {
 export function CalculatorDataProvider({ children }: CalculatorDataProviderProps) {
   const calculatorRepository = useMemo(() => new LocalStorageCalculatorRepository(), []);
   const settingsRepository = useMemo(() => new LocalStorageSettingsRepository(), []);
+  const exchangeRateProvider = useMemo(() => new NbpExchangeRateProvider(), []);
 
   return (
     <ManagedCalculatorDataProvider
       calculatorRepository={calculatorRepository}
+      exchangeRateProvider={exchangeRateProvider}
       settingsRepository={settingsRepository}
     >
       {children}

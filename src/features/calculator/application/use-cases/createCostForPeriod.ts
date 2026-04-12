@@ -2,6 +2,8 @@ import { createCost, type Cost } from '@/features/calculator/domain/entities/cos
 import { calculateMonthlySnapshot } from '@/features/calculator/domain/services/calculateMonthlySnapshot';
 import type { ReportingPeriodBundle } from '@/features/calculator/domain/entities/reporting-period-bundle';
 import type { CalculatorRepository } from '@/features/calculator/domain/repositories/CalculatorRepository';
+import type { ExchangeRateProvider } from '@/features/calculator/application/services/ExchangeRateProvider';
+import { resolveCostEditorFx } from '@/features/calculator/application/services/resolveFxInput';
 import type { SettingsRepository } from '@/features/settings/domain/repositories/SettingsRepository';
 
 import type { CreateCostForPeriodCommand } from './costCommands';
@@ -10,28 +12,36 @@ import { loadIncomesForPeriodUseCase } from './loadIncomesForPeriod';
 export async function createCostForPeriodUseCase(
   calculatorRepository: CalculatorRepository,
   settingsRepository: SettingsRepository,
-  command: CreateCostForPeriodCommand
+  exchangeRateProviderOrCommand: ExchangeRateProvider | CreateCostForPeriodCommand,
+  maybeCommand?: CreateCostForPeriodCommand
 ): Promise<ReportingPeriodBundle> {
+  const exchangeRateProvider = maybeCommand
+    ? (exchangeRateProviderOrCommand as ExchangeRateProvider)
+    : undefined;
+  const command = maybeCommand ??
+    (exchangeRateProviderOrCommand as CreateCostForPeriodCommand);
   const bundle = await loadIncomesForPeriodUseCase(
     calculatorRepository,
     settingsRepository,
     command.period
   );
   const timestamp = new Date().toISOString();
+  const resolvedInput = await resolveCostEditorFx(command.input, exchangeRateProvider);
   const cost = createCost({
     id: createCostId(),
     reportingPeriodId: bundle.reportingPeriod.id,
-    label: command.input.label,
-    description: command.input.description,
-    enteredNetAmount: command.input.enteredNetAmount,
-    currency: command.input.currency,
-    netAmount: command.input.netAmount,
-    vatRate: command.input.vatRate,
-    category: command.input.category,
-    exchangeRate: command.input.exchangeRate,
-    exchangeRateSource: command.input.exchangeRateSource,
-    exchangeRateEffectiveDate: command.input.exchangeRateEffectiveDate,
-    attachment: command.input.attachment,
+    label: resolvedInput.label,
+    description: resolvedInput.description,
+    enteredNetAmount: resolvedInput.enteredNetAmount,
+    currency: resolvedInput.currency,
+    netAmount: resolvedInput.netAmount,
+    vatRate: resolvedInput.vatRate,
+    category: resolvedInput.category,
+    exchangeRate: resolvedInput.exchangeRate,
+    exchangeRateSource: resolvedInput.exchangeRateSource,
+    exchangeRateReferenceDate: resolvedInput.exchangeRateReferenceDate,
+    exchangeRateEffectiveDate: resolvedInput.exchangeRateEffectiveDate,
+    attachment: resolvedInput.attachment,
     createdAt: timestamp,
     updatedAt: timestamp,
   });

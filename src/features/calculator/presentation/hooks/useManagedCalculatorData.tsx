@@ -12,6 +12,7 @@ import { createCostForPeriodUseCase } from '@/features/calculator/application/us
 import { deleteCostFromPeriodUseCase } from '@/features/calculator/application/use-cases/deleteCostFromPeriod';
 import { duplicateCostInPeriodUseCase } from '@/features/calculator/application/use-cases/duplicateCostInPeriod';
 import type { CostEditorInput } from '@/features/calculator/application/use-cases/costCommands';
+import type { ExchangeRateProvider, ResolvedExchangeRate } from '@/features/calculator/application/services/ExchangeRateProvider';
 import { createIncomeForPeriodUseCase } from '@/features/calculator/application/use-cases/createIncomeForPeriod';
 import { deleteIncomeFromPeriodUseCase } from '@/features/calculator/application/use-cases/deleteIncomeFromPeriod';
 import { duplicateIncomeInPeriodUseCase } from '@/features/calculator/application/use-cases/duplicateIncomeInPeriod';
@@ -47,6 +48,10 @@ type CalculatorDataContextValue = {
   reloadSelectedPeriod: () => Promise<void>;
   syncAllPeriodsWithCurrentSettings: () => Promise<void>;
   resetCalculatorData: () => Promise<void>;
+  getExchangeRate: (
+    currency: IncomeEditorInput['currency'],
+    referenceDate: string
+  ) => Promise<ResolvedExchangeRate>;
   createIncome: (input: IncomeEditorInput) => Promise<void>;
   updateIncome: (incomeId: string, input: IncomeEditorInput) => Promise<void>;
   duplicateIncome: (incomeId: string) => Promise<void>;
@@ -63,12 +68,14 @@ type ManagedCalculatorDataProviderProps = {
   children: React.ReactNode;
   calculatorRepository: CalculatorRepository;
   settingsRepository: SettingsRepository;
+  exchangeRateProvider: ExchangeRateProvider;
 };
 
 export function ManagedCalculatorDataProvider({
   children,
   calculatorRepository,
   settingsRepository,
+  exchangeRateProvider,
 }: ManagedCalculatorDataProviderProps) {
   const [selectedPeriod, setSelectedPeriod] = useState<MonthlyReportingPeriod>(() =>
     monthlyReportingPeriodFromDate(new Date())
@@ -174,6 +181,7 @@ export function ManagedCalculatorDataProvider({
       const nextBundle = await createIncomeForPeriodUseCase(
         calculatorRepository,
         settingsRepository,
+        exchangeRateProvider,
         {
           period: selectedPeriod,
           input,
@@ -184,7 +192,7 @@ export function ManagedCalculatorDataProvider({
       setHasAnyRecordsEver(true);
       setError(null);
     },
-    [calculatorRepository, selectedPeriod, settingsRepository]
+    [calculatorRepository, exchangeRateProvider, selectedPeriod, settingsRepository]
   );
 
   const updateIncome = useCallback(
@@ -192,6 +200,7 @@ export function ManagedCalculatorDataProvider({
       const nextBundle = await updateIncomeForPeriodUseCase(
         calculatorRepository,
         settingsRepository,
+        exchangeRateProvider,
         {
           period: selectedPeriod,
           incomeId,
@@ -203,7 +212,7 @@ export function ManagedCalculatorDataProvider({
       setHasAnyRecordsEver(true);
       setError(null);
     },
-    [calculatorRepository, selectedPeriod, settingsRepository]
+    [calculatorRepository, exchangeRateProvider, selectedPeriod, settingsRepository]
   );
 
   const duplicateIncome = useCallback(
@@ -250,6 +259,7 @@ export function ManagedCalculatorDataProvider({
       const nextBundle = await createCostForPeriodUseCase(
         calculatorRepository,
         settingsRepository,
+        exchangeRateProvider,
         {
           period: selectedPeriod,
           input,
@@ -260,7 +270,7 @@ export function ManagedCalculatorDataProvider({
       setHasAnyCostsEver(true);
       setError(null);
     },
-    [calculatorRepository, selectedPeriod, settingsRepository]
+    [calculatorRepository, exchangeRateProvider, selectedPeriod, settingsRepository]
   );
 
   const updateCost = useCallback(
@@ -268,6 +278,7 @@ export function ManagedCalculatorDataProvider({
       const nextBundle = await updateCostForPeriodUseCase(
         calculatorRepository,
         settingsRepository,
+        exchangeRateProvider,
         {
           period: selectedPeriod,
           costId,
@@ -279,7 +290,13 @@ export function ManagedCalculatorDataProvider({
       setHasAnyCostsEver(true);
       setError(null);
     },
-    [calculatorRepository, selectedPeriod, settingsRepository]
+    [calculatorRepository, exchangeRateProvider, selectedPeriod, settingsRepository]
+  );
+
+  const getExchangeRate = useCallback(
+    async (currency: IncomeEditorInput['currency'], referenceDate: string) =>
+      exchangeRateProvider.getRate(currency, referenceDate),
+    [exchangeRateProvider]
   );
 
   const duplicateCost = useCallback(
@@ -371,6 +388,7 @@ export function ManagedCalculatorDataProvider({
       reloadSelectedPeriod: loadBundle,
       syncAllPeriodsWithCurrentSettings,
       resetCalculatorData,
+      getExchangeRate,
       createIncome,
       updateIncome,
       duplicateIncome,
@@ -389,6 +407,7 @@ export function ManagedCalculatorDataProvider({
       duplicateCost,
       duplicateIncome,
       error,
+      getExchangeRate,
       hasAnyCostsEver,
       hasLoadedSelectedPeriod,
       hasAnyRecordsEver,

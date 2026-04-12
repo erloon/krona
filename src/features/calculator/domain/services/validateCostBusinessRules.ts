@@ -7,6 +7,7 @@ export type CostValidationInput = Readonly<{
   vatRate: CostVatRate;
   category: CostCategory;
   exchangeRate: number;
+  exchangeRateReferenceDate: string;
   attachmentUri: string | null;
 }>;
 
@@ -37,6 +38,10 @@ export function validateCostBusinessRules(
 
   if (!Number.isFinite(input.exchangeRate) || input.exchangeRate <= 0) {
     errors.push({ message: 'Kurs waluty musi być większy od zera.' });
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.exchangeRateReferenceDate)) {
+    errors.push({ message: 'Data referencyjna kursu musi mieć format RRRR-MM-DD.' });
   }
 
   if (settingsSnapshot.taxationForm === 'LUMP_SUM') {

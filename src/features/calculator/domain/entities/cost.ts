@@ -28,6 +28,7 @@ export type Cost = Readonly<{
   category: CostCategory;
   exchangeRate: number;
   exchangeRateSource: IncomeExchangeRateSource;
+  exchangeRateReferenceDate: string;
   exchangeRateEffectiveDate: string;
   attachment: CostAttachment | null;
   createdAt: string;
@@ -46,6 +47,7 @@ export function createCost(params: {
   category?: CostCategory;
   exchangeRate?: number;
   exchangeRateSource?: IncomeExchangeRateSource;
+  exchangeRateReferenceDate?: string;
   exchangeRateEffectiveDate?: string;
   attachment?: CostAttachment | null;
   createdAt?: string;
@@ -63,7 +65,15 @@ export function createCost(params: {
   assertPositiveAmount(enteredNetAmount, 'enteredNetAmount');
   assertPositiveAmount(exchangeRate, 'exchangeRate');
 
-  const exchangeRateEffectiveDate = params.exchangeRateEffectiveDate ?? timestamp.slice(0, 10);
+  const exchangeRateReferenceDate = params.exchangeRateReferenceDate ?? timestamp.slice(0, 10);
+  const exchangeRateEffectiveDate =
+    params.exchangeRateEffectiveDate ?? exchangeRateReferenceDate;
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(exchangeRateReferenceDate)) {
+    throw new Error(
+      `Invalid exchangeRateReferenceDate "${exchangeRateReferenceDate}". Expected format YYYY-MM-DD.`
+    );
+  }
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(exchangeRateEffectiveDate)) {
     throw new Error(
@@ -83,6 +93,7 @@ export function createCost(params: {
     category: params.category ?? 'STANDARD',
     exchangeRate: normalizeMoney(exchangeRate),
     exchangeRateSource: params.exchangeRateSource ?? defaultExchangeRateSource(currency),
+    exchangeRateReferenceDate,
     exchangeRateEffectiveDate,
     attachment: normalizeAttachment(params.attachment),
     createdAt: timestamp,

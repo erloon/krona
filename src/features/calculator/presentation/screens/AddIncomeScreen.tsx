@@ -30,7 +30,7 @@ import { SettlementTypeSelector } from '../components/SettlementTypeSelector';
 import { WorkParametersSection } from '../components/WorkParametersSection';
 import { formatCurrencyAmount } from '../view-models/calculatorViewModels';
 import {
-  applyIncomeFormCurrency,
+  convertIncomeFormAmountForCurrencyChange,
   buildIncomeEditorInput,
   buildIncomeSummary,
   buildIncomeValidationInput,
@@ -38,6 +38,7 @@ import {
   isIncomeFormForeignCurrency,
   normalizeDecimalInput,
   normalizeIntegerInput,
+  resolveIncomePlnAmount,
   type IncomeFormState,
 } from '../view-models/incomeFormState';
 
@@ -58,11 +59,16 @@ const vatOptions: ChipSelectorOption<IncomeVatRate>[] = [
 ];
 
 export function AddIncomeScreen() {
-  const { createIncome } = useCalculatorData();
-  const [form, setForm] = React.useState<IncomeFormState>(() => createDefaultIncomeFormState());
+  const { createIncome, getExchangeRate, selectedPeriod } = useCalculatorData();
+  const [form, setForm] = React.useState<IncomeFormState>(() =>
+    createDefaultIncomeFormState(createPeriodStartDate(selectedPeriod))
+  );
   const [validationMessage, setValidationMessage] = React.useState<string | null>(null);
   const [validationWarnings, setValidationWarnings] = React.useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isResolvingFx, setIsResolvingFx] = React.useState(false);
+  const [fxMessage, setFxMessage] = React.useState<string | null>(null);
+  const [fxErrorMessage, setFxErrorMessage] = React.useState<string | null>(null);
 
   const summary = React.useMemo(() => buildIncomeSummary(form), [form]);
   const isForeignCurrency = React.useMemo(() => isIncomeFormForeignCurrency(form), [form]);
@@ -80,9 +86,89 @@ export function AddIncomeScreen() {
     }));
   }
 
+  async function handleCurrencyChange(nextCurrency: IncomeCurrency) {
+    const currentForm = form;
+    const nextReferenceDate =
+      currentForm.exchangeRateReferenceDate || formatPeriodDate(selectedPeriod.year, selectedPeriod.month, 1);
+
+    setIsResolvingFx(true);
+    setFxErrorMessage(null);
+
+    try {
+      const resolvedRate = await getExchangeRate(nextCurrency, nextReferenceDate);
+      const nextBaseAmount =
+        nextCurrency === currentForm.currency
+          ? currentForm.baseAmount
+          : formatMoneyInput(
+              convertIncomeFormAmountForCurrencyChange(currentForm, resolvedRate.exchangeRate)
+            );
+
+      setForm({
+        ...currentForm,
+        currency: nextCurrency,
+        baseAmount: nextBaseAmount,
+        exchangeRate: formatRateInput(resolvedRate.exchangeRate),
+        exchangeRateSource: resolvedRate.exchangeRateSource,
+        exchangeRateReferenceDate: resolvedRate.exchangeRateReferenceDate,
+        exchangeRateEffectiveDate: resolvedRate.exchangeRateEffectiveDate,
+      });
+      setFxMessage(
+        `Przeliczono po kursie ${formatRateDisplay(resolvedRate.exchangeRate)} ${nextCurrency}/PLN z dnia ${resolvedRate.exchangeRateEffectiveDate}.`
+      );
+    } catch (error) {
+      setFxErrorMessage(
+        error instanceof Error ? error.message : 'Nie udało się pobrać kursu NBP dla wybranej waluty.'
+      );
+    } finally {
+      setIsResolvingFx(false);
+    }
+  }
+
+  async function handleReferenceDateChange(value: string) {
+    updateForm('exchangeRateReferenceDate', value);
+    setFxMessage(null);
+
+    if (!isValidReferenceDate(value, selectedPeriod) || form.currency === 'PLN') {
+      return;
+    }
+
+    setIsResolvingFx(true);
+    setFxErrorMessage(null);
+
+    try {
+      const resolvedRate = await getExchangeRate(form.currency, value);
+      setForm((current) =>
+        current
+          ? {
+              ...current,
+              exchangeRate: formatRateInput(resolvedRate.exchangeRate),
+              exchangeRateSource: resolvedRate.exchangeRateSource,
+              exchangeRateReferenceDate: resolvedRate.exchangeRateReferenceDate,
+              exchangeRateEffectiveDate: resolvedRate.exchangeRateEffectiveDate,
+            }
+          : current
+      );
+      setFxMessage(
+        `Odświeżono kurs ${form.currency}/PLN do ${formatRateDisplay(resolvedRate.exchangeRate)} z tabeli NBP ${resolvedRate.exchangeRateEffectiveDate}.`
+      );
+    } catch (error) {
+      setFxErrorMessage(
+        error instanceof Error ? error.message : 'Nie udało się odświeżyć kursu dla wskazanej daty.'
+      );
+    } finally {
+      setIsResolvingFx(false);
+    }
+  }
+
   async function handleSave() {
     const validationInput = buildIncomeValidationInput(form);
     const validationResult = validateIncomeInputBusinessRules(validationInput);
+
+    if (!isValidReferenceDate(form.exchangeRateReferenceDate, selectedPeriod)) {
+      setValidationMessage('Data referencyjna kursu musi należeć do aktywnego miesiąca raportowego.');
+      setValidationWarnings([]);
+      return;
+    }
 
     if (!validationResult.isValid) {
       setValidationMessage(validationResult.errors[0]?.message ?? 'Nieprawidłowe dane.');
@@ -141,16 +227,46 @@ export function AddIncomeScreen() {
 
       <ChipSelector
         label="WALUTA"
-        onValueChange={(value) => setForm((current) => applyIncomeFormCurrency(current, value))}
+        onValueChange={(value) => {
+          void handleCurrencyChange(value);
+        }}
         options={currencyOptions}
         value={form.currency}
       />
 
       {isForeignCurrency ? (
-        <Text style={styles.fxHint}>
-          Kurs waluty jest zapisany jako stan roboczy: {form.exchangeRateSource} ·{' '}
-          {form.exchangeRateEffectiveDate}. Właściwy workflow FX zostanie dopięty w kolejnym kroku.
-        </Text>
+        <View style={styles.fxSection}>
+          <TextField
+            autoCapitalize="none"
+            label="DATA REFERENCYJNA KURSU"
+            onChangeText={(value) => {
+              void handleReferenceDateChange(value);
+            }}
+            placeholder={`${selectedPeriod.key}-01`}
+            value={form.exchangeRateReferenceDate}
+          />
+          <TextField
+            keyboardType="decimal-pad"
+            label="KURS PRZELICZENIA DO PLN"
+            onChangeText={(value) => {
+              updateForm('exchangeRate', normalizeDecimalInput(value));
+              updateForm('exchangeRateSource', 'CUSTOM');
+              setFxMessage('Używasz kursu własnego. Zapis zostanie przeliczony z tym kursem.');
+            }}
+            placeholder="Np. 4,1234"
+            value={form.exchangeRate}
+          />
+          <Text style={styles.fxHint}>
+            Źródło: {form.exchangeRateSource} · data referencyjna: {form.exchangeRateReferenceDate} ·
+            kurs zastosowany: {form.exchangeRateEffectiveDate}
+          </Text>
+          {fxMessage ? <Text style={styles.fxInfo}>{fxMessage}</Text> : null}
+          {fxErrorMessage ? <Text style={styles.validation}>{fxErrorMessage}</Text> : null}
+          {isResolvingFx ? <Text style={styles.fxHint}>Pobieranie kursu NBP...</Text> : null}
+          <Text style={styles.fxHint}>
+            Do obliczeń: {formatCurrencyAmount(resolveIncomePlnAmount(form))} PLN
+          </Text>
+        </View>
       ) : null}
 
       <View style={styles.section}>
@@ -213,7 +329,7 @@ export function AddIncomeScreen() {
       ) : null}
 
       <PrimaryButton
-        disabled={isSubmitting}
+        disabled={isSubmitting || isResolvingFx}
         label={isSubmitting ? 'ZAPISYWANIE...' : 'ZAPISZ PRZYCHÓD'}
         leadingAccessory={
           <MaterialCommunityIcons color={colors.text.inverse} name="check-circle-outline" size={20} />
@@ -242,8 +358,42 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.text.secondary,
   },
+  fxSection: {
+    gap: spacing.sm,
+  },
+  fxInfo: {
+    ...typography.caption,
+    color: colors.brand.primary,
+  },
   validation: {
     ...typography.caption,
     color: '#b3261e',
   },
 });
+
+function createPeriodStartDate(period: { year: number; month: number; key: string }) {
+  return new Date(Date.UTC(period.year, period.month - 1, 1));
+}
+
+function formatPeriodDate(year: number, month: number, day: number) {
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function isValidReferenceDate(value: string, period: { year: number; month: number; key: string }) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) && value.startsWith(`${period.key}-`);
+}
+
+function formatMoneyInput(value: number) {
+  return value.toFixed(2).replace('.', ',');
+}
+
+function formatRateInput(value: number) {
+  return value.toFixed(4).replace(/0+$/, '').replace(/[,.]$/, '').replace('.', ',');
+}
+
+function formatRateDisplay(value: number) {
+  return value.toLocaleString('pl-PL', {
+    minimumFractionDigits: 4,
+    maximumFractionDigits: 4,
+  });
+}

@@ -13,8 +13,9 @@ export function testCreateDefaultIncomeFormStateUsesPlnStaticFx(): void {
   const form = createDefaultIncomeFormState(new Date('2026-04-12T09:30:00.000Z'));
 
   assert(form.currency === 'PLN', 'Default form should start in PLN.');
-  assert(form.exchangeRate === 1, 'PLN default should use unit exchange rate.');
+  assert(form.exchangeRate === '1', 'PLN default should use unit exchange rate.');
   assert(form.exchangeRateSource === 'STATIC', 'PLN default should use STATIC source.');
+  assert(form.exchangeRateReferenceDate === '2026-04-12', 'Default form should stamp the current reference date.');
   assert(
     form.exchangeRateEffectiveDate === '2026-04-12',
     'Default form should stamp the current effective date.'
@@ -28,8 +29,9 @@ export function testApplyIncomeFormCurrencySwitchesBetweenPlnAndForeignFxStates(
   const eurForm = applyIncomeFormCurrency(initial, 'EUR', new Date('2026-04-15T09:30:00.000Z'));
 
   assert(eurForm.currency === 'EUR', 'Currency switch should update the selected currency.');
-  assert(eurForm.exchangeRate === 1, 'Foreign currency should start from explicit placeholder rate.');
+  assert(eurForm.exchangeRate === '1', 'Foreign currency should start from explicit placeholder rate.');
   assert(eurForm.exchangeRateSource === 'NBP_TABLE_A', 'Foreign currency should initialize NBP source.');
+  assert(eurForm.exchangeRateReferenceDate === '2026-04-15', 'Foreign currency should stamp the reference date.');
   assert(
     eurForm.exchangeRateEffectiveDate === '2026-04-15',
     'Foreign currency should stamp the explicit FX effective date.'
@@ -53,8 +55,9 @@ export function testBuildIncomeValidationInputAndEditorInputKeepFxMetadata(): vo
       invoiceNumber: 'FV/04/2026',
       workingDaysPerMonth: '18',
       workingHoursPerDay: '7',
-      exchangeRate: 4.2731,
+      exchangeRate: '4,2731',
       exchangeRateSource: 'CUSTOM',
+      exchangeRateReferenceDate: '2026-04-10',
       exchangeRateEffectiveDate: '2026-04-10',
     },
     'EUR',
@@ -62,8 +65,9 @@ export function testBuildIncomeValidationInputAndEditorInputKeepFxMetadata(): vo
   );
   const formWithCustomFx = {
     ...form,
-    exchangeRate: 4.2731,
+    exchangeRate: '4,2731',
     exchangeRateSource: 'CUSTOM' as const,
+    exchangeRateReferenceDate: '2026-04-10',
     exchangeRateEffectiveDate: '2026-04-10',
   };
 
@@ -73,6 +77,10 @@ export function testBuildIncomeValidationInputAndEditorInputKeepFxMetadata(): vo
   assert(validationInput.currency === 'EUR', 'Validation input should keep selected currency.');
   assert(validationInput.exchangeRate === 4.2731, 'Validation input should keep explicit exchange rate.');
   assert(
+    validationInput.exchangeRateReferenceDate === '2026-04-10',
+    'Validation input should keep explicit FX reference date.'
+  );
+  assert(
     validationInput.exchangeRateEffectiveDate === '2026-04-10',
     'Validation input should keep explicit FX date.'
   );
@@ -80,6 +88,10 @@ export function testBuildIncomeValidationInputAndEditorInputKeepFxMetadata(): vo
   assert(
     editorInput.exchangeRateSource === 'CUSTOM',
     'Editor input should pass the selected FX source to the use case.'
+  );
+  assert(
+    editorInput.exchangeRateReferenceDate === '2026-04-10',
+    'Editor input should pass FX reference date to the use case.'
   );
   assert(
     editorInput.exchangeRateEffectiveDate === '2026-04-10',
@@ -105,6 +117,7 @@ export function testIncomeToFormStateMapsPersistedFxMetadata(): void {
     },
     exchangeRate: 3.9876,
     exchangeRateSource: 'NBP_TABLE_A',
+    exchangeRateReferenceDate: '2026-04-07',
     exchangeRateEffectiveDate: '2026-04-08',
     createdAt: '2026-04-09T08:00:00.000Z',
     updatedAt: '2026-04-09T08:00:00.000Z',
@@ -113,8 +126,9 @@ export function testIncomeToFormStateMapsPersistedFxMetadata(): void {
   const form = incomeToFormState(income);
 
   assert(form.currency === 'USD', 'Form mapping should preserve saved currency.');
-  assert(form.exchangeRate === 3.9876, 'Form mapping should preserve saved exchange rate.');
+  assert(form.exchangeRate === '3,9876', 'Form mapping should preserve saved exchange rate.');
   assert(form.exchangeRateSource === 'NBP_TABLE_A', 'Form mapping should preserve saved source.');
+  assert(form.exchangeRateReferenceDate === '2026-04-07', 'Form mapping should preserve saved reference date.');
   assert(
     form.exchangeRateEffectiveDate === '2026-04-08',
     'Form mapping should preserve saved effective date.'

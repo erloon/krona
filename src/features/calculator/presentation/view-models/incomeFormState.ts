@@ -1,5 +1,6 @@
 import type { IncomeEditorInput } from '@/features/calculator/application/use-cases/incomeCommands';
 import type { Income, IncomeBillingType, IncomeCurrency, IncomeVatRate } from '@/features/calculator/domain/entities/income';
+import { convertIncomeBaseAmountPreservingPln, resolveIncomeMonthlyPlnAmount } from '@/features/calculator/application/services/fxMath';
 import type { IncomeExchangeRateSource } from '@/features/calculator/domain/value-objects/IncomeExchangeRateSource';
 import type { IncomeValidationInput } from '@/features/calculator/domain/services/validateIncomeBusinessRules';
 
@@ -14,14 +15,15 @@ export type IncomeFormState = Readonly<{
   invoiceNumber: string;
   workingDaysPerMonth: string;
   workingHoursPerDay: string;
-  exchangeRate: number;
+  exchangeRate: string;
   exchangeRateSource: IncomeExchangeRateSource;
+  exchangeRateReferenceDate: string;
   exchangeRateEffectiveDate: string;
 }>;
 
 type IncomeFxState = Pick<
   IncomeFormState,
-  'exchangeRate' | 'exchangeRateSource' | 'exchangeRateEffectiveDate'
+  'exchangeRate' | 'exchangeRateSource' | 'exchangeRateReferenceDate' | 'exchangeRateEffectiveDate'
 >;
 
 export function createDefaultIncomeFormState(now = new Date()): IncomeFormState {
@@ -45,8 +47,9 @@ export function createFxStateForCurrency(
   now = new Date()
 ): IncomeFxState {
   return {
-    exchangeRate: 1,
+    exchangeRate: '1',
     exchangeRateSource: currency === 'PLN' ? 'STATIC' : 'NBP_TABLE_A',
+    exchangeRateReferenceDate: formatExchangeRateEffectiveDate(now),
     exchangeRateEffectiveDate: formatExchangeRateEffectiveDate(now),
   };
 }
@@ -79,8 +82,9 @@ export function incomeToFormState(income: Income): IncomeFormState {
     invoiceNumber: income.invoiceNumber,
     workingDaysPerMonth: String(income.workParameters.workingDaysPerMonth),
     workingHoursPerDay: String(income.workParameters.workingHoursPerDay),
-    exchangeRate: income.exchangeRate,
+    exchangeRate: normalizeExchangeRateValue(income.exchangeRate),
     exchangeRateSource: income.exchangeRateSource,
+    exchangeRateReferenceDate: income.exchangeRateReferenceDate,
     exchangeRateEffectiveDate: income.exchangeRateEffectiveDate,
   };
 }
@@ -119,7 +123,8 @@ export function buildIncomeValidationInput(form: IncomeFormState): IncomeValidat
     vatRate: form.vatRate,
     workingDaysPerMonth: parseIntegerInput(form.workingDaysPerMonth),
     workingHoursPerDay: parseIntegerInput(form.workingHoursPerDay),
-    exchangeRate: form.exchangeRate,
+    exchangeRate: parseDecimalInput(form.exchangeRate),
+    exchangeRateReferenceDate: form.exchangeRateReferenceDate,
     exchangeRateEffectiveDate: form.exchangeRateEffectiveDate,
     ipBoxQualifiedIncomePercent: null,
     lumpSumRate: null,
@@ -140,8 +145,9 @@ export function buildIncomeEditorInput(form: IncomeFormState): IncomeEditorInput
       workingDaysPerMonth: parseIntegerInput(form.workingDaysPerMonth),
       workingHoursPerDay: parseIntegerInput(form.workingHoursPerDay),
     },
-    exchangeRate: form.exchangeRate,
+    exchangeRate: parseDecimalInput(form.exchangeRate),
     exchangeRateSource: form.exchangeRateSource,
+    exchangeRateReferenceDate: form.exchangeRateReferenceDate,
     exchangeRateEffectiveDate: form.exchangeRateEffectiveDate,
   };
 }
@@ -164,4 +170,31 @@ export function parseIntegerInput(value: string) {
 
 function formatExchangeRateEffectiveDate(now: Date) {
   return now.toISOString().slice(0, 10);
+}
+
+function normalizeExchangeRateValue(value: number) {
+  return value.toFixed(4).replace(/0+$/, '').replace(/[,.]$/, '').replace('.', ',');
+}
+
+export function resolveIncomePlnAmount(form: IncomeFormState) {
+  return resolveIncomeMonthlyPlnAmount({
+    baseAmount: parseDecimalInput(form.baseAmount),
+    billingType: form.billingType,
+    workingDaysPerMonth: parseIntegerInput(form.workingDaysPerMonth),
+    workingHoursPerDay: parseIntegerInput(form.workingHoursPerDay),
+    exchangeRate: parseDecimalInput(form.exchangeRate),
+  });
+}
+
+export function convertIncomeFormAmountForCurrencyChange(
+  form: IncomeFormState,
+  nextExchangeRate: number
+) {
+  return convertIncomeBaseAmountPreservingPln({
+    currentPlnAmount: resolveIncomePlnAmount(form),
+    nextExchangeRate,
+    billingType: form.billingType,
+    workingDaysPerMonth: parseIntegerInput(form.workingDaysPerMonth),
+    workingHoursPerDay: parseIntegerInput(form.workingHoursPerDay),
+  });
 }

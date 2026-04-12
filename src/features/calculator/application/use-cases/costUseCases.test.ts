@@ -42,6 +42,7 @@ export async function testCreateAndUpdateCostRecalculateSnapshot(): Promise<void
         category: 'CAR_MIXED',
         exchangeRate: 1,
         exchangeRateSource: 'STATIC',
+        exchangeRateReferenceDate: '2026-04-01',
         exchangeRateEffectiveDate: '2026-04-01',
         attachment: null,
       },
@@ -71,6 +72,7 @@ export async function testCreateAndUpdateCostRecalculateSnapshot(): Promise<void
         category: 'CAR_BUSINESS',
         exchangeRate: 1,
         exchangeRateSource: 'STATIC',
+        exchangeRateReferenceDate: '2026-04-01',
         exchangeRateEffectiveDate: '2026-04-01',
         attachment: null,
       },
@@ -105,6 +107,7 @@ export async function testDuplicateAndDeleteCostKeepOtherPeriodsUntouched(): Pro
         category: 'STANDARD',
         exchangeRate: 1,
         exchangeRateSource: 'STATIC',
+        exchangeRateReferenceDate: '2026-04-01',
         exchangeRateEffectiveDate: '2026-04-01',
         attachment: null,
       },
@@ -123,6 +126,7 @@ export async function testDuplicateAndDeleteCostKeepOtherPeriodsUntouched(): Pro
       category: 'CAR_MIXED',
       exchangeRate: 1,
       exchangeRateSource: 'STATIC',
+      exchangeRateReferenceDate: '2026-05-01',
       exchangeRateEffectiveDate: '2026-05-01',
       attachment: null,
     },
@@ -175,6 +179,9 @@ function createFixtures() {
     },
     async updateSettings() {
       return settings;
+    },
+    async clearSettings() {
+      settings = createDefaultAppSettings('2026-04-01T08:00:00.000Z');
     },
   };
 
@@ -269,12 +276,29 @@ class InMemoryCalculatorRepository implements CalculatorRepository {
     return snapshot;
   }
 
+  async listReportingPeriods(): Promise<readonly ReportingPeriod[]> {
+    return [...this.reportingPeriods.values()];
+  }
+
+  async saveReportingPeriodSettingsSnapshot(snapshot: ReportingPeriodSettingsSnapshot) {
+    this.settingsSnapshots.set(snapshot.reportingPeriodId, snapshot);
+    return snapshot;
+  }
+
   async hasAnyIncomes(): Promise<boolean> {
     return this.incomes.size > 0;
   }
 
   async hasAnyCosts(): Promise<boolean> {
     return this.costs.size > 0;
+  }
+
+  async clearAllData(): Promise<void> {
+    this.reportingPeriods.clear();
+    this.settingsSnapshots.clear();
+    this.calculationSnapshots.clear();
+    this.incomes.clear();
+    this.costs.clear();
   }
 }
 

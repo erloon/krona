@@ -27,6 +27,7 @@ export function testApplyCostFormCurrencyAndEditorInputKeepFxMetadata(): void {
       label: 'Licencja',
       exchangeRate: '4,2731',
       exchangeRateSource: 'CUSTOM',
+      exchangeRateReferenceDate: '2026-04-10',
       exchangeRateEffectiveDate: '2026-04-10',
     },
     'EUR',
@@ -43,6 +44,7 @@ export function testApplyCostFormCurrencyAndEditorInputKeepFxMetadata(): void {
 
   assert(validationInput.enteredNetAmount === 120.5, 'Validation input should parse entered amount.');
   assert(validationInput.exchangeRate === 4.2731, 'Validation input should keep exchange rate.');
+  assert(validationInput.exchangeRateReferenceDate === '2026-04-10', 'Validation input should keep reference date.');
   assert(editorInput.currency === 'EUR', 'Editor input should keep foreign currency.');
   assert(editorInput.netAmount === 514.9086, 'Editor input should calculate PLN snapshot from raw input.');
   assert(editorInput.exchangeRateSource === 'CUSTOM', 'Editor input should keep explicit FX source.');
@@ -61,6 +63,7 @@ export function testCostToFormStateAndAttachmentDraftRoundTrip(): void {
     category: 'STANDARD',
     exchangeRate: 4,
     exchangeRateSource: 'NBP_TABLE_A',
+    exchangeRateReferenceDate: '2026-04-07',
     exchangeRateEffectiveDate: '2026-04-08',
     attachment: {
       uri: 'file:///tmp/invoice.pdf',
@@ -81,6 +84,7 @@ export function testCostToFormStateAndAttachmentDraftRoundTrip(): void {
 
   assert(form.currency === 'USD', 'Persisted cost should map saved currency to form state.');
   assert(form.exchangeRate === '4', 'Persisted cost should map saved exchange rate.');
+  assert(form.exchangeRateReferenceDate === '2026-04-07', 'Persisted cost should map saved reference date.');
   assert(resolvePlnNetAmount(form) === 196, 'PLN amount should recompute from entered amount and FX.');
   assert(withAttachment.attachment?.fileName === 'receipt.jpg', 'Attachment helper should update draft metadata.');
 }

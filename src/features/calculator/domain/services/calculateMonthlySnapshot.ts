@@ -5,6 +5,8 @@ import {
   type IncomeVatRate,
 } from '@/features/calculator/domain/entities/income';
 import {
+  createCostFxAuditEntry,
+  createIncomeFxAuditEntry,
   createMonthlyCalculationSnapshot,
   type MonthlyCalculationSnapshot,
 } from '@/features/calculator/domain/entities/monthly-calculation-snapshot';
@@ -30,6 +32,9 @@ export function calculateMonthlySnapshot(params: {
   costs: readonly Cost[];
   calculatedAt?: string;
 }): MonthlyCalculationSnapshot {
+  const incomeAudit = params.incomes.map((income) =>
+    createIncomeFxAuditEntry(income, resolveIncomeMonthlyNetAmount(income))
+  );
   const revenueAmount = roundMoney(
     params.incomes.reduce((sum, income) => sum + resolveIncomeMonthlyNetAmount(income), 0)
   );
@@ -42,6 +47,7 @@ export function calculateMonthlySnapshot(params: {
   );
 
   const derivedCosts = params.costs.map((cost) => deriveCostAmounts(cost, params.settingsSnapshot.vatStatus));
+  const costAudit = params.costs.map((cost) => createCostFxAuditEntry(cost, cost.netAmount));
   const costAmount = roundMoney(derivedCosts.reduce((sum, cost) => sum + cost.economicCostAmount, 0));
   const deductibleCostAmount =
     params.settingsSnapshot.taxationForm === 'LUMP_SUM'
@@ -100,6 +106,10 @@ export function calculateMonthlySnapshot(params: {
     annualResidualTaxableIncomeAmount: ipBoxEstimate.annualResidualTaxableIncomeAmount,
     ipBoxNexusRatio: ipBoxEstimate.ipBoxNexusRatio,
     ipBoxWarning: ipBoxEstimate.ipBoxWarning,
+    fxAudit: {
+      incomes: incomeAudit,
+      costs: costAudit,
+    },
     calculatedAt: params.calculatedAt,
   });
 }
