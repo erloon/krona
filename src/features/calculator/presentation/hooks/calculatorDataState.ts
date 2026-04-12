@@ -16,6 +16,12 @@ type ResolveIncomesScreenContentStateParams = {
 
 export type IncomesScreenContentState = 'loading' | 'error' | 'list' | 'empty' | 'no-results' | 'first-use';
 export type CostsScreenContentState = 'loading' | 'error' | 'list' | 'empty' | 'no-results' | 'first-use';
+export type DashboardScreenContentState =
+  | 'loading'
+  | 'error'
+  | 'first-use'
+  | 'empty-period'
+  | 'ready';
 
 export function hasBundleForSelectedPeriod(
   bundle: ReportingPeriodBundle | null,
@@ -102,4 +108,42 @@ export function resolveCostsScreenContentState({
   }
 
   return hasAnyRecordsInPeriod ? 'no-results' : 'empty';
+}
+
+type ResolveDashboardScreenContentStateParams = {
+  isLoading: boolean;
+  error: string | null;
+  hasLoadedSelectedPeriod: boolean;
+  hasAnyRecordsEver: boolean;
+  hasMeaningfulSnapshot: boolean;
+};
+
+export function resolveDashboardScreenContentState({
+  isLoading,
+  error,
+  hasLoadedSelectedPeriod,
+  hasAnyRecordsEver,
+  hasMeaningfulSnapshot,
+}: ResolveDashboardScreenContentStateParams): DashboardScreenContentState {
+  if (isLoading) {
+    return 'loading';
+  }
+
+  if (error) {
+    return 'error';
+  }
+
+  if (!hasLoadedSelectedPeriod) {
+    return 'loading';
+  }
+
+  if (!hasAnyRecordsEver) {
+    return 'first-use';
+  }
+
+  if (!hasMeaningfulSnapshot) {
+    return 'empty-period';
+  }
+
+  return 'ready';
 }

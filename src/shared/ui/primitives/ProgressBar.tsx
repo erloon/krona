@@ -4,35 +4,45 @@ import { StyleSheet, Text, View } from 'react-native';
 import { colors, radius, spacing, typography } from '@/shared/theme';
 
 type ProgressBarProps = {
-  labels: string[];
+  labels?: string[];
   activeIndex?: number;
+  progress?: number;
 };
 
-export function ProgressBar({ labels, activeIndex }: ProgressBarProps) {
+export function ProgressBar({ labels = [], activeIndex, progress }: ProgressBarProps) {
+  const clampedProgress =
+    typeof progress === 'number' ? Math.max(0, Math.min(1, progress)) : null;
+
   return (
     <View style={styles.container}>
       <View style={styles.track}>
-        {labels.map((label, index) => (
-          <View
-            key={label}
-            style={[
-              styles.segment,
-              index === activeIndex ? styles.segmentActive : null,
-              index < labels.length - 1 ? styles.segmentGap : null,
-            ]}
-          />
-        ))}
+        {clampedProgress !== null ? (
+          <View style={[styles.progressFill, { width: `${clampedProgress * 100}%` }]} />
+        ) : (
+          labels.map((label, index) => (
+            <View
+              key={label}
+              style={[
+                styles.segment,
+                index === activeIndex ? styles.segmentActive : null,
+                index < labels.length - 1 ? styles.segmentGap : null,
+              ]}
+            />
+          ))
+        )}
       </View>
-      <View style={styles.labels}>
-        {labels.map((label, index) => (
-          <Text
-            key={label}
-            style={[styles.label, index === activeIndex ? styles.labelActive : null]}
-          >
-            {label}
-          </Text>
-        ))}
-      </View>
+      {labels.length > 0 ? (
+        <View style={styles.labels}>
+          {labels.map((label, index) => (
+            <Text
+              key={label}
+              style={[styles.label, index === activeIndex ? styles.labelActive : null]}
+            >
+              {label}
+            </Text>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -53,6 +63,11 @@ const styles = StyleSheet.create({
     flex: 1,
     height: '100%',
     backgroundColor: 'rgba(0, 117, 222, 0.16)',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: radius.pill,
+    backgroundColor: colors.brand.primary,
   },
   segmentActive: {
     backgroundColor: colors.brand.primary,

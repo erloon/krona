@@ -61,8 +61,10 @@ export function calculateMonthlySnapshot(params: {
   );
   const vatPayableAmount = roundMoney(Math.max(0, outputVatAmount - deductibleInputVatAmount));
   const vatSurplusAmount = roundMoney(Math.max(0, deductibleInputVatAmount - outputVatAmount));
+  // Revenue is already stored as the net invoice base, so output VAT stays a separate
+  // settlement metric and must not be deducted again from the take-home result.
   const netToHandAmount = roundMoney(
-    revenueAmount - costAmount - zusAmount - healthContributionAmount - pitAmount - vatPayableAmount
+    revenueAmount - costAmount - zusAmount - healthContributionAmount - pitAmount
   );
 
   return createMonthlyCalculationSnapshot({

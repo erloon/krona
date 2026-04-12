@@ -61,13 +61,53 @@ export type CostSummaryViewModel = {
 export type DashboardViewModel = {
   monthLabel: string;
   statusLabel: string;
-  netToHandAmount: number;
-  revenueAmount: number;
-  costAmount: number;
-  pitAmount: number;
-  vatPayableAmount: number;
-  zusAmount: number;
-  healthContributionAmount: number;
+  welcomeTitle: string;
+  welcomeDescription: string;
+  profileInitials: string;
+  hero: {
+    eyebrow: string;
+    amount: number;
+    currency: 'PLN';
+  };
+  revenueCard: {
+    label: string;
+    amount: number;
+    currency: 'PLN';
+    route: '/incomes';
+  };
+  costCard: {
+    label: string;
+    amount: number;
+    currency: 'PLN';
+    route: '/costs';
+  };
+  burden: {
+    title: string;
+    detailLabel: string;
+    amount: number;
+    ratio: number;
+    percentageLabel: string;
+  };
+  breakdown: {
+    title: string;
+    summaryLabel: string;
+    summaryAmount: number;
+    rows: readonly {
+      key: 'pit' | 'vat' | 'zus' | 'health';
+      label: string;
+      amount: number;
+    }[];
+  };
+  thresholdContext: {
+    title: string;
+    detail: string;
+  };
+  actions: {
+    primaryLabel: string;
+    primaryRoute: '/add-income';
+    secondaryLabel: string;
+    secondaryRoute: '/add-cost';
+  };
 };
 
 export function buildIncomeSummaryViewModel(bundle: ReportingPeriodBundle): IncomeSummaryViewModel {
@@ -147,16 +187,81 @@ export function buildCostListItems(bundle: ReportingPeriodBundle): CostListItemV
 }
 
 export function buildDashboardViewModel(bundle: ReportingPeriodBundle): DashboardViewModel {
+  const burdenAmount = roundMoney(
+    bundle.calculationSnapshot.pitAmount +
+      bundle.calculationSnapshot.vatPayableAmount +
+      bundle.calculationSnapshot.zusAmount +
+      bundle.calculationSnapshot.healthContributionAmount
+  );
+  const burdenRatio =
+    bundle.calculationSnapshot.revenueAmount > 0
+      ? clampRatio(burdenAmount / bundle.calculationSnapshot.revenueAmount)
+      : 0;
+
   return {
     monthLabel: toBundlePeriodLabel(bundle),
-    statusLabel: 'Snapshot zapisany',
-    netToHandAmount: bundle.calculationSnapshot.netToHandAmount,
-    revenueAmount: bundle.calculationSnapshot.revenueAmount,
-    costAmount: bundle.calculationSnapshot.costAmount,
-    pitAmount: bundle.calculationSnapshot.pitAmount,
-    vatPayableAmount: bundle.calculationSnapshot.vatPayableAmount,
-    zusAmount: bundle.calculationSnapshot.zusAmount,
-    healthContributionAmount: bundle.calculationSnapshot.healthContributionAmount,
+    statusLabel: formatSnapshotStatusLabel(bundle.calculationSnapshot.calculatedAt),
+    welcomeTitle: 'Dzień dobry, Michał',
+    welcomeDescription: `Oto Twój bilans dla okresu ${toBundlePeriodLabel(bundle)}.`,
+    profileInitials: 'MK',
+    hero: {
+      eyebrow: `Na rękę · ${toBundlePeriodLabel(bundle)}`,
+      amount: bundle.calculationSnapshot.netToHandAmount,
+      currency: 'PLN',
+    },
+    revenueCard: {
+      label: 'Przychody',
+      amount: bundle.calculationSnapshot.revenueAmount,
+      currency: 'PLN',
+      route: '/incomes',
+    },
+    costCard: {
+      label: 'Koszty',
+      amount: bundle.calculationSnapshot.costAmount,
+      currency: 'PLN',
+      route: '/costs',
+    },
+    burden: {
+      title: 'Obciążenie całkowite',
+      detailLabel: formatCurrencyAmount(burdenAmount),
+      amount: burdenAmount,
+      ratio: burdenRatio,
+      percentageLabel: `${formatPercentage(burdenRatio)} przychodu`,
+    },
+    breakdown: {
+      title: 'Podatki i składki',
+      summaryLabel: 'Suma obciążeń',
+      summaryAmount: burdenAmount,
+      rows: [
+        {
+          key: 'pit',
+          label: 'PIT',
+          amount: bundle.calculationSnapshot.pitAmount,
+        },
+        {
+          key: 'vat',
+          label: 'VAT',
+          amount: bundle.calculationSnapshot.vatPayableAmount,
+        },
+        {
+          key: 'zus',
+          label: 'ZUS',
+          amount: bundle.calculationSnapshot.zusAmount,
+        },
+        {
+          key: 'health',
+          label: 'Zdrowotna',
+          amount: bundle.calculationSnapshot.healthContributionAmount,
+        },
+      ],
+    },
+    thresholdContext: buildThresholdContext(bundle),
+    actions: {
+      primaryLabel: 'Dodaj przychód',
+      primaryRoute: '/add-income',
+      secondaryLabel: 'Dodaj koszt',
+      secondaryRoute: '/add-cost',
+    },
   };
 }
 
@@ -267,4 +372,75 @@ const amountFormatter = new Intl.NumberFormat('pl-PL', {
 
 function roundMoney(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+function clampRatio(value: number) {
+  return Math.max(0, Math.min(1, value));
+}
+
+function formatPercentage(value: number) {
+  return `${Math.round(value * 100)}%`;
+}
+
+function formatSnapshotStatusLabel(calculatedAt: string) {
+  const parsedDate = new Date(calculatedAt);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return 'Snapshot zapisany';
+  }
+
+  return `Snapshot z ${new Intl.DateTimeFormat('pl-PL', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(parsedDate)}`;
+}
+
+function buildThresholdContext(
+  bundle: ReportingPeriodBundle
+): DashboardViewModel['thresholdContext'] {
+  const snapshot = bundle.calculationSnapshot;
+  const settings = bundle.settingsSnapshot;
+  const annualizedRevenue = roundMoney(snapshot.revenueAmount * 12);
+  const annualizedTaxableBase = roundMoney(
+    Math.max(0, snapshot.revenueAmount - snapshot.deductibleCostAmount - snapshot.zusAmount) * 12
+  );
+
+  switch (settings.taxationForm) {
+    case 'SCALE': {
+      const remainingToThreshold = Math.max(0, 120000 - annualizedTaxableBase);
+
+      if (annualizedTaxableBase >= 120000) {
+        return {
+          title: 'Próg skali podatkowej',
+          detail: `Szacowany roczny dochód ${formatCurrencyAmount(annualizedTaxableBase)} PLN wskazuje wejście w próg 32%.`,
+        };
+      }
+
+      return {
+        title: 'Próg skali podatkowej',
+        detail: `Do progu 120 000 PLN brakuje ${formatCurrencyAmount(remainingToThreshold)} PLN przy utrzymaniu tego miesiąca.`,
+      };
+    }
+    case 'LUMP_SUM': {
+      const tier =
+        annualizedRevenue > 300000
+          ? 'powyżej 300 000 PLN'
+          : annualizedRevenue > 60000
+            ? '60 000 - 300 000 PLN'
+            : 'poniżej 60 000 PLN';
+
+      return {
+        title: 'Próg zdrowotnej dla ryczałtu',
+        detail: `Szacowany roczny przychód ${formatCurrencyAmount(annualizedRevenue)} PLN plasuje okres w przedziale ${tier}.`,
+      };
+    }
+    default:
+      return {
+        title: 'Wynik roczny',
+        detail: `Przy utrzymaniu tego miesiąca rocznie zostaje około ${formatCurrencyAmount(
+          roundMoney(snapshot.netToHandAmount * 12)
+        )} PLN na rękę.`,
+      };
+  }
 }
