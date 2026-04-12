@@ -30,6 +30,25 @@ Lint the project:
 npm run lint
 ```
 
+Recommended day-to-day workflow:
+
+```bash
+npm run dev
+npm run dev:client
+npm run typecheck
+npm run doctor
+```
+
+Internal build and update commands:
+
+```bash
+npm run build:android:development
+npm run build:android:preview
+npm run update:preview
+```
+
+See [docs/development-workflow.md](/C:/Playground/krona/docs/development-workflow.md) for the full Expo development workflow used in this repository.
+
 ## Structure
 
 - `src/app` contains route entrypoints only.
