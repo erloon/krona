@@ -59,12 +59,18 @@ export function IncomesScreen() {
   const [draftMonth, setDraftMonth] = React.useState(String(selectedPeriod.month));
   const [deleteConfirmationVisible, setDeleteConfirmationVisible] = React.useState(false);
   const [pendingDeleteIncomeId, setPendingDeleteIncomeId] = React.useState<string | null>(null);
+  const [pendingDuplicateIncomeId, setPendingDuplicateIncomeId] = React.useState<string | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
 
   const isLastIncome = bundle?.incomes.length === 1;
-  const incomeListItems = hasLoadedSelectedPeriod && bundle ? buildIncomeListItems(bundle) : [];
-  const incomeListSummary =
-    hasLoadedSelectedPeriod && bundle ? buildIncomeSummaryViewModel(bundle) : null;
+  const incomeListItems = React.useMemo(
+    () => (hasLoadedSelectedPeriod && bundle ? buildIncomeListItems(bundle) : []),
+    [bundle, hasLoadedSelectedPeriod]
+  );
+  const incomeListSummary = React.useMemo(
+    () => (hasLoadedSelectedPeriod && bundle ? buildIncomeSummaryViewModel(bundle) : null),
+    [bundle, hasLoadedSelectedPeriod]
+  );
   const selectedPeriodLabel = React.useMemo(
     () => getSelectedPeriodLabel(selectedPeriod),
     [selectedPeriod]
@@ -84,6 +90,7 @@ export function IncomesScreen() {
   const hasActiveFilters = hasActiveIncomeListFilters(filters);
   const hasSearchQuery = searchQuery.trim().length > 0;
   const listStatusLabel = buildListStatusLabel(searchQuery, queryResult.appliedFilterCount);
+  const isMutatingIncome = isDeleting || pendingDuplicateIncomeId !== null;
   const shouldShowListSection =
     contentState === 'list' ||
     contentState === 'no-results' ||
@@ -140,6 +147,8 @@ export function IncomesScreen() {
   }
 
   async function handleDuplicateIncome(id: string) {
+    setPendingDuplicateIncomeId(id);
+
     try {
       await duplicateIncome(id);
     } catch (saveError) {
@@ -147,6 +156,8 @@ export function IncomesScreen() {
         'Nie udało się zduplikować przychodu',
         saveError instanceof Error ? saveError.message : 'Spróbuj ponownie.'
       );
+    } finally {
+      setPendingDuplicateIncomeId(null);
     }
   }
 
@@ -185,7 +196,7 @@ export function IncomesScreen() {
     <View style={styles.screen}>
       <ScreenContainer contentContainerStyle={styles.content}>
         <AppTopBar
-          leadingContent={<IconButton accessibilityLabel="Menu" icon="menu" />}
+          leadingContent={<IconButton accessibilityHint="Otwiera nawigację aplikacji." accessibilityLabel="Otwórz menu" icon="menu" />}
           title="KRONA"
           trailingContent={
             <View style={styles.avatar}>
@@ -198,6 +209,7 @@ export function IncomesScreen() {
           description="Przychody i snapshot miesięczny są zapisane pod wybranym okresem raportowym."
           onNextPress={goToNextPeriod}
           onPreviousPress={goToPreviousPeriod}
+          navigationDisabled={isLoading || isMutatingIncome}
           periodLabel={selectedPeriodLabel}
           statusLabel={isLoading ? 'Ładowanie okresu' : undefined}
           title="Okres raportowy"
@@ -216,6 +228,7 @@ export function IncomesScreen() {
         ) : null}
 
         <SearchField
+          editable={!isMutatingIncome}
           onChangeText={setSearchQuery}
           placeholder="Szukaj klienta lub faktury..."
           value={searchQuery}
@@ -244,14 +257,20 @@ export function IncomesScreen() {
               </View>
               <View style={styles.monthActions}>
                 <IconButton
-                  accessibilityLabel="Filtruj przychody"
+                  accessibilityHint="Otwiera filtry listy przychodów."
+                  accessibilityLabel={
+                    hasActiveFilters ? 'Filtruj przychody, aktywne filtry' : 'Filtruj przychody'
+                  }
                   color={hasActiveFilters ? colors.brand.primary : colors.text.secondary}
+                  disabled={isMutatingIncome}
                   filled={hasActiveFilters}
                   icon="filter-variant"
                   onPress={handleFilterPress}
                 />
                 <IconButton
-                  accessibilityLabel="Wybierz miesiąc"
+                  accessibilityHint="Otwiera wybór okresu raportowego."
+                  accessibilityLabel="Wybierz okres raportowy"
+                  disabled={isMutatingIncome}
                   icon="calendar-month-outline"
                   onPress={handleCalendarPress}
                 />
@@ -271,7 +290,7 @@ export function IncomesScreen() {
                   actionLabel="Dodaj pierwszy przychód"
                   description="Zacznij śledzić swoje przychody B2B. Dodaj fakturę lub wynagrodzenie, aby zobaczyć podsumowanie miesięczne."
                   onAction={handleAddIncome}
-                  title="Witaj w Krona"
+                  title="Witaj w Kronie"
                   variant="first-use"
                 />
               </View>
@@ -287,14 +306,16 @@ export function IncomesScreen() {
                 {queryResult.items.map((item) => (
                   <IncomeListItemCard
                     amount={formatCurrencyAmount(item.amount)}
+                    actionDisabled={isMutatingIncome}
+                    clientName={item.clientName}
                     currency={item.currency}
                     deleteDisabled={isLoading || isDeleting}
+                    duplicateLoading={pendingDuplicateIncomeId === item.id}
+                    invoiceNumber={item.invoiceNumber}
                     key={item.id}
-                    metadata={item.metadata}
                     onDelete={() => handleDeleteIncome(item.id)}
                     onDuplicate={() => handleDuplicateIncome(item.id)}
                     onEdit={() => handleEditIncome(item.id)}
-                    title={item.title}
                     vatLabel={item.vatLabel}
                     warnings={item.warnings}
                   />
@@ -313,7 +334,9 @@ export function IncomesScreen() {
       </ScreenContainer>
 
       <FloatingActionButton
+        accessibilityHint="Otwiera formularz dodawania nowego przychodu."
         accessibilityLabel="Dodaj przychód"
+        disabled={isMutatingIncome}
         onPress={handleAddIncome}
         style={styles.fab}
       />
@@ -384,6 +407,7 @@ const styles = StyleSheet.create({
   monthHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: spacing.md,
     paddingTop: spacing.xs,
@@ -404,6 +428,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
+    marginLeft: 'auto',
   },
   cards: {
     gap: spacing.md,
@@ -431,10 +456,27 @@ function buildListStatusLabel(searchQuery: string, appliedFilterCount: number) {
   }
 
   if (appliedFilterCount > 0) {
-    bits.push(appliedFilterCount === 1 ? '1 aktywny filtr' : `${appliedFilterCount} aktywne filtry`);
+    bits.push(formatAppliedFiltersLabel(appliedFilterCount));
   }
 
   return bits.join(' · ');
+}
+
+function formatAppliedFiltersLabel(appliedFilterCount: number) {
+  if (appliedFilterCount === 1) {
+    return '1 aktywny filtr';
+  }
+
+  const remainderTen = appliedFilterCount % 10;
+  const remainderHundred = appliedFilterCount % 100;
+  const usesFewForm =
+    remainderTen >= 2 &&
+    remainderTen <= 4 &&
+    (remainderHundred < 12 || remainderHundred > 14);
+
+  return usesFewForm
+    ? `${appliedFilterCount} aktywne filtry`
+    : `${appliedFilterCount} aktywnych filtrów`;
 }
 
 function buildNoResultsDescription(searchQuery: string, hasActiveFilters: boolean) {

@@ -13,6 +13,7 @@ type ReportingPeriodHeaderProps = {
   description: string;
   onPreviousPress: () => void;
   onNextPress: () => void;
+  navigationDisabled?: boolean;
 };
 
 export function ReportingPeriodHeader({
@@ -22,6 +23,7 @@ export function ReportingPeriodHeader({
   description,
   onPreviousPress,
   onNextPress,
+  navigationDisabled = false,
 }: ReportingPeriodHeaderProps) {
   return (
     <SurfaceCard>
@@ -38,12 +40,16 @@ export function ReportingPeriodHeader({
       <View style={styles.actions}>
         <IconButton
           accessibilityLabel="Poprzedni miesiąc"
+          accessibilityHint="Przełącza widok na poprzedni okres raportowy."
+          disabled={navigationDisabled}
           filled
           icon="chevron-left"
           onPress={onPreviousPress}
         />
         <IconButton
           accessibilityLabel="Następny miesiąc"
+          accessibilityHint="Przełącza widok na następny okres raportowy."
+          disabled={navigationDisabled}
           filled
           icon="chevron-right"
           onPress={onNextPress}

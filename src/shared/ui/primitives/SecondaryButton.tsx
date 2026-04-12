@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -16,7 +17,10 @@ type SecondaryButtonProps = {
   onPress?: ((event: GestureResponderEvent) => void) | undefined;
   disabled?: boolean;
   fullWidth?: boolean;
+  loading?: boolean;
   leadingAccessory?: React.ReactNode;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -25,25 +29,39 @@ export function SecondaryButton({
   onPress,
   disabled = false,
   fullWidth = true,
+  loading = false,
   leadingAccessory,
+  accessibilityLabel,
+  accessibilityHint,
   style,
 }: SecondaryButtonProps) {
+  const isDisabled = disabled || loading;
+
   return (
     <Pressable
+      accessibilityHint={accessibilityHint}
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityRole="button"
-      disabled={disabled}
+      accessibilityState={{ busy: loading, disabled: isDisabled }}
+      disabled={isDisabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
         fullWidth && styles.fullWidth,
-        pressed && !disabled ? styles.pressed : null,
-        disabled ? styles.disabled : null,
+        pressed && !isDisabled ? styles.pressed : null,
+        isDisabled ? styles.disabled : null,
         style,
       ]}
     >
       <View style={styles.content}>
-        {leadingAccessory ? <View style={styles.accessory}>{leadingAccessory}</View> : null}
-        <Text style={styles.label}>{label}</Text>
+        {loading ? (
+          <ActivityIndicator color={colors.text.secondary} size="small" />
+        ) : (
+          <>
+            {leadingAccessory ? <View style={styles.accessory}>{leadingAccessory}</View> : null}
+            <Text style={styles.label}>{label}</Text>
+          </>
+        )}
       </View>
     </Pressable>
   );
@@ -68,7 +86,7 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.985 }],
   },
   disabled: {
-    opacity: 0.9,
+    opacity: 0.55,
   },
   content: {
     flexDirection: 'row',

@@ -16,6 +16,8 @@ export function SearchField(props: SearchFieldProps) {
         style={styles.icon}
       />
       <TextInput
+        accessibilityHint="Wpisz nazwę klienta albo numer faktury, aby zawęzić listę."
+        accessibilityLabel="Szukaj przychodów"
         placeholderTextColor={colors.text.muted}
         style={styles.input}
         {...props}

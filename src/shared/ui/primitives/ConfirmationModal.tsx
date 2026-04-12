@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  ActivityIndicator,
   Modal,
   Pressable,
   StyleSheet,
@@ -44,6 +43,7 @@ export function ConfirmationModal({
 }: ConfirmationModalProps) {
   return (
     <Modal
+      accessibilityViewIsModal
       animationType="fade"
       onRequestClose={loading ? undefined : onCancel}
       statusBarTranslucent
@@ -63,7 +63,13 @@ export function ConfirmationModal({
           <View style={styles.buttonRow}>
             <SecondaryButton disabled={loading} label={cancelLabel} onPress={onCancel} style={styles.button} />
             {destructive ? (
-              <DestructiveButton label={confirmLabel} loading={loading} onPress={onConfirm} style={styles.button} />
+              <DestructiveButton
+                accessibilityHint="Trwale usuwa rekord z bieżącego okresu raportowego."
+                label={confirmLabel}
+                loading={loading}
+                onPress={onConfirm}
+                style={styles.button}
+              />
             ) : (
               <PrimaryButton label={confirmLabel} loading={loading} onPress={onConfirm} style={styles.button} />
             )}

@@ -10,18 +10,29 @@ type RecordActionRowProps = {
   onEdit?: () => void;
   onDuplicate?: () => void;
   onDelete?: () => void;
+  actionDisabled?: boolean;
+  duplicateLoading?: boolean;
   deleteDisabled?: boolean;
+  title?: string;
 };
 
 export function RecordActionRow({
   onEdit,
   onDuplicate,
   onDelete,
+  actionDisabled = false,
+  duplicateLoading = false,
   deleteDisabled = false,
+  title,
 }: RecordActionRowProps) {
+  const deleteLabel = title ? `Usuń przychód ${title}` : 'Usuń przychód';
+
   return (
     <View style={styles.row}>
       <SecondaryButton
+        accessibilityHint="Otwiera formularz edycji tego przychodu."
+        accessibilityLabel={title ? `Edytuj przychód ${title}` : 'Edytuj przychód'}
+        disabled={actionDisabled}
         fullWidth
         label="EDYTUJ"
         leadingAccessory={
@@ -31,18 +42,23 @@ export function RecordActionRow({
         style={styles.actionButton}
       />
       <SecondaryButton
+        accessibilityHint="Tworzy kopię tego przychodu w bieżącym miesiącu."
+        accessibilityLabel={title ? `Duplikuj przychód ${title}` : 'Duplikuj przychód'}
+        disabled={actionDisabled}
         fullWidth
         label="DUPLIKUJ"
         leadingAccessory={
           <MaterialCommunityIcons color={colors.text.primary} name="content-copy" size={16} />
         }
+        loading={duplicateLoading}
         onPress={onDuplicate}
         style={styles.actionButton}
       />
       <IconButton
-        accessibilityLabel="Usuń przychód"
-        color={colors.text.muted}
-        disabled={deleteDisabled}
+        accessibilityHint="Otwiera potwierdzenie usunięcia tego przychodu."
+        accessibilityLabel={deleteLabel}
+        color={colors.brand.destructive}
+        disabled={actionDisabled || deleteDisabled}
         icon="trash-can-outline"
         onPress={onDelete}
         style={styles.deleteButton}
@@ -64,7 +80,7 @@ const styles = StyleSheet.create({
   deleteButton: {
     alignSelf: 'stretch',
     borderWidth: 1,
-    borderColor: colors.border.input,
-    backgroundColor: colors.background.surface,
+    borderColor: 'rgba(220, 38, 38, 0.18)',
+    backgroundColor: 'rgba(220, 38, 38, 0.06)',
   },
 });

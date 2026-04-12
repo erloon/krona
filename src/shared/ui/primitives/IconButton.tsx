@@ -15,6 +15,7 @@ type IconButtonProps = {
   icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
   onPress?: ((event: GestureResponderEvent) => void) | undefined;
   accessibilityLabel?: string;
+  accessibilityHint?: string;
   color?: string;
   size?: number;
   filled?: boolean;
@@ -26,6 +27,7 @@ export function IconButton({
   icon,
   onPress,
   accessibilityLabel,
+  accessibilityHint,
   color = colors.text.secondary,
   size = 20,
   filled = false,
@@ -34,9 +36,12 @@ export function IconButton({
 }: IconButtonProps) {
   return (
     <Pressable
+      accessibilityHint={accessibilityHint}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
+      accessibilityState={{ disabled }}
       disabled={disabled}
+      hitSlop={4}
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
@@ -55,8 +60,8 @@ export function IconButton({
 
 const styles = StyleSheet.create({
   base: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.standard,

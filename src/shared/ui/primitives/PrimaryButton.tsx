@@ -20,6 +20,8 @@ type PrimaryButtonProps = {
   fullWidth?: boolean;
   loading?: boolean;
   leadingAccessory?: React.ReactNode;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -30,13 +32,18 @@ export function PrimaryButton({
   fullWidth = true,
   loading = false,
   leadingAccessory,
+  accessibilityLabel,
+  accessibilityHint,
   style,
 }: PrimaryButtonProps) {
   const isDisabled = disabled || loading;
 
   return (
     <Pressable
+      accessibilityHint={accessibilityHint}
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityRole="button"
+      accessibilityState={{ busy: loading, disabled: isDisabled }}
       disabled={isDisabled}
       onPress={onPress}
       style={({ pressed }) => [

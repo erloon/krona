@@ -1,5 +1,5 @@
 import type { Cost } from '@/features/calculator/domain/entities/cost';
-import type { Income } from '@/features/calculator/domain/entities/income';
+import { resolveIncomeMonthlyNetAmount, type Income } from '@/features/calculator/domain/entities/income';
 import type { ReportingPeriodBundle } from '@/features/calculator/domain/entities/reporting-period-bundle';
 import {
   createMonthlyReportingPeriod,
@@ -12,8 +12,8 @@ import {
 
 export type IncomeListItemViewModel = {
   id: string;
-  title: string;
-  metadata: string;
+  clientName: string;
+  invoiceNumber: string;
   amount: number;
   currency: Income['currency'];
   vatRate: Income['vatRate'];
@@ -71,14 +71,13 @@ export function buildIncomeSummaryViewModel(bundle: ReportingPeriodBundle): Inco
 
 export function buildIncomeListItems(bundle: ReportingPeriodBundle): IncomeListItemViewModel[] {
   return bundle.incomes.map((income) => {
-    const metadata = income.description || fallbackIncomeMetadata(income);
     const validationResult = validateIncomeEntityBusinessRules(income);
 
     return {
       id: income.id,
-      title: income.label,
-      metadata,
-      amount: income.baseAmount,
+      clientName: income.clientName || income.label,
+      invoiceNumber: income.invoiceNumber || fallbackIncomeInvoiceNumber(income),
+      amount: resolveIncomeMonthlyNetAmount(income),
       currency: income.currency,
       vatRate: income.vatRate,
       vatLabel: toIncomeVatLabel(income),
@@ -90,7 +89,6 @@ export function buildIncomeListItems(bundle: ReportingPeriodBundle): IncomeListI
         income.description,
         income.clientName,
         income.invoiceNumber,
-        metadata,
       ]
         .filter(Boolean)
         .join(' '),
@@ -166,13 +164,7 @@ function toCostCategoryLabel(cost: Cost) {
   }
 }
 
-function fallbackIncomeMetadata(income: Income) {
-  const sourceBits = [income.clientName, income.invoiceNumber].filter(Boolean);
-
-  if (sourceBits.length) {
-    return sourceBits.join(' · ');
-  }
-
+function fallbackIncomeInvoiceNumber(income: Income) {
   return `${toIncomeBillingTypeLabel(income)} · ${income.createdAt.slice(0, 10)}`;
 }
 

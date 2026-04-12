@@ -16,9 +16,6 @@ function createShadow(
   elevation: number
 ): ViewStyle {
   if (Platform.OS === 'web') {
-    const alpha = Math.round(config.opacity * 255)
-      .toString(16)
-      .padStart(2, '0');
     return {
       boxShadow: `0 ${config.offsetY}px ${config.blur}px rgba(0, 0, 0, ${config.opacity})`,
     } as ViewStyle;

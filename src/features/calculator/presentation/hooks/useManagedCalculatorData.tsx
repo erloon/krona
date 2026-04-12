@@ -77,7 +77,7 @@ export function ManagedCalculatorDataProvider({
         if (!isCancelled) {
           setHasAnyRecordsEver(anyRecords);
         }
-      } catch (error) {
+      } catch {
         // Ignore errors during this check, just keep as false
         if (!isCancelled) {
           setHasAnyRecordsEver(false);
@@ -110,7 +110,7 @@ export function ManagedCalculatorDataProvider({
 
       setBundle(nextBundle);
       setLoadedPeriod(period);
-      
+
       // Update hasAnyRecordsEver if we now have any records
       if (!hasAnyRecordsEver && nextBundle.incomes.length > 0) {
         setHasAnyRecordsEver(true);
@@ -130,7 +130,7 @@ export function ManagedCalculatorDataProvider({
         setIsLoading(false);
       }
     }
-  }, [calculatorRepository, selectedPeriod, settingsRepository, hasAnyRecordsEver]);
+  }, [calculatorRepository, hasAnyRecordsEver, selectedPeriod, settingsRepository]);
 
   useEffect(() => {
     setIsLoading(true);

@@ -75,7 +75,6 @@ export type IncomeValidationInput = Readonly<{
 }>;
 
 // Validation constants from functional specifications
-const MAX_REASONABLE_MONTHLY_REVENUE_PLN = 1_000_000;
 const MAX_WORKING_DAYS_PER_MONTH = 31;
 const MAX_HOURS_PER_DAY = 24;
 const WARNING_WORKING_DAYS_THRESHOLD = 26; // Above this is unusual
@@ -346,9 +345,6 @@ function validateCrossFieldWarnings(
 ): void {
   // Monthly mode with very low workload might indicate user misunderstanding
   if (input.billingType === 'MONTHLY') {
-    const effectiveDailyRate = input.baseAmount / input.workingDaysPerMonth;
-    const effectiveHourlyRate = effectiveDailyRate / input.workingHoursPerDay;
-
     // If monthly amount seems unusually high relative to typical workload
     if (input.baseAmount > 50_000 && input.workingDaysPerMonth < 10) {
       warnings.push({

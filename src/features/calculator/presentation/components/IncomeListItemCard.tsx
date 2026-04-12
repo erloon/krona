@@ -9,8 +9,8 @@ import { ValidationWarningsList } from '@/shared/ui/primitives/ValidationWarning
 import { RecordActionRow } from './RecordActionRow';
 
 type IncomeListItemCardProps = {
-  title: string;
-  metadata: string;
+  clientName: string;
+  invoiceNumber: string;
   amount: string;
   currency: string;
   vatLabel: string;
@@ -18,12 +18,14 @@ type IncomeListItemCardProps = {
   onEdit?: () => void;
   onDuplicate?: () => void;
   onDelete?: () => void;
+  actionDisabled?: boolean;
+  duplicateLoading?: boolean;
   deleteDisabled?: boolean;
 };
 
 export function IncomeListItemCard({
-  title,
-  metadata,
+  clientName,
+  invoiceNumber,
   amount,
   currency,
   vatLabel,
@@ -31,14 +33,22 @@ export function IncomeListItemCard({
   onEdit,
   onDuplicate,
   onDelete,
+  actionDisabled = false,
+  duplicateLoading = false,
   deleteDisabled = false,
 }: IncomeListItemCardProps) {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
         <View style={styles.copy}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.metadata}>{metadata}</Text>
+          <View style={styles.metaRow}>
+            <Text style={styles.metaLabel}>KLIENT</Text>
+            <Text style={styles.metaValue}>{clientName}</Text>
+          </View>
+          <View style={styles.metaRow}>
+            <Text style={styles.metaLabel}>NUMER</Text>
+            <Text style={styles.metaValue}>{invoiceNumber}</Text>
+          </View>
         </View>
 
         <View style={styles.amountWrap}>
@@ -54,7 +64,15 @@ export function IncomeListItemCard({
         <ValidationWarningsList warnings={warnings.map((w) => w.message)} />
       ) : null}
 
-      <RecordActionRow deleteDisabled={deleteDisabled} onDelete={onDelete} onDuplicate={onDuplicate} onEdit={onEdit} />
+      <RecordActionRow
+        actionDisabled={actionDisabled}
+        deleteDisabled={deleteDisabled}
+        duplicateLoading={duplicateLoading}
+        onDelete={onDelete}
+        onDuplicate={onDuplicate}
+        onEdit={onEdit}
+        title={clientName}
+      />
     </View>
   );
 }
@@ -74,27 +92,32 @@ const styles = StyleSheet.create({
   },
   copy: {
     flex: 1,
-    gap: spacing.xs,
+    minWidth: 0,
+    gap: spacing.sm,
   },
-  title: {
+  metaRow: {
+    gap: spacing.xxs,
+  },
+  metaLabel: {
+    ...typography.caption,
+    color: colors.text.subtle,
+  },
+  metaValue: {
     ...typography.bodyMedium,
     color: colors.text.primary,
+    flexShrink: 1,
     fontWeight: '700',
-  },
-  metadata: {
-    ...typography.bodySmall,
-    color: colors.text.secondary,
   },
   amountWrap: {
     alignItems: 'flex-end',
+    flexShrink: 0,
     gap: spacing.xs,
-    maxWidth: '42%',
   },
   amountRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'flex-end',
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
     gap: spacing.xs,
   },
   amount: {

@@ -76,8 +76,8 @@ function createItems(): IncomeListItemViewModel[] {
   return [
     {
       id: 'a',
-      title: 'Monthly Retainer',
-      metadata: 'Acme Corp · FV/03/2026',
+      clientName: 'Acme Corp',
+      invoiceNumber: 'FV/03/2026',
       amount: 12000,
       currency: 'PLN',
       vatRate: '23',
@@ -90,8 +90,8 @@ function createItems(): IncomeListItemViewModel[] {
     },
     {
       id: 'b',
-      title: 'Design Sprint',
-      metadata: 'Nebula Ltd. · INV-44',
+      clientName: 'Nebula Ltd.',
+      invoiceNumber: 'INV-44',
       amount: 9500,
       currency: 'EUR',
       vatRate: '8',
@@ -104,8 +104,8 @@ function createItems(): IncomeListItemViewModel[] {
     },
     {
       id: 'c',
-      title: 'Platform Delivery',
-      metadata: 'Roadmap phase',
+      clientName: 'Fintech Horizon',
+      invoiceNumber: 'FIN-55',
       amount: 18000,
       currency: 'PLN',
       vatRate: '23',

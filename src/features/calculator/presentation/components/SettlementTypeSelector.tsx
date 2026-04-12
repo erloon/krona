@@ -11,12 +11,12 @@ type SettlementTypeSelectorProps = {
   onValueChange: (value: IncomeBillingType) => void;
 };
 
-const options: Array<{
+const options: {
   value: IncomeBillingType;
   title: string;
   description: string;
   icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
-}> = [
+}[] = [
   {
     value: 'MONTHLY',
     title: 'Miesięczny',

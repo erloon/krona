@@ -19,6 +19,8 @@ type DestructiveButtonProps = {
   fullWidth?: boolean;
   loading?: boolean;
   leadingAccessory?: React.ReactNode;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -29,13 +31,18 @@ export function DestructiveButton({
   fullWidth = true,
   loading = false,
   leadingAccessory,
+  accessibilityLabel,
+  accessibilityHint,
   style,
 }: DestructiveButtonProps) {
   const isDisabled = disabled || loading;
 
   return (
     <Pressable
+      accessibilityHint={accessibilityHint}
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityRole="button"
+      accessibilityState={{ busy: loading, disabled: isDisabled }}
       disabled={isDisabled}
       onPress={onPress}
       style={({ pressed }) => [
