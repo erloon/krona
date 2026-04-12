@@ -1,27 +1,26 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { startupSessionActions } from '@/core/store/startup-session';
 import { colors, layout, spacing } from '@/shared/theme';
+import { InfoBanner } from '@/shared/ui/primitives/InfoBanner';
 
 import { AuthCard } from '../components/AuthCard';
 import { GoogleSignInButton } from '../components/GoogleSignInButton';
+import { useGoogleSignIn } from '../hooks/useGoogleSignIn';
 
 export function LoginScreen() {
-  const router = useRouter();
-
-  function handleSignIn() {
-    startupSessionActions.setAuthenticated(true);
-    router.replace('/(app)/dashboard');
-  }
+  const { error, isPending, signIn } = useGoogleSignIn();
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.screen}>
         <View style={styles.content}>
-          <AuthCard action={<GoogleSignInButton onPress={handleSignIn} />} />
+          <AuthCard
+            action={<GoogleSignInButton disabled={isPending} loading={isPending} onPress={signIn} />}
+            statusMessage="Logowanie zapisuje lokalną sesję na tym urządzeniu."
+          />
+          {error ? <InfoBanner message={error} /> : null}
         </View>
       </View>
     </SafeAreaView>
@@ -45,5 +44,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: spacing.lg,
   },
 });

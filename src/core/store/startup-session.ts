@@ -1,16 +1,22 @@
 import { useSyncExternalStore } from 'react';
 
+import type { StoredAuthSession } from '@/features/auth/shared/types/auth';
+
 export type StartupPhase = 'splash' | 'auth' | 'app';
 
 type StartupSessionState = {
   hasCompletedSplash: boolean;
+  isHydrating: boolean;
   isAuthenticated: boolean;
+  session: StoredAuthSession | null;
   phase: StartupPhase;
 };
 
 const initialState: StartupSessionState = {
   hasCompletedSplash: false,
+  isHydrating: true,
   isAuthenticated: false,
+  session: null,
   phase: 'splash',
 };
 
@@ -48,14 +54,36 @@ export const startupSessionActions = {
     setState((currentState) => ({
       ...currentState,
       hasCompletedSplash: true,
-      phase: currentState.isAuthenticated ? 'app' : 'auth',
+      phase: resolvePhase({
+        hasCompletedSplash: true,
+        isHydrating: currentState.isHydrating,
+        isAuthenticated: currentState.isAuthenticated,
+      }),
     }));
   },
-  setAuthenticated(isAuthenticated: boolean) {
+  finishHydration(session: StoredAuthSession | null) {
     setState((currentState) => ({
       ...currentState,
-      isAuthenticated,
-      phase: currentState.hasCompletedSplash ? (isAuthenticated ? 'app' : 'auth') : 'splash',
+      isHydrating: false,
+      session,
+      isAuthenticated: Boolean(session),
+      phase: resolvePhase({
+        hasCompletedSplash: currentState.hasCompletedSplash,
+        isHydrating: false,
+        isAuthenticated: Boolean(session),
+      }),
+    }));
+  },
+  setSession(session: StoredAuthSession | null) {
+    setState((currentState) => ({
+      ...currentState,
+      session,
+      isAuthenticated: Boolean(session),
+      phase: resolvePhase({
+        hasCompletedSplash: currentState.hasCompletedSplash,
+        isHydrating: currentState.isHydrating,
+        isAuthenticated: Boolean(session),
+      }),
     }));
   },
   reset() {
@@ -63,3 +91,11 @@ export const startupSessionActions = {
     emit();
   },
 };
+
+function resolvePhase(input: Pick<StartupSessionState, 'hasCompletedSplash' | 'isHydrating' | 'isAuthenticated'>): StartupPhase {
+  if (!input.hasCompletedSplash || input.isHydrating) {
+    return 'splash';
+  }
+
+  return input.isAuthenticated ? 'app' : 'auth';
+}

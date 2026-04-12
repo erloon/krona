@@ -10,7 +10,8 @@ import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-import { startupSessionActions } from '@/core/store/startup-session';
+import { startupSessionActions, useStartupSession } from '@/core/store/startup-session';
+import { authSessionService } from '@/features/auth/application/services/authSessionService';
 import { colors, radius, spacing, typography } from '@/shared/theme';
 import { ScreenContainer } from '@/shared/ui/layout/ScreenContainer';
 import { AppHeaderAvatar } from '@/shared/ui/primitives/AppHeaderAvatar';
@@ -40,6 +41,7 @@ import {
 
 export function SettingsScreen() {
   const router = useRouter();
+  const { session } = useStartupSession();
   const {
     clearDatabase,
     error,
@@ -51,12 +53,19 @@ export function SettingsScreen() {
     updateSettings,
   } = useSettings();
   const [isResetConfirmationVisible, setIsResetConfirmationVisible] = React.useState(false);
+  const [isSigningOut, setIsSigningOut] = React.useState(false);
 
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
 
-  function handleLogout() {
-    startupSessionActions.setAuthenticated(false);
-    router.replace('/(auth)/login');
+  async function handleLogout() {
+    try {
+      setIsSigningOut(true);
+      await authSessionService.signOut();
+      startupSessionActions.setSession(null);
+      router.replace('/(auth)/login');
+    } finally {
+      setIsSigningOut(false);
+    }
   }
 
   async function handleConfirmClearDatabase() {
@@ -96,6 +105,9 @@ export function SettingsScreen() {
         <Text style={styles.screenSubtitle}>
           Konfiguracja profilu, podatków i preferencji
         </Text>
+        {session ? (
+          <Text style={styles.loggedInAs}>Zalogowano jako {session.user.email}</Text>
+        ) : null}
       </View>
 
       {error ? (
@@ -359,9 +371,16 @@ export function SettingsScreen() {
           onPress={() => setIsResetConfirmationVisible(true)}
           style={styles.clearDataButton}
         />
-        <Pressable onPress={handleLogout} style={styles.logoutButton}>
+        <Pressable
+          accessibilityState={{ busy: isSigningOut, disabled: isSigningOut }}
+          disabled={isSigningOut}
+          onPress={handleLogout}
+          style={[styles.logoutButton, isSigningOut ? styles.logoutButtonDisabled : null]}
+        >
           <MaterialCommunityIcons color={colors.text.primary} name="logout" size={18} />
-          <Text style={styles.logoutLabel}>Wyloguj się</Text>
+          <Text style={styles.logoutLabel}>
+            {isSigningOut ? 'Wylogowywanie...' : 'Wyloguj się'}
+          </Text>
         </Pressable>
         <Text style={styles.footerMeta}>KRONA v{appVersion} • 2026</Text>
       </View>
@@ -397,6 +416,10 @@ const styles = StyleSheet.create({
   screenSubtitle: {
     ...typography.bodySmall,
     color: colors.text.secondary,
+  },
+  loggedInAs: {
+    ...typography.caption,
+    color: colors.text.muted,
   },
   loadingState: {
     flex: 1,
@@ -469,6 +492,9 @@ const styles = StyleSheet.create({
     borderColor: colors.border.whisper,
     borderRadius: radius.paper,
     backgroundColor: colors.background.surface,
+  },
+  logoutButtonDisabled: {
+    opacity: 0.6,
   },
   logoutLabel: {
     ...typography.button,

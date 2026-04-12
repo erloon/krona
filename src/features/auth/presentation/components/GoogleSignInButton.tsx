@@ -6,17 +6,20 @@ import { SecondaryButton } from '@/shared/ui/primitives/SecondaryButton';
 type GoogleSignInButtonProps = {
   onPress?: () => void;
   disabled?: boolean;
+  loading?: boolean;
 };
 
 export function GoogleSignInButton({
   onPress,
   disabled = false,
+  loading = false,
 }: GoogleSignInButtonProps) {
   return (
     <SecondaryButton
       disabled={disabled}
       label="Sign in with Google"
       leadingAccessory={<Text style={styles.googleGlyph}>G</Text>}
+      loading={loading}
       onPress={onPress}
     />
   );

@@ -1,12 +1,22 @@
 import React from 'react';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useStartupSession } from '@/core/store/startup-session';
 import { colors, spacing, typography } from '@/shared/theme';
 
 export default function AppLayout() {
   const insets = useSafeAreaInsets();
+  const { phase, isHydrating } = useStartupSession();
+
+  if (isHydrating || phase === 'splash') {
+    return null;
+  }
+
+  if (phase !== 'app') {
+    return <Redirect href="/(auth)/login" />;
+  }
 
   return (
     <Tabs

@@ -6,9 +6,10 @@ import { BrandMark } from '@/shared/ui/primitives/BrandMark';
 
 type AuthCardProps = {
   action: React.ReactNode;
+  statusMessage?: string | null;
 };
 
-export function AuthCard({ action }: AuthCardProps) {
+export function AuthCard({ action, statusMessage }: AuthCardProps) {
   return (
     <View style={styles.container}>
       <View style={styles.brandSection}>
@@ -28,6 +29,7 @@ export function AuthCard({ action }: AuthCardProps) {
       </View>
 
       <View style={styles.actions}>{action}</View>
+      {statusMessage ? <Text style={styles.statusMessage}>{statusMessage}</Text> : null}
     </View>
   );
 }
@@ -59,5 +61,12 @@ const styles = StyleSheet.create({
   },
   actions: {
     width: '100%',
+  },
+  statusMessage: {
+    ...typography.caption,
+    width: '100%',
+    marginTop: spacing.lg,
+    color: colors.text.secondary,
+    textAlign: 'center',
   },
 });
