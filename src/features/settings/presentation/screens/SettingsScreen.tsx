@@ -219,7 +219,7 @@ export function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
-        <SectionHeader title="Ulgi podatkowe (PIT-0)" />
+        <SectionHeader title="Preferencje PIT" />
         <SettingsGroupCard style={styles.zeroPaddingCard}>
           <View style={styles.paddedBlock}>
             <ReliefToggleRow

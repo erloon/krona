@@ -1,5 +1,11 @@
 import React from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewProps,
+  type ViewStyle,
+} from 'react-native';
 
 import { colors, radius, shadows, spacing } from '@/shared/theme';
 
@@ -7,14 +13,19 @@ type SurfaceCardProps = {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   padded?: boolean;
-};
+} & ViewProps;
 
 export function SurfaceCard({
   children,
   style,
   padded = true,
+  ...rest
 }: SurfaceCardProps) {
-  return <View style={[styles.base, padded && styles.padded, style]}>{children}</View>;
+  return (
+    <View {...rest} style={[styles.base, padded && styles.padded, style]}>
+      {children}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

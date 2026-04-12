@@ -143,6 +143,15 @@ export function toMonthlyCalculationSnapshotRecord(
     zusAmount: snapshot.zusAmount,
     healthContributionAmount: snapshot.healthContributionAmount,
     netToHandAmount: snapshot.netToHandAmount,
+    annualBasePitAmount: snapshot.annualBasePitAmount,
+    annualPitAfterIpBoxAmount: snapshot.annualPitAfterIpBoxAmount,
+    annualIpBoxTaxAmount: snapshot.annualIpBoxTaxAmount,
+    annualIpBoxTaxGainAmount: snapshot.annualIpBoxTaxGainAmount,
+    annualQualifiedIpIncomeAmount: snapshot.annualQualifiedIpIncomeAmount,
+    annualQualifiedIpIncomeAfterNexusAmount: snapshot.annualQualifiedIpIncomeAfterNexusAmount,
+    annualResidualTaxableIncomeAmount: snapshot.annualResidualTaxableIncomeAmount,
+    ipBoxNexusRatio: snapshot.ipBoxNexusRatio,
+    ipBoxWarning: snapshot.ipBoxWarning,
   };
 
   return {
@@ -171,6 +180,17 @@ export function fromMonthlyCalculationSnapshotRecord(
     zusAmount: parsed.zusAmount ?? 0,
     healthContributionAmount: parsed.healthContributionAmount ?? 0,
     netToHandAmount: parsed.netToHandAmount ?? 0,
+    annualBasePitAmount: parsed.annualBasePitAmount ?? (parsed.pitAmount ?? 0) * 12,
+    annualPitAfterIpBoxAmount:
+      parsed.annualPitAfterIpBoxAmount ?? (parsed.pitAmount ?? 0) * 12,
+    annualIpBoxTaxAmount: parsed.annualIpBoxTaxAmount ?? 0,
+    annualIpBoxTaxGainAmount: parsed.annualIpBoxTaxGainAmount ?? 0,
+    annualQualifiedIpIncomeAmount: parsed.annualQualifiedIpIncomeAmount ?? 0,
+    annualQualifiedIpIncomeAfterNexusAmount:
+      parsed.annualQualifiedIpIncomeAfterNexusAmount ?? 0,
+    annualResidualTaxableIncomeAmount: parsed.annualResidualTaxableIncomeAmount ?? 0,
+    ipBoxNexusRatio: parsed.ipBoxNexusRatio ?? 0,
+    ipBoxWarning: parsed.ipBoxWarning ?? null,
     calculatedAt: record.calculatedAt,
   });
 }

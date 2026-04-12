@@ -19,6 +19,7 @@ import { SummaryHero } from '@/shared/ui/primitives/SummaryHero';
 import { SurfaceCard } from '@/shared/ui/primitives/SurfaceCard';
 
 import { FinancialBreakdownCard } from '../components/FinancialBreakdownCard';
+import { FinancialBreakdownRow } from '../components/FinancialBreakdownRow';
 import { ReportingPeriodHeader } from '../components/ReportingPeriodHeader';
 import { ReportingPeriodPickerModal } from '../components/ReportingPeriodPickerModal';
 import {
@@ -48,6 +49,7 @@ export function DashboardScreen() {
   const [draftYear, setDraftYear] = React.useState(String(selectedPeriod.year));
   const [draftMonth, setDraftMonth] = React.useState(String(selectedPeriod.month));
   const dashboard = hasLoadedSelectedPeriod && bundle ? buildDashboardViewModel(bundle) : null;
+  const ipBoxEstimate = dashboard?.ipBoxEstimate ?? null;
   const selectedPeriodLabel = React.useMemo(
     () => getSelectedPeriodLabel(selectedPeriod),
     [selectedPeriod]
@@ -260,6 +262,34 @@ export function DashboardScreen() {
             summaryLabel={dashboard.breakdown.summaryLabel}
             title={dashboard.breakdown.title}
           />
+
+          {ipBoxEstimate ? (
+            <SurfaceCard style={styles.ipBoxCard}>
+              <View style={styles.ipBoxHeader}>
+                <Text style={styles.ipBoxTitle}>{ipBoxEstimate.title}</Text>
+                <Text style={styles.ipBoxCaption}>{ipBoxEstimate.caption}</Text>
+              </View>
+
+              <View style={styles.ipBoxRows}>
+                {ipBoxEstimate.rows.map((row, index) => (
+                  <View
+                    key={row.key}
+                    style={index < ipBoxEstimate.rows.length - 1 ? styles.ipBoxRow : null}
+                  >
+                    <FinancialBreakdownRow
+                      amount={row.value}
+                      currency={row.unit === '%' ? '' : row.unit}
+                      label={row.label}
+                    />
+                  </View>
+                ))}
+              </View>
+
+              {ipBoxEstimate.warning ? (
+                <InfoBanner message={ipBoxEstimate.warning} />
+              ) : null}
+            </SurfaceCard>
+          ) : null}
         </>
       ) : null}
 
@@ -362,5 +392,27 @@ const styles = StyleSheet.create({
     borderRadius: radius.featured,
     backgroundColor: colors.background.surfaceContainerLow,
     paddingHorizontal: spacing.md,
+  },
+  ipBoxCard: {
+    gap: spacing.lg,
+  },
+  ipBoxHeader: {
+    gap: spacing.xs,
+  },
+  ipBoxTitle: {
+    ...typography.sectionLabel,
+    color: colors.text.primary,
+  },
+  ipBoxCaption: {
+    ...typography.caption,
+    color: colors.text.secondary,
+  },
+  ipBoxRows: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border.subtle,
+  },
+  ipBoxRow: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.subtle,
   },
 });

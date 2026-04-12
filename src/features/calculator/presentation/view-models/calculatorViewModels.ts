@@ -98,6 +98,23 @@ export type DashboardViewModel = {
       amount: number;
     }[];
   };
+  ipBoxEstimate: null | {
+    title: string;
+    caption: string;
+    warning: string | null;
+    rows: readonly {
+      key:
+        | 'basePit'
+        | 'pitAfter'
+        | 'taxGain'
+        | 'qualifiedIncome'
+        | 'qualifiedAfterNexus'
+        | 'nexus';
+      label: string;
+      value: string;
+      unit?: 'PLN' | '%';
+    }[];
+  };
   thresholdContext: {
     title: string;
     detail: string;
@@ -255,6 +272,7 @@ export function buildDashboardViewModel(bundle: ReportingPeriodBundle): Dashboar
         },
       ],
     },
+    ipBoxEstimate: buildIpBoxEstimate(bundle),
     thresholdContext: buildThresholdContext(bundle),
     actions: {
       primaryLabel: 'Dodaj przychód',
@@ -262,6 +280,62 @@ export function buildDashboardViewModel(bundle: ReportingPeriodBundle): Dashboar
       secondaryLabel: 'Dodaj koszt',
       secondaryRoute: '/add-cost',
     },
+  };
+}
+
+function buildIpBoxEstimate(
+  bundle: ReportingPeriodBundle
+): DashboardViewModel['ipBoxEstimate'] {
+  const { calculationSnapshot, settingsSnapshot } = bundle;
+
+  if (!settingsSnapshot.ipBox || settingsSnapshot.taxationForm === 'LUMP_SUM') {
+    return null;
+  }
+
+  return {
+    title: 'IP Box',
+    caption: 'Szacunek rocznego rozliczenia. Miesięczny PIT powyżej pozostaje liczony standardowo.',
+    warning: calculationSnapshot.ipBoxWarning,
+    rows: [
+      {
+        key: 'basePit',
+        label: 'PIT roczny bez IP Box',
+        value: formatCurrencyAmount(calculationSnapshot.annualBasePitAmount),
+        unit: 'PLN',
+      },
+      {
+        key: 'pitAfter',
+        label: 'PIT roczny po IP Box',
+        value: formatCurrencyAmount(calculationSnapshot.annualPitAfterIpBoxAmount),
+        unit: 'PLN',
+      },
+      {
+        key: 'taxGain',
+        label: 'Szacowana korzyść podatkowa',
+        value: formatCurrencyAmount(calculationSnapshot.annualIpBoxTaxGainAmount),
+        unit: 'PLN',
+      },
+      {
+        key: 'qualifiedIncome',
+        label: 'Kwalifikowany dochód przed nexus',
+        value: formatCurrencyAmount(calculationSnapshot.annualQualifiedIpIncomeAmount),
+        unit: 'PLN',
+      },
+      {
+        key: 'qualifiedAfterNexus',
+        label: 'Kwalifikowany dochód po nexus',
+        value: formatCurrencyAmount(
+          calculationSnapshot.annualQualifiedIpIncomeAfterNexusAmount
+        ),
+        unit: 'PLN',
+      },
+      {
+        key: 'nexus',
+        label: 'Współczynnik nexus',
+        value: `${Math.round(calculationSnapshot.ipBoxNexusRatio * 100)}%`,
+        unit: '%',
+      },
+    ],
   };
 }
 
