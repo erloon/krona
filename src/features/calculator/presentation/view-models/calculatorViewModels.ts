@@ -1,4 +1,5 @@
 import type { Cost } from '@/features/calculator/domain/entities/cost';
+import { calculateMonthlySnapshot } from '@/features/calculator/domain/services/calculateMonthlySnapshot';
 import { resolveIncomeMonthlyNetAmount, type Income } from '@/features/calculator/domain/entities/income';
 import type { ReportingPeriodBundle } from '@/features/calculator/domain/entities/reporting-period-bundle';
 import {
@@ -37,9 +38,12 @@ export type CostListItemViewModel = {
   title: string;
   amount: number;
   netAmount: number;
+  enteredNetAmount?: number;
+  enteredCurrency?: Cost['currency'];
   vatLabel: string;
   categoryLabel: string;
   deductionLabel: string;
+  fxLabel?: string | null;
   searchableText: string;
   vatRate: Cost['vatRate'];
   category: Cost['category'];
@@ -51,6 +55,7 @@ export type CostSummaryViewModel = {
   totalAmount: number;
   deductibleAmount: number;
   vatOffsetAmount: number;
+  pitReductionAmount: number;
 };
 
 export type DashboardViewModel = {
@@ -103,11 +108,22 @@ export function buildIncomeListItems(bundle: ReportingPeriodBundle): IncomeListI
 }
 
 export function buildCostSummaryViewModel(bundle: ReportingPeriodBundle): CostSummaryViewModel {
+  const snapshotWithoutCosts = calculateMonthlySnapshot({
+    reportingPeriodId: bundle.reportingPeriod.id,
+    settingsSnapshot: bundle.settingsSnapshot,
+    incomes: bundle.incomes,
+    costs: [],
+  });
+
   return {
     monthLabel: toBundlePeriodLabel(bundle),
     totalAmount: bundle.calculationSnapshot.costAmount,
     deductibleAmount: bundle.calculationSnapshot.deductibleCostAmount,
     vatOffsetAmount: bundle.calculationSnapshot.deductibleInputVatAmount,
+    pitReductionAmount: Math.max(
+      0,
+      roundMoney(snapshotWithoutCosts.pitAmount - bundle.calculationSnapshot.pitAmount)
+    ),
   };
 }
 
@@ -117,10 +133,13 @@ export function buildCostListItems(bundle: ReportingPeriodBundle): CostListItemV
     title: cost.label,
     amount: resolveCostGrossAmount(cost),
     netAmount: cost.netAmount,
+    enteredNetAmount: cost.enteredNetAmount,
+    enteredCurrency: cost.currency,
     vatLabel: toCostVatLabel(cost),
     categoryLabel: toCostCategoryLabel(cost),
     deductionLabel: toCostDeductionLabel(cost),
-    searchableText: [cost.label, cost.description, cost.category, cost.vatRate].join(' '),
+    fxLabel: toCostFxLabel(cost),
+    searchableText: [cost.label, cost.description, cost.category, cost.vatRate, cost.currency].join(' '),
     vatRate: cost.vatRate,
     category: cost.category,
     createdAt: cost.createdAt,
@@ -193,6 +212,14 @@ function resolveCostGrossAmount(cost: Cost) {
   return cost.netAmount + cost.netAmount * parseCostVatRate(cost.vatRate);
 }
 
+function toCostFxLabel(cost: Cost) {
+  if (cost.currency === 'PLN') {
+    return null;
+  }
+
+  return `${amountFormatter.format(cost.enteredNetAmount)} ${cost.currency} · kurs ${cost.exchangeRate.toFixed(4)}`;
+}
+
 function parseCostVatRate(vatRate: Cost['vatRate']) {
   if (vatRate === 'ZW') {
     return 0;
@@ -216,3 +243,7 @@ const amountFormatter = new Intl.NumberFormat('pl-PL', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
+
+function roundMoney(value: number) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}

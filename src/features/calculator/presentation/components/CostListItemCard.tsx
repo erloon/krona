@@ -11,6 +11,7 @@ type CostListItemCardProps = {
   title: string;
   amount: string;
   netAmount: string;
+  fxLabel?: string | null;
   vatLabel: string;
   categoryLabel: string;
   deductionLabel: string;
@@ -26,6 +27,7 @@ export function CostListItemCard({
   title,
   amount,
   netAmount,
+  fxLabel,
   vatLabel,
   categoryLabel,
   deductionLabel,
@@ -47,6 +49,7 @@ export function CostListItemCard({
         <View style={styles.amountWrap}>
           <Text style={styles.amount}>{amount}</Text>
           <Text style={styles.metadata}>{vatLabel} | Netto: {netAmount} PLN</Text>
+          {fxLabel ? <Text style={styles.metadata}>{fxLabel}</Text> : null}
         </View>
       </View>
 

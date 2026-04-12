@@ -4,9 +4,9 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import {
-  COST_CATEGORIES,
+  COST_CURRENCIES,
   COST_VAT_RATES,
-  type CostCategory,
+  type CostCurrency,
   type CostVatRate,
 } from '@/features/calculator/domain/entities/cost';
 import { useCalculatorData } from '@/features/calculator/presentation/hooks/useManagedCalculatorData';
@@ -17,32 +17,36 @@ import { ChipSelector, type ChipSelectorOption } from '@/shared/ui/primitives/Ch
 import { EmptyState } from '@/shared/ui/primitives/EmptyState';
 import { IconButton } from '@/shared/ui/primitives/IconButton';
 import { LoadingIndicator } from '@/shared/ui/primitives/LoadingIndicator';
-import { NumericAmountField } from '@/shared/ui/primitives/NumericAmountField';
 import { PrimaryButton } from '@/shared/ui/primitives/PrimaryButton';
+import { SecondaryButton } from '@/shared/ui/primitives/SecondaryButton';
+import { SurfaceCard } from '@/shared/ui/primitives/SurfaceCard';
 import { TextAreaField } from '@/shared/ui/primitives/TextAreaField';
 import { TextField } from '@/shared/ui/primitives/TextField';
+import { ValidationWarningsList } from '@/shared/ui/primitives/ValidationWarning';
 
-type CostFormState = {
-  label: string;
-  description: string;
-  netAmount: string;
-  vatRate: CostVatRate;
-  category: CostCategory;
-};
+import { AttachmentDropzone } from '../components/AttachmentDropzone';
+import { DeductionModeSelector } from '../components/DeductionModeSelector';
+import {
+  applyCostFormCurrency,
+  attachCostReference,
+  buildCostEditorInput,
+  buildCostPreview,
+  buildCostValidationResult,
+  costToFormState,
+  detachCostReference,
+  normalizeDecimalInput,
+  resolvePlnNetAmount,
+  type CostFormState,
+} from '../view-models/costFormState';
+
+const currencyOptions: ChipSelectorOption<CostCurrency>[] = COST_CURRENCIES.map((currency) => ({
+  label: currency,
+  value: currency,
+}));
 
 const vatOptions: ChipSelectorOption<CostVatRate>[] = COST_VAT_RATES.map((vatRate) => ({
   label: vatRate === 'ZW' ? 'ZW' : `${vatRate}%`,
   value: vatRate,
-}));
-
-const categoryOptions: ChipSelectorOption<CostCategory>[] = COST_CATEGORIES.map((category) => ({
-  label:
-    category === 'STANDARD'
-      ? 'Standard'
-      : category === 'CAR_MIXED'
-        ? 'Auto 50/75'
-        : 'Auto 100%',
-  value: category,
 }));
 
 export function EditCostScreen() {
@@ -51,8 +55,20 @@ export function EditCostScreen() {
   const [form, setForm] = React.useState<CostFormState | null>(null);
   const [validationMessage, setValidationMessage] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isAttachmentEditorVisible, setIsAttachmentEditorVisible] = React.useState(false);
+  const [attachmentUriDraft, setAttachmentUriDraft] = React.useState('');
+  const [attachmentNameDraft, setAttachmentNameDraft] = React.useState('');
 
   const costEntity = bundle?.costs.find((cost) => cost.id === costId) ?? null;
+  const settingsSnapshot = bundle?.settingsSnapshot ?? null;
+  const preview = React.useMemo(
+    () => (form && settingsSnapshot ? buildCostPreview(form, settingsSnapshot) : null),
+    [form, settingsSnapshot]
+  );
+  const validationResult = React.useMemo(
+    () => (form && settingsSnapshot ? buildCostValidationResult(form, settingsSnapshot) : null),
+    [form, settingsSnapshot]
+  );
 
   React.useEffect(() => {
     if (!hasLoadedSelectedPeriod || !bundle || !costId) {
@@ -65,13 +81,7 @@ export function EditCostScreen() {
       return;
     }
 
-    setForm({
-      label: cost.label,
-      description: cost.description,
-      netAmount: cost.netAmount.toFixed(2),
-      vatRate: cost.vatRate,
-      category: cost.category,
-    });
+    setForm(costToFormState(cost));
   }, [bundle, costId, hasLoadedSelectedPeriod]);
 
   if (!hasLoadedSelectedPeriod) {
@@ -96,7 +106,7 @@ export function EditCostScreen() {
     );
   }
 
-  if (!form) {
+  if (!form || !settingsSnapshot || preview === null) {
     return <LoadingIndicator label="Trwa ładowanie danych..." />;
   }
 
@@ -107,16 +117,33 @@ export function EditCostScreen() {
     setForm((current) => (current ? { ...current, [key]: value } : current));
   }
 
-  async function handleSave() {
-    const netAmount = Number(activeForm.netAmount.replace(',', '.'));
+  function handleOpenAttachmentEditor() {
+    setAttachmentUriDraft(activeForm.attachment?.uri ?? '');
+    setAttachmentNameDraft(activeForm.attachment?.fileName ?? '');
+    setIsAttachmentEditorVisible(true);
+  }
 
-    if (!activeForm.label.trim()) {
-      setValidationMessage('Nazwa kosztu jest wymagana.');
+  function handleApplyAttachment() {
+    if (!attachmentUriDraft.trim()) {
+      setValidationMessage('Podaj lokalne URI załącznika albo usuń szkic.');
       return;
     }
 
-    if (!Number.isFinite(netAmount) || netAmount < 0) {
-      setValidationMessage('Kwota netto musi być liczbą większą lub równą zero.');
+    setForm((current) =>
+      current
+        ? attachCostReference(current, {
+            uri: attachmentUriDraft,
+            fileName: attachmentNameDraft,
+          })
+        : current
+    );
+    setValidationMessage(null);
+    setIsAttachmentEditorVisible(false);
+  }
+
+  async function handleSave() {
+    if (!validationResult?.isValid) {
+      setValidationMessage(validationResult?.errors[0]?.message ?? 'Nieprawidłowe dane kosztu.');
       return;
     }
 
@@ -124,13 +151,7 @@ export function EditCostScreen() {
     setIsSubmitting(true);
 
     try {
-      await updateCost(activeCostId, {
-        label: activeForm.label.trim(),
-        description: activeForm.description.trim(),
-        netAmount: Math.round((netAmount + Number.EPSILON) * 100) / 100,
-        vatRate: activeForm.vatRate,
-        category: activeForm.category,
-      });
+      await updateCost(activeCostId, buildCostEditorInput(activeForm));
       router.back();
     } catch (saveError) {
       Alert.alert(
@@ -151,13 +172,33 @@ export function EditCostScreen() {
         title="Edytuj koszt"
       />
 
-      <NumericAmountField
-        label="KWOTA NETTO"
-        onChangeText={(value) => updateForm('netAmount', normalizeDecimalInput(value))}
-        placeholder="0,00"
-        suffix="PLN"
-        value={activeForm.netAmount}
+      <ChipSelector
+        label="WALUTA"
+        onValueChange={(value) =>
+          setForm((current) => (current ? applyCostFormCurrency(current, value) : current))
+        }
+        options={currencyOptions}
+        value={activeForm.currency}
       />
+
+      <TextField
+        keyboardType="decimal-pad"
+        label="KWOTA NETTO"
+        onChangeText={(value) => updateForm('enteredNetAmount', normalizeDecimalInput(value))}
+        placeholder="0,00"
+        suffix={activeForm.currency}
+        value={activeForm.enteredNetAmount}
+      />
+
+      {activeForm.currency !== 'PLN' ? (
+        <TextField
+          keyboardType="decimal-pad"
+          label="KURS PRZELICZENIA DO PLN"
+          onChangeText={(value) => updateForm('exchangeRate', normalizeDecimalInput(value))}
+          placeholder="Np. 4,1234"
+          value={activeForm.exchangeRate}
+        />
+      ) : null}
 
       <ChipSelector
         label="STAWKA VAT"
@@ -166,15 +207,10 @@ export function EditCostScreen() {
         value={activeForm.vatRate}
       />
 
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>KATEGORIA I ODLICZENIE</Text>
-        <ChipSelector
-          label="Kategoria"
-          onValueChange={(value) => updateForm('category', value)}
-          options={categoryOptions}
-          value={activeForm.category}
-        />
-      </View>
+      <DeductionModeSelector
+        onValueChange={(value) => updateForm('category', value)}
+        value={activeForm.category}
+      />
 
       <View style={styles.section}>
         <TextField
@@ -193,15 +229,49 @@ export function EditCostScreen() {
         />
       </View>
 
-      <View style={styles.infoCard}>
-        <MaterialCommunityIcons color={colors.brand.primary} name="paperclip" size={18} />
+      <AttachmentDropzone
+        attachment={activeForm.attachment}
+        onAddPress={handleOpenAttachmentEditor}
+        onRemovePress={() => setForm((current) => (current ? detachCostReference(current) : current))}
+      />
+
+      {isAttachmentEditorVisible ? (
+        <SurfaceCard style={styles.attachmentEditor}>
+          <TextField
+            autoCapitalize="none"
+            label="URI ZAŁĄCZNIKA"
+            onChangeText={setAttachmentUriDraft}
+            placeholder="file:///storage/emulated/0/DCIM/receipt.jpg"
+            value={attachmentUriDraft}
+          />
+          <TextField
+            autoCapitalize="none"
+            label="NAZWA PLIKU"
+            onChangeText={setAttachmentNameDraft}
+            placeholder="receipt.jpg"
+            value={attachmentNameDraft}
+          />
+          <View style={styles.attachmentActions}>
+            <PrimaryButton label="Zapisz załącznik" onPress={handleApplyAttachment} />
+            <SecondaryButton label="Anuluj edycję załącznika" onPress={() => setIsAttachmentEditorVisible(false)} />
+          </View>
+        </SurfaceCard>
+      ) : null}
+
+      <SurfaceCard style={styles.infoCard}>
+        <Text style={styles.infoTitle}>Podgląd skutku kosztu</Text>
         <Text style={styles.infoText}>
-          Obsługa załączników zostanie dopięta w kolejnym kroku. Ta edycja zapisuje już dane kosztu
-          do aktywnego okresu raportowego.
+          PLN do obliczeń: {resolvePlnNetAmount(activeForm).toFixed(2).replace('.', ',')} · VAT odliczalny: {preview.deductibleVatAmount.toFixed(2).replace('.', ',')} PLN
         </Text>
-      </View>
+        <Text style={styles.infoText}>
+          PIT/Zdrowotna: {preview.deductibleCostAmount.toFixed(2).replace('.', ',')} PLN · Gotówka: {preview.economicCostAmount.toFixed(2).replace('.', ',')} PLN
+        </Text>
+      </SurfaceCard>
 
       {validationMessage ? <Text style={styles.validation}>{validationMessage}</Text> : null}
+      {validationResult ? (
+        <ValidationWarningsList warnings={validationResult.warnings.map((warning) => warning.message)} />
+      ) : null}
 
       <PrimaryButton
         disabled={isSubmitting}
@@ -217,10 +287,6 @@ export function EditCostScreen() {
   );
 }
 
-function normalizeDecimalInput(value: string) {
-  return value.replace(/[^0-9,.\s]/g, '').replace(/\s/g, '').replace('.', ',');
-}
-
 const styles = StyleSheet.create({
   content: {
     gap: spacing.xl,
@@ -229,22 +295,23 @@ const styles = StyleSheet.create({
   section: {
     gap: spacing.md,
   },
-  sectionLabel: {
-    ...typography.caption,
-    color: colors.text.secondary,
-  },
   infoCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-    borderRadius: 12,
-    backgroundColor: colors.background.surfaceContainerLow,
-    padding: spacing.lg,
+    gap: spacing.xs,
+  },
+  infoTitle: {
+    ...typography.bodyMedium,
+    color: colors.text.primary,
+    fontWeight: '700',
   },
   infoText: {
     ...typography.bodySmall,
-    flex: 1,
     color: colors.text.secondary,
+  },
+  attachmentEditor: {
+    gap: spacing.md,
+  },
+  attachmentActions: {
+    gap: spacing.sm,
   },
   validation: {
     ...typography.caption,

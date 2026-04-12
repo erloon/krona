@@ -5,7 +5,7 @@ import type {
   reportingPeriodsTable,
   reportingPeriodSettingsSnapshotsTable,
 } from '@/core/database/schema';
-import { createCost, type Cost } from '@/features/calculator/domain/entities/cost';
+import { createCost, type Cost, type CostAttachment } from '@/features/calculator/domain/entities/cost';
 import { createIncome, type Income } from '@/features/calculator/domain/entities/income';
 import {
   createMonthlyCalculationSnapshot,
@@ -233,26 +233,52 @@ export function toCostRecord(cost: Cost): CostInsertRecord {
     reportingPeriodId: cost.reportingPeriodId,
     label: cost.label,
     description: cost.description,
+    enteredNetAmount: cost.enteredNetAmount,
+    currency: cost.currency,
     netAmount: cost.netAmount,
     vatRate: cost.vatRate,
     category: cost.category,
+    exchangeRate: cost.exchangeRate,
+    exchangeRateSource: cost.exchangeRateSource,
+    exchangeRateEffectiveDate: cost.exchangeRateEffectiveDate,
+    attachmentPayload: cost.attachment ? JSON.stringify(cost.attachment) : null,
     createdAt: cost.createdAt,
     updatedAt: cost.updatedAt,
   };
 }
 
 export function fromCostRecord(record: CostRecord): Cost {
+  const attachment = parseCostAttachment(record.attachmentPayload);
+
   return createCost({
     id: record.id,
     reportingPeriodId: record.reportingPeriodId,
     label: record.label,
     description: record.description,
+    enteredNetAmount: record.enteredNetAmount,
+    currency: record.currency as Cost['currency'],
     netAmount: record.netAmount,
     vatRate: record.vatRate as Cost['vatRate'],
     category: record.category as Cost['category'],
+    exchangeRate: record.exchangeRate,
+    exchangeRateSource: record.exchangeRateSource as Cost['exchangeRateSource'],
+    exchangeRateEffectiveDate: record.exchangeRateEffectiveDate,
+    attachment,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
   });
+}
+
+function parseCostAttachment(payload: string | null): CostAttachment | null {
+  if (!payload) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(payload) as CostAttachment;
+  } catch {
+    return null;
+  }
 }
 
 export function createReportingPeriodId(year: number, month: number): string {

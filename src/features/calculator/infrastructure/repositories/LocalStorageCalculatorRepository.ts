@@ -1,5 +1,5 @@
 import type { MonthlyReportingPeriod } from '@/features/calculator/domain/value-objects/MonthlyReportingPeriod';
-import type { Cost } from '@/features/calculator/domain/entities/cost';
+import { createCost, type Cost } from '@/features/calculator/domain/entities/cost';
 import { createIncome, type Income } from '@/features/calculator/domain/entities/income';
 import type { MonthlyCalculationSnapshot } from '@/features/calculator/domain/entities/monthly-calculation-snapshot';
 import type { ReportingPeriod } from '@/features/calculator/domain/entities/reporting-period';
@@ -207,7 +207,7 @@ export class LocalStorageCalculatorRepository implements CalculatorRepository {
         settingsSnapshots: parsed.settingsSnapshots ?? [],
         calculationSnapshots: parsed.calculationSnapshots ?? [],
         incomes: (parsed.incomes ?? []).map((income) => migrateStoredIncome(income)),
-        costs: parsed.costs ?? [],
+        costs: (parsed.costs ?? []).map((cost) => migrateStoredCost(cost)),
       };
     } catch {
       return createEmptyStorage();
@@ -259,5 +259,25 @@ function migrateStoredIncome(income: Partial<Income> & { netAmount?: number }): 
     invoiceNumber: income.invoiceNumber,
     createdAt: income.createdAt,
     updatedAt: income.updatedAt,
+  });
+}
+
+function migrateStoredCost(cost: Partial<Cost> & { enteredNetAmount?: number }): Cost {
+  return createCost({
+    id: cost.id ?? `cost-${Date.now()}`,
+    reportingPeriodId: cost.reportingPeriodId ?? '',
+    label: cost.label ?? '',
+    description: cost.description,
+    enteredNetAmount: cost.enteredNetAmount,
+    currency: cost.currency,
+    netAmount: cost.netAmount ?? cost.enteredNetAmount ?? 0,
+    vatRate: cost.vatRate,
+    category: cost.category,
+    exchangeRate: cost.exchangeRate,
+    exchangeRateSource: cost.exchangeRateSource,
+    exchangeRateEffectiveDate: cost.exchangeRateEffectiveDate,
+    attachment: cost.attachment,
+    createdAt: cost.createdAt,
+    updatedAt: cost.updatedAt,
   });
 }

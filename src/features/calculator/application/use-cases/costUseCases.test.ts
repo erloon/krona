@@ -35,9 +35,15 @@ export async function testCreateAndUpdateCostRecalculateSnapshot(): Promise<void
       input: {
         label: 'Leasing auta',
         description: 'Rata miesięczna',
+        enteredNetAmount: 1000,
+        currency: 'PLN',
         netAmount: 1000,
         vatRate: '23',
         category: 'CAR_MIXED',
+        exchangeRate: 1,
+        exchangeRateSource: 'STATIC',
+        exchangeRateEffectiveDate: '2026-04-01',
+        attachment: null,
       },
     }
   );
@@ -58,9 +64,15 @@ export async function testCreateAndUpdateCostRecalculateSnapshot(): Promise<void
       input: {
         label: 'Leasing auta premium',
         description: 'Rata po korekcie',
+        enteredNetAmount: 1200,
+        currency: 'PLN',
         netAmount: 1200,
         vatRate: '23',
         category: 'CAR_BUSINESS',
+        exchangeRate: 1,
+        exchangeRateSource: 'STATIC',
+        exchangeRateEffectiveDate: '2026-04-01',
+        attachment: null,
       },
     }
   );
@@ -86,9 +98,15 @@ export async function testDuplicateAndDeleteCostKeepOtherPeriodsUntouched(): Pro
       input: {
         label: 'Biuro',
         description: '',
+        enteredNetAmount: 500,
+        currency: 'PLN',
         netAmount: 500,
         vatRate: '23',
         category: 'STANDARD',
+        exchangeRate: 1,
+        exchangeRateSource: 'STATIC',
+        exchangeRateEffectiveDate: '2026-04-01',
+        attachment: null,
       },
     }
   );
@@ -98,9 +116,15 @@ export async function testDuplicateAndDeleteCostKeepOtherPeriodsUntouched(): Pro
     input: {
       label: 'Paliwo',
       description: '',
+      enteredNetAmount: 300,
+      currency: 'PLN',
       netAmount: 300,
       vatRate: '23',
       category: 'CAR_MIXED',
+      exchangeRate: 1,
+      exchangeRateSource: 'STATIC',
+      exchangeRateEffectiveDate: '2026-05-01',
+      attachment: null,
     },
   });
 

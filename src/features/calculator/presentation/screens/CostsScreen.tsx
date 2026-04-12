@@ -221,7 +221,7 @@ export function CostsScreen() {
 
           {costSummary ? (
             <CostSummaryHeader
-              pitAmount={formatCurrencyAmount(costSummary.deductibleAmount)}
+              pitAmount={formatCurrencyAmount(costSummary.pitReductionAmount)}
               title="Koszty"
               totalAmount={formatCurrencyAmount(costSummary.totalAmount)}
               vatAmount={formatCurrencyAmount(costSummary.vatOffsetAmount)}
@@ -310,6 +310,7 @@ export function CostsScreen() {
                     deductionLabel={item.deductionLabel}
                     deleteDisabled={isLoading || isDeleting}
                     duplicateLoading={pendingDuplicateCostId === item.id}
+                    fxLabel={item.fxLabel}
                     key={item.id}
                     netAmount={formatCurrencyAmount(item.netAmount)}
                     onDelete={() => handleDeleteCost(item.id)}

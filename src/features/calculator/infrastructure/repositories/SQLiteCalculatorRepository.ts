@@ -188,9 +188,15 @@ export class SQLiteCalculatorRepository implements CalculatorRepository {
         set: {
           label: record.label,
           description: record.description,
+          enteredNetAmount: record.enteredNetAmount,
+          currency: record.currency,
           netAmount: record.netAmount,
           vatRate: record.vatRate,
           category: record.category,
+          exchangeRate: record.exchangeRate,
+          exchangeRateSource: record.exchangeRateSource,
+          exchangeRateEffectiveDate: record.exchangeRateEffectiveDate,
+          attachmentPayload: record.attachmentPayload,
           updatedAt: record.updatedAt,
         },
       });

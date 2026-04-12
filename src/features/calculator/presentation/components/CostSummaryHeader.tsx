@@ -35,7 +35,7 @@ export function CostSummaryHeader({
           <Text style={styles.metricCurrency}>PLN</Text>
         </View>
         <View style={styles.metric}>
-          <Text style={styles.metricLabel}>PIT:</Text>
+          <Text style={styles.metricLabel}>PIT mniej:</Text>
           <Text style={styles.metricValue}>{pitAmount}</Text>
           <Text style={styles.metricCurrency}>PLN</Text>
         </View>

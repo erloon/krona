@@ -9,6 +9,7 @@ type ChoiceCardProps = {
   description?: string;
   selected: boolean;
   onPress: () => void;
+  leadingContent?: React.ReactNode;
   children?: React.ReactNode;
 };
 
@@ -17,6 +18,7 @@ export function ChoiceCard({
   description,
   selected,
   onPress,
+  leadingContent,
   children,
 }: ChoiceCardProps) {
   return (
@@ -25,9 +27,12 @@ export function ChoiceCard({
       style={[styles.card, selected ? styles.cardSelected : null]}
     >
       <View style={styles.header}>
-        <View style={styles.copy}>
+        <View style={styles.titleRow}>
+          {leadingContent ? <View style={styles.leading}>{leadingContent}</View> : null}
+          <View style={styles.copy}>
           <Text style={[styles.title, selected ? styles.titleSelected : null]}>{title}</Text>
           {description ? <Text style={styles.description}>{description}</Text> : null}
+          </View>
         </View>
         <MaterialCommunityIcons
           color={selected ? colors.brand.primary : colors.text.muted}
@@ -59,6 +64,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.md,
+  },
+  titleRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  leading: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   copy: {
     flex: 1,
