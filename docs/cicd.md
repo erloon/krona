@@ -1,6 +1,6 @@
 # CI/CD Setup
 
-This repository now supports a branch-based Expo deployment flow through GitHub Actions.
+This repository now supports a branch-based Expo deployment flow through GitHub Actions, with automatic deployment enabled only for development.
 
 ## Branch Strategy
 
@@ -13,7 +13,7 @@ This repository now supports a branch-based Expo deployment flow through GitHub 
 
 - Pushes and pull requests to `dev` or `main` run GitHub Actions CI (`lint` + `typecheck`).
 - Pushes to `dev` publish an EAS Update to the `development` branch using the `development` EAS environment.
-- Pushes to `main` publish an EAS Update to the `production` branch using the `production` EAS environment.
+- Production deployment exists as a manual GitHub Actions workflow only. It does not run automatically on `main`.
 
 These automatic deployments are OTA updates. They are appropriate for JavaScript, styling, assets, and other changes that do not require a new native binary.
 
@@ -42,7 +42,7 @@ Create two GitHub environments:
 - `development`
 - `production`
 
-At minimum, use them for visibility. For stronger controls, require approvals on `production`.
+At minimum, use environments for visibility and secret scoping.
 
 ## Required Expo Setup
 
@@ -65,7 +65,7 @@ Before relying on CI/CD, confirm these are already completed in Expo:
 2. Pull requests merge into `dev`.
 3. `dev` automatically publishes development OTA updates for internal testing.
 4. When ready to release, open a pull request from `dev` to `main`.
-5. After merge, `main` automatically publishes the production OTA update.
+5. After merge, release production intentionally from a local machine or a manually triggered release workflow.
 6. Trigger native store builds separately when the release includes native changes.
 
 ## What Else You Still Need
