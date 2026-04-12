@@ -14,9 +14,9 @@ import { startupSessionActions, useStartupSession } from '@/core/store/startup-s
 import { authSessionService } from '@/features/auth/application/services/authSessionService';
 import { colors, radius, spacing, typography } from '@/shared/theme';
 import { ScreenContainer } from '@/shared/ui/layout/ScreenContainer';
-import { AppHeaderAvatar } from '@/shared/ui/primitives/AppHeaderAvatar';
 import { AppHeaderBrand } from '@/shared/ui/primitives/AppHeaderBrand';
 import { AppTopBar } from '@/shared/ui/primitives/AppTopBar';
+import { AppHeaderUser } from '@/shared/ui/primitives/AppHeaderUser';
 import { ChoiceCard } from '@/shared/ui/primitives/ChoiceCard';
 import { ConfirmationModal } from '@/shared/ui/primitives/ConfirmationModal';
 import { DestructiveButton } from '@/shared/ui/primitives/DestructiveButton';
@@ -97,7 +97,7 @@ export function SettingsScreen() {
       <AppTopBar
         title="KRONA"
         leadingContent={<AppHeaderBrand />}
-        trailingContent={<AppHeaderAvatar />}
+        trailingContent={<AppHeaderUser />}
       />
 
       <View style={styles.hero}>

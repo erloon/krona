@@ -6,9 +6,9 @@ import { createMonthlyReportingPeriod } from '@/features/calculator/domain/value
 import { useCalculatorData } from '@/features/calculator/presentation/hooks/useManagedCalculatorData';
 import { colors, radius, spacing, typography } from '@/shared/theme';
 import { ScreenContainer } from '@/shared/ui/layout/ScreenContainer';
-import { AppHeaderAvatar } from '@/shared/ui/primitives/AppHeaderAvatar';
 import { AppHeaderBrand } from '@/shared/ui/primitives/AppHeaderBrand';
 import { AppTopBar } from '@/shared/ui/primitives/AppTopBar';
+import { AppHeaderUser } from '@/shared/ui/primitives/AppHeaderUser';
 import { ConfirmationModal } from '@/shared/ui/primitives/ConfirmationModal';
 import { EmptyState } from '@/shared/ui/primitives/EmptyState';
 import { FloatingActionButton } from '@/shared/ui/primitives/FloatingActionButton';
@@ -199,7 +199,7 @@ export function CostsScreen() {
         <AppTopBar
           leadingContent={<AppHeaderBrand />}
           title="KRONA"
-          trailingContent={<AppHeaderAvatar />}
+          trailingContent={<AppHeaderUser />}
         />
 
         <View style={styles.headerSection}>
