@@ -8,7 +8,11 @@
     "scheme": "krona",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/images/logo.png"
+      "icon": "./assets/images/logo.png",
+      "bundleIdentifier": "com.sparkdatapl.krona",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
