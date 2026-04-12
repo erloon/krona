@@ -30,6 +30,9 @@ export async function createIncomeForPeriodUseCase(
     clientName: command.input.clientName,
     invoiceNumber: command.input.invoiceNumber,
     workParameters: command.input.workParameters,
+    exchangeRate: command.input.exchangeRate,
+    exchangeRateSource: command.input.exchangeRateSource,
+    exchangeRateEffectiveDate: command.input.exchangeRateEffectiveDate,
     createdAt: timestamp,
     updatedAt: timestamp,
   });

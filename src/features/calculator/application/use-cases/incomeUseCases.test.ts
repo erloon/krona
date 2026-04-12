@@ -81,6 +81,9 @@ export async function testCreateAndUpdateIncomeRecalculateSnapshot(): Promise<vo
           workingDaysPerMonth: 21,
           workingHoursPerDay: 8,
         },
+        exchangeRate: 1,
+        exchangeRateSource: 'STATIC',
+        exchangeRateEffectiveDate: '2026-04-01',
       },
     }
   );
@@ -109,6 +112,9 @@ export async function testCreateAndUpdateIncomeRecalculateSnapshot(): Promise<vo
           workingDaysPerMonth: 20,
           workingHoursPerDay: 7,
         },
+        exchangeRate: 1,
+        exchangeRateSource: 'STATIC',
+        exchangeRateEffectiveDate: '2026-04-01',
       },
     }
   );
@@ -119,6 +125,73 @@ export async function testCreateAndUpdateIncomeRecalculateSnapshot(): Promise<vo
   assert(
     updatedBundle.incomes[0].workParameters.workingDaysPerMonth === 20,
     'Updated work parameters should be saved.'
+  );
+}
+
+export async function testUpdateIncomeAllowsFxMetadataChanges(): Promise<void> {
+  const fixtures = createFixtures();
+  const period = createMonthlyReportingPeriod(2026, 4);
+
+  const createdBundle = await createIncomeForPeriodUseCase(
+    fixtures.calculatorRepository,
+    fixtures.settingsRepository,
+    {
+      period,
+      input: {
+        label: 'Foreign contract',
+        description: 'Original USD invoice',
+        baseAmount: 2000,
+        billingType: 'MONTHLY',
+        currency: 'USD',
+        vatRate: 'NP',
+        clientName: 'Globex',
+        invoiceNumber: 'INV-01',
+        workParameters: {
+          workingDaysPerMonth: 21,
+          workingHoursPerDay: 8,
+        },
+        exchangeRate: 3.9,
+        exchangeRateSource: 'NBP_TABLE_A',
+        exchangeRateEffectiveDate: '2026-04-01',
+      },
+    }
+  );
+
+  const updatedBundle = await updateIncomeForPeriodUseCase(
+    fixtures.calculatorRepository,
+    fixtures.settingsRepository,
+    {
+      period,
+      incomeId: createdBundle.incomes[0].id,
+      input: {
+        label: 'Foreign contract',
+        description: 'Corrected EUR invoice',
+        baseAmount: 1800,
+        billingType: 'MONTHLY',
+        currency: 'EUR',
+        vatRate: 'NP',
+        clientName: 'Globex',
+        invoiceNumber: 'INV-01-K',
+        workParameters: {
+          workingDaysPerMonth: 21,
+          workingHoursPerDay: 8,
+        },
+        exchangeRate: 4.21,
+        exchangeRateSource: 'CUSTOM',
+        exchangeRateEffectiveDate: '2026-04-05',
+      },
+    }
+  );
+
+  assert(updatedBundle.incomes[0].currency === 'EUR', 'Updated income should accept new currency.');
+  assert(updatedBundle.incomes[0].exchangeRate === 4.21, 'Updated income should save new exchange rate.');
+  assert(
+    updatedBundle.incomes[0].exchangeRateSource === 'CUSTOM',
+    'Updated income should save the new exchange rate source.'
+  );
+  assert(
+    updatedBundle.incomes[0].exchangeRateEffectiveDate === '2026-04-05',
+    'Updated income should save the new exchange rate effective date.'
   );
 }
 
@@ -143,6 +216,9 @@ export async function testDuplicateIncomeCreatesNewRecord(): Promise<void> {
           workingDaysPerMonth: 21,
           workingHoursPerDay: 8,
         },
+        exchangeRate: 1,
+        exchangeRateSource: 'STATIC',
+        exchangeRateEffectiveDate: '2026-04-01',
       },
     }
   );
@@ -188,6 +264,9 @@ export async function testDuplicateIncomeResetsInvoiceNumberAndDate(): Promise<v
           workingDaysPerMonth: 21,
           workingHoursPerDay: 8,
         },
+        exchangeRate: 4.25,
+        exchangeRateSource: 'NBP_TABLE_A',
+        exchangeRateEffectiveDate: '2026-04-01',
       },
     }
   );
@@ -243,6 +322,9 @@ export async function testDeleteIncomeKeepsOtherPeriodsUntouched(): Promise<void
           workingDaysPerMonth: 21,
           workingHoursPerDay: 8,
         },
+        exchangeRate: 1,
+        exchangeRateSource: 'STATIC',
+        exchangeRateEffectiveDate: '2026-04-01',
       },
     }
   );
@@ -262,6 +344,9 @@ export async function testDeleteIncomeKeepsOtherPeriodsUntouched(): Promise<void
         workingDaysPerMonth: 21,
         workingHoursPerDay: 8,
       },
+      exchangeRate: 1,
+      exchangeRateSource: 'STATIC',
+      exchangeRateEffectiveDate: '2026-04-01',
     },
   });
 
@@ -307,6 +392,9 @@ export async function testCreateDailyIncomeUsesWorkingDays(): Promise<void> {
           workingDaysPerMonth: 18,
           workingHoursPerDay: 8,
         },
+        exchangeRate: 1,
+        exchangeRateSource: 'STATIC',
+        exchangeRateEffectiveDate: '2026-04-01',
       },
     }
   );
@@ -339,6 +427,9 @@ export async function testCreateHourlyIncomeUsesFullWorkParameters(): Promise<vo
           workingDaysPerMonth: 20,
           workingHoursPerDay: 8,
         },
+        exchangeRate: 1,
+        exchangeRateSource: 'STATIC',
+        exchangeRateEffectiveDate: '2026-04-01',
       },
     }
   );

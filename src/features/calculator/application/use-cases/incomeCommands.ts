@@ -3,6 +3,7 @@ import type {
   IncomeCurrency,
   IncomeVatRate,
 } from '@/features/calculator/domain/entities/income';
+import type { IncomeExchangeRateSource } from '@/features/calculator/domain/value-objects/IncomeExchangeRateSource';
 import type { MonthlyReportingPeriod } from '@/features/calculator/domain/value-objects/MonthlyReportingPeriod';
 
 export type IncomeEditorInput = Readonly<{
@@ -18,6 +19,9 @@ export type IncomeEditorInput = Readonly<{
     workingDaysPerMonth: number;
     workingHoursPerDay: number;
   };
+  exchangeRate: number;
+  exchangeRateSource: IncomeExchangeRateSource;
+  exchangeRateEffectiveDate: string;
 }>;
 
 export type IncomePeriodCommand = Readonly<{

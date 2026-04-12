@@ -4,15 +4,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 
 import {
-  type IncomeBillingType,
   type IncomeCurrency,
   type IncomeVatRate,
-  type Income,
 } from '@/features/calculator/domain/entities/income';
-import type { IncomeEditorInput } from '@/features/calculator/application/use-cases/incomeCommands';
 import {
   validateIncomeInputBusinessRules,
-  type IncomeValidationInput,
 } from '@/features/calculator/domain/services/validateIncomeBusinessRules';
 import { useCalculatorData } from '@/features/calculator/presentation/hooks/useManagedCalculatorData';
 import { colors, spacing, typography } from '@/shared/theme';
@@ -35,19 +31,17 @@ import { AmountSummaryPanel } from '../components/AmountSummaryPanel';
 import { SettlementTypeSelector } from '../components/SettlementTypeSelector';
 import { WorkParametersSection } from '../components/WorkParametersSection';
 import { formatCurrencyAmount } from '../view-models/calculatorViewModels';
-
-type EditIncomeFormState = {
-  label: string;
-  description: string;
-  baseAmount: string;
-  billingType: IncomeBillingType;
-  currency: IncomeCurrency;
-  vatRate: IncomeVatRate;
-  clientName: string;
-  invoiceNumber: string;
-  workingDaysPerMonth: string;
-  workingHoursPerDay: string;
-};
+import {
+  applyIncomeFormCurrency,
+  buildIncomeEditorInput,
+  buildIncomeSummary,
+  buildIncomeValidationInput,
+  incomeToFormState,
+  isIncomeFormForeignCurrency,
+  normalizeDecimalInput,
+  normalizeIntegerInput,
+  type IncomeFormState,
+} from '../view-models/incomeFormState';
 
 const currencyOptions: ChipSelectorOption<IncomeCurrency>[] = [
   { label: 'PLN', value: 'PLN' },
@@ -69,7 +63,7 @@ export function EditIncomeScreen() {
   const { bundle, hasLoadedSelectedPeriod, updateIncome } = useCalculatorData();
   const { id: incomeId } = useLocalSearchParams<{ id?: string }>();
   
-  const [form, setForm] = React.useState<EditIncomeFormState | null>(null);
+  const [form, setForm] = React.useState<IncomeFormState | null>(null);
   const [validationMessage, setValidationMessage] = React.useState<string | null>(null);
   const [validationWarnings, setValidationWarnings] = React.useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -84,12 +78,16 @@ export function EditIncomeScreen() {
     const income = bundle.incomes.find(income => income.id === incomeId);
     if (!income) return;
     
-    setForm(incomeToEditorValues(income));
+    setForm(incomeToFormState(income));
   }, [bundle, hasLoadedSelectedPeriod, incomeId]);
 
   // Compute summary - must be called before any early returns (hook order rule)
   // Returns null when form is null, used after early return guards
   const summary = React.useMemo(() => form ? buildIncomeSummary(form) : null, [form]);
+  const isForeignCurrency = React.useMemo(
+    () => (form ? isIncomeFormForeignCurrency(form) : false),
+    [form]
+  );
 
   // Don't render if still loading
   if (!hasLoadedSelectedPeriod) {
@@ -128,7 +126,7 @@ export function EditIncomeScreen() {
 
   // After early returns, form is guaranteed non-null, so summary is also non-null
 
-  function updateForm<Key extends keyof EditIncomeFormState>(key: Key, value: EditIncomeFormState[Key]) {
+  function updateForm<Key extends keyof IncomeFormState>(key: Key, value: IncomeFormState[Key]) {
     setForm((current) => {
       if (!current) return null;
       
@@ -148,7 +146,7 @@ export function EditIncomeScreen() {
   async function handleSave() {
     if (!form) return;
 
-    const validationInput = buildValidationInput(form);
+    const validationInput = buildIncomeValidationInput(form);
     const validationResult = validateIncomeInputBusinessRules(validationInput);
 
     if (!validationResult.isValid) {
@@ -213,10 +211,19 @@ export function EditIncomeScreen() {
 
       <ChipSelector
         label="WALUTA"
-        onValueChange={(value) => updateForm('currency', value)}
+        onValueChange={(value) =>
+          setForm((current) => (current ? applyIncomeFormCurrency(current, value) : current))
+        }
         options={currencyOptions}
         value={form.currency}
       />
+
+      {isForeignCurrency ? (
+        <Text style={styles.fxHint}>
+          Kurs waluty jest zapisany jako stan roboczy: {form.exchangeRateSource} ·{' '}
+          {form.exchangeRateEffectiveDate}. Właściwy workflow FX zostanie dopięty w kolejnym kroku.
+        </Text>
+      ) : null}
 
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>TYP ROZLICZENIA</Text>
@@ -291,104 +298,6 @@ export function EditIncomeScreen() {
   );
 }
 
-// Inline copy of incomeToEditorValues function from IncomeEditorModal
-function incomeToEditorValues(income: Income): EditIncomeFormState {
-  return {
-    label: income.label,
-    description: income.description,
-    baseAmount: income.baseAmount.toFixed(2),
-    billingType: income.billingType,
-    currency: income.currency,
-    vatRate: income.vatRate,
-    clientName: income.clientName,
-    invoiceNumber: income.invoiceNumber,
-    workingDaysPerMonth: String(income.workParameters.workingDaysPerMonth),
-    workingHoursPerDay: String(income.workParameters.workingHoursPerDay),
-  };
-}
-
-function buildIncomeSummary(form: EditIncomeFormState) {
-  const baseAmount = parseDecimalInput(form.baseAmount);
-  const daysPerMonth = parseIntegerInput(form.workingDaysPerMonth);
-  const hoursPerDay = parseIntegerInput(form.workingHoursPerDay);
-
-  let netAmount = baseAmount;
-
-  if (form.billingType === 'DAILY') {
-    netAmount = baseAmount * daysPerMonth;
-  }
-
-  if (form.billingType === 'HOURLY') {
-    netAmount = baseAmount * daysPerMonth * hoursPerDay;
-  }
-
-  const vatMultiplier = form.vatRate === 'NP' ? 0 : Number(form.vatRate) / 100;
-  const vatAmount = netAmount * vatMultiplier;
-
-  return {
-    netAmount,
-    vatAmount,
-    grossAmount: netAmount + vatAmount,
-    vatLabel: form.vatRate === 'NP' ? 'VAT (NP)' : `VAT (${form.vatRate}%)`,
-  };
-}
-
-function buildValidationInput(form: EditIncomeFormState): IncomeValidationInput {
-  const baseAmount = parseDecimalInput(form.baseAmount);
-  const workingDaysPerMonth = parseIntegerInput(form.workingDaysPerMonth);
-  const workingHoursPerDay = parseIntegerInput(form.workingHoursPerDay);
-
-  return {
-    baseAmount,
-    billingType: form.billingType,
-    currency: form.currency,
-    vatRate: form.vatRate,
-    workingDaysPerMonth,
-    workingHoursPerDay,
-    exchangeRate: 1, // Default for PLN, will be set by domain if foreign currency
-    exchangeRateEffectiveDate: new Date().toISOString().slice(0, 10),
-    ipBoxQualifiedIncomePercent: null,
-    lumpSumRate: null,
-  };
-}
-
-function buildIncomeEditorInput(form: EditIncomeFormState): IncomeEditorInput {
-  const baseAmount = parseDecimalInput(form.baseAmount);
-  const workingDaysPerMonth = parseIntegerInput(form.workingDaysPerMonth);
-  const workingHoursPerDay = parseIntegerInput(form.workingHoursPerDay);
-
-  return {
-    label: form.label.trim() || form.clientName.trim() || 'Nowe źródło przychodu',
-    description: form.description,
-    baseAmount,
-    billingType: form.billingType,
-    currency: form.currency,
-    vatRate: form.vatRate,
-    clientName: form.clientName,
-    invoiceNumber: form.invoiceNumber,
-    workParameters: {
-      workingDaysPerMonth,
-      workingHoursPerDay,
-    },
-  };
-}
-
-function normalizeDecimalInput(value: string) {
-  return value.replace(/[^0-9.,]/g, '').replace(',', '.');
-}
-
-function normalizeIntegerInput(value: string) {
-  return value.replace(/\D/g, '');
-}
-
-function parseDecimalInput(value: string) {
-  return Number(value.replace(',', '.'));
-}
-
-function parseIntegerInput(value: string) {
-  return Number(value);
-}
-
 const styles = StyleSheet.create({
   content: {
     gap: spacing.xl,
@@ -398,6 +307,10 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   sectionLabel: {
+    ...typography.caption,
+    color: colors.text.secondary,
+  },
+  fxHint: {
     ...typography.caption,
     color: colors.text.secondary,
   },
