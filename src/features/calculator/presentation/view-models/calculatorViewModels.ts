@@ -243,7 +243,7 @@ export function buildDashboardViewModel(bundle: ReportingPeriodBundle): Dashboar
   return {
     monthLabel: toBundlePeriodLabel(bundle),
     statusLabel: formatSnapshotStatusLabel(bundle.calculationSnapshot.calculatedAt),
-    welcomeTitle: 'Dzień dobry, Michał',
+    welcomeTitle: 'Dzień dobry',
     welcomeDescription: `Oto Twój bilans dla okresu ${toBundlePeriodLabel(bundle)}.`,
     profileInitials: 'MK',
     hero: {
