@@ -21,6 +21,9 @@ import type { ReportingPeriodSettingsSnapshot } from '@/features/calculator/doma
 export type CostFormState = Readonly<{
   label: string;
   description: string;
+  nip: string;
+  supplierName: string;
+  supplierAddress: string;
   enteredNetAmount: string;
   currency: CostCurrency;
   vatRate: CostVatRate;
@@ -36,6 +39,9 @@ export function createDefaultCostFormState(now = new Date()): CostFormState {
   return {
     label: '',
     description: '',
+    nip: '',
+    supplierName: '',
+    supplierAddress: '',
     enteredNetAmount: '',
     currency: 'PLN',
     vatRate: '23',
@@ -52,6 +58,9 @@ export function costToFormState(cost: Cost): CostFormState {
   return {
     label: cost.label,
     description: cost.description,
+    nip: cost.nip,
+    supplierName: cost.supplierName,
+    supplierAddress: cost.supplierAddress,
     enteredNetAmount: cost.enteredNetAmount.toFixed(2).replace('.', ','),
     currency: cost.currency,
     vatRate: cost.vatRate,
@@ -116,6 +125,9 @@ export function buildCostEditorInput(form: CostFormState): CostEditorInput {
   return {
     label: form.label.trim(),
     description: form.description.trim(),
+    nip: form.nip.trim(),
+    supplierName: form.supplierName.trim(),
+    supplierAddress: form.supplierAddress.trim(),
     enteredNetAmount: parseDecimalInput(form.enteredNetAmount),
     currency: form.currency,
     netAmount: resolvePlnNetAmount(form),

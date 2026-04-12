@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-const DATABASE_VERSION = 5;
+const DATABASE_VERSION = 6;
 
 export async function initializeDatabase(database: SQLiteDatabase) {
   await database.execAsync('PRAGMA journal_mode = WAL;');
@@ -196,6 +196,9 @@ export async function initializeDatabase(database: SQLiteDatabase) {
       "TEXT NOT NULL DEFAULT '1970-01-01'"
     );
     await ensureColumn(database, 'costs', 'attachment_payload', 'TEXT');
+    await ensureColumn(database, 'costs', 'nip', "TEXT NOT NULL DEFAULT ''");
+    await ensureColumn(database, 'costs', 'supplier_name', "TEXT NOT NULL DEFAULT ''");
+    await ensureColumn(database, 'costs', 'supplier_address', "TEXT NOT NULL DEFAULT ''");
 
     await database.execAsync(`
       UPDATE costs

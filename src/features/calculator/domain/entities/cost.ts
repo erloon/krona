@@ -21,6 +21,9 @@ export type Cost = Readonly<{
   reportingPeriodId: string;
   label: string;
   description: string;
+  nip: string;
+  supplierName: string;
+  supplierAddress: string;
   enteredNetAmount: number;
   currency: CostCurrency;
   netAmount: number;
@@ -40,6 +43,9 @@ export function createCost(params: {
   reportingPeriodId: string;
   label: string;
   description?: string;
+  nip?: string;
+  supplierName?: string;
+  supplierAddress?: string;
   enteredNetAmount?: number;
   currency?: CostCurrency;
   netAmount: number;
@@ -86,6 +92,9 @@ export function createCost(params: {
     reportingPeriodId: params.reportingPeriodId,
     label: params.label.trim(),
     description: params.description?.trim() ?? '',
+    nip: params.nip?.trim() ?? '',
+    supplierName: params.supplierName?.trim() ?? '',
+    supplierAddress: params.supplierAddress?.trim() ?? '',
     enteredNetAmount: normalizeMoney(enteredNetAmount),
     currency,
     netAmount: normalizeMoney(params.netAmount),

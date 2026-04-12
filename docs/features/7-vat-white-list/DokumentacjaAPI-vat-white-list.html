@@ -1,0 +1,1267 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>API Rejestr WL</title>
+    <style type="text/css">
+      body {
+      	font-family: Trebuchet MS, sans-serif;
+      	font-size: 15px;
+      	color: #444;
+      	margin-right: 24px;
+      }
+      
+      h1	{
+      	font-size: 25px;
+      }
+      h2	{
+      	font-size: 20px;
+      }
+      h3	{
+      	font-size: 16px;
+      	font-weight: bold;
+      }
+      hr	{
+      	height: 1px;
+      	border: 0;
+      	color: #ddd;
+      	background-color: #ddd;
+      }
+      
+      .app-desc {
+        clear: both;
+        margin-left: 20px;
+      }
+      .param-name {
+        width: 100%;
+      }
+      .license-info {
+        margin-left: 20px;
+      }
+      
+      .license-url {
+        margin-left: 20px;
+      }
+      
+      .model {
+        margin: 0 0 0px 20px;
+      }
+      
+      .method {
+        margin-left: 20px;
+      }
+      
+      .method-notes	{
+      	margin: 10px 0 20px 0;
+      	font-size: 90%;
+      	color: #555;
+      }
+      
+      pre {
+        padding: 10px;
+        margin-bottom: 2px;
+      }
+      
+      .http-method {
+       text-transform: uppercase;
+      }
+      
+      pre.get {
+        background-color: #0f6ab4;
+      }
+      
+      pre.post {
+        background-color: #10a54a;
+      }
+      
+      pre.put {
+        background-color: #c5862b;
+      }
+      
+      pre.delete {
+        background-color: #a41e22;
+      }
+      
+      .huge	{
+      	color: #fff;
+      }
+      
+      pre.example {
+        background-color: #f3f3f3;
+        padding: 10px;
+        border: 1px solid #ddd;
+      }
+      
+      code {
+        white-space: pre;
+      }
+      
+      .nickname {
+        font-weight: bold;
+      }
+      
+      .method-path {
+        font-size: 1.5em;
+        background-color: #0f6ab4;
+      }
+      
+      .up {
+        float:right;
+      }
+      
+      .parameter {
+        width: 500px;
+      }
+      
+      .param {
+        width: 500px;
+        padding: 10px 0 0 20px;
+        font-weight: bold;
+      }
+      
+      .param-desc {
+        width: 700px;
+        padding: 0 0 0 20px;
+        color: #777;
+      }
+      
+      .param-type {
+        font-style: italic;
+      }
+      
+      .param-enum-header {
+      width: 700px;
+      padding: 0 0 0 60px;
+      color: #777;
+      font-weight: bold;
+      }
+      
+      .param-enum {
+      width: 700px;
+      padding: 0 0 0 80px;
+      color: #777;
+      font-style: italic;
+      }
+      
+      .field-label {
+        padding: 0;
+        margin: 0;
+        clear: both;
+      }
+      
+      .field-items	{
+      	padding: 0 0 15px 0;
+      	margin-bottom: 15px;
+      }
+      
+      .return-type {
+        clear: both;
+        padding-bottom: 10px;
+      }
+      
+      .param-header {
+        font-weight: bold;
+      }
+      
+      .method-tags {
+        text-align: right;
+      }
+      
+      .method-tag {
+        background: none repeat scroll 0% 0% #24A600;
+        border-radius: 3px;
+        padding: 2px 10px;
+        margin: 2px;
+        color: #FFF;
+        display: inline-block;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+  <h1>API Rejestr WL</h1>
+    <div class="app-desc">Rejestr Podatników VAT</div>
+    <div class="app-desc">Contact Info: <a href="WykazPodatnikow@mf.gov.pl">WykazPodatnikow@mf.gov.pl</a></div>
+    <div class="app-desc">Version: 1.6.0</div>
+    
+    <div class="license-info">Apache 2.0</div>
+    <div class="license-url">http://www.apache.org/licenses/LICENSE-2.0.html</div>
+  <h2>Access</h2>
+
+  <h2><a name="__Methods">Methods</a></h2>
+  [ Jump to <a href="#__Models">Models</a> ]
+
+  <h3>Table of Contents </h3>
+  <div class="method-summary"></div>
+  <h4><a href="#Default">Default</a></h4>
+  <ul>
+  <li><a href="#bankAccount?date"><code><span class="http-method">get</span> /api/search/bank-account/{bank-account}</code></a></li>
+  <li><a href="#bankAccounts?date"><code><span class="http-method">get</span> /api/search/bank-accounts/{bank-accounts}</code></a></li>
+  <li><a href="#checkNip"><code><span class="http-method">get</span> /api/check/nip/{nip}/bank-account/{bank-account}</code></a></li>
+  <li><a href="#checkRegon"><code><span class="http-method">get</span> /api/check/regon/{regon}/bank-account/{bank-account}</code></a></li>
+  <li><a href="#nip?date"><code><span class="http-method">get</span> /api/search/nip/{nip}</code></a></li>
+  <li><a href="#nips?date"><code><span class="http-method">get</span> /api/search/nips/{nips}</code></a></li>
+  <li><a href="#regon?date"><code><span class="http-method">get</span> /api/search/regon/{regon}</code></a></li>
+  <li><a href="#regons?date"><code><span class="http-method">get</span> /api/search/regons/{regons}</code></a></li>
+  </ul>
+
+  <h1><a name="Default">Default</a></h1>
+  <div class="method"><a name="bankAccount?date"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/search/bank-account/{bank-account}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">bankAccount?date</span>)</div>
+    <div class="method-notes">Wyszukiwanie podmiotow po numerze konta</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">bank-account (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Numer rachunku bankowego </div>    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">date (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash;  format: date</div>    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#EntityListResponse">EntityListResponse</a>
+      
+    </div>
+
+  
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "result" : {
+    "subjects" : [ {
+      "authorizedClerks" : [ ],
+      "regon" : "regon",
+      "restorationDate" : "2019-02-21",
+      "workingAddress" : "ul/ Prosta 49 00-838 Warszawa",
+      "hasVirtualAccounts" : true,
+      "statusVat" : "Zwolniony",
+      "krs" : "0000636771",
+      "restorationBasis" : "Ustawa o podatku od towarów i usług art. 96",
+      "accountNumbers" : [ "90249000050247256316596736", "90249000050247256316596736" ],
+      "registrationDenialBasis" : "Ustawa o podatku od towarów i usług art. 96",
+      "nip" : "1111111111",
+      "removalDate" : "2019-02-21",
+      "partners" : [ ],
+      "name" : "ABC Jan Nowak",
+      "registrationLegalDate" : "2018-02-21",
+      "removalBasis" : "Ustawa o podatku od towarów i usług Art. 97",
+      "pesel" : "22222222222",
+      "representatives" : [ {
+        "firstName" : "Jan",
+        "lastName" : "Nowak",
+        "nip" : "1111111111",
+        "companyName" : "Nazwa firmy"
+      }, {
+        "firstName" : "Jan",
+        "lastName" : "Nowak",
+        "nip" : "1111111111",
+        "companyName" : "Nazwa firmy"
+      } ],
+      "residenceAddress" : "ul/ Chmielna 85/87 00-805 Warszawa",
+      "registrationDenialDate" : "2019-02-21"
+    }, {
+      "authorizedClerks" : [ ],
+      "regon" : "regon",
+      "restorationDate" : "2019-02-21",
+      "workingAddress" : "ul/ Prosta 49 00-838 Warszawa",
+      "hasVirtualAccounts" : true,
+      "statusVat" : "Zwolniony",
+      "krs" : "0000636771",
+      "restorationBasis" : "Ustawa o podatku od towarów i usług art. 96",
+      "accountNumbers" : [ "90249000050247256316596736", "90249000050247256316596736" ],
+      "registrationDenialBasis" : "Ustawa o podatku od towarów i usług art. 96",
+      "nip" : "1111111111",
+      "removalDate" : "2019-02-21",
+      "partners" : [ ],
+      "name" : "ABC Jan Nowak",
+      "registrationLegalDate" : "2018-02-21",
+      "removalBasis" : "Ustawa o podatku od towarów i usług Art. 97",
+      "pesel" : "22222222222",
+      "representatives" : [ {
+        "firstName" : "Jan",
+        "lastName" : "Nowak",
+        "nip" : "1111111111",
+        "companyName" : "Nazwa firmy"
+      }, {
+        "firstName" : "Jan",
+        "lastName" : "Nowak",
+        "nip" : "1111111111",
+        "companyName" : "Nazwa firmy"
+      } ],
+      "residenceAddress" : "ul/ Chmielna 85/87 00-805 Warszawa",
+      "registrationDenialDate" : "2019-02-21"
+    } ],
+  "requestDateTime": "19-11-2019 14:58:49",
+  "requestId" : "d2n10-84df1a1"
+  }
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Lista podmiotow, które spełnily warunki wyszukiwania
+        <a href="#EntityListResponse">EntityListResponse</a>
+    <h4 class="field-label">400</h4>
+    niepoprawny parametr na wejściu
+        <a href="#Exception">Exception</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="bankAccounts?date"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/search/bank-accounts/{bank-accounts}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">bankAccounts?date</span>)</div>
+    <div class="method-notes">Wyszukiwanie podmiotow po numerach kont</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">bank-accounts (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Lista maksymalnie 30 numerow rachunkow bankowych rozdzielonych przecinkami </div>    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">date (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash;  format: date</div>    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#EntryListResponse">EntryListResponse</a>
+      
+    </div>
+
+   
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "result" : {
+    "entries" : [ {
+      "identifier" : "90249000050247256316596736",
+      "subjects" : [ {
+        "authorizedClerks" : [ ],
+        "regon" : "regon",
+        "restorationDate" : "2019-02-21",
+        "workingAddress" : "ul/ Prosta 49 00-838 Warszawa",
+        "hasVirtualAccounts" : true,
+        "statusVat" : "Zwolniony",
+        "krs" : "0000636771",
+        "restorationBasis" : "Ustawa o podatku od towarów i usług art. 96",
+        "accountNumbers" : [ "90249000050247256316596736", "90249000050247256316596736" ],
+        "registrationDenialBasis" : "Ustawa o podatku od towarów i usług art. 96",
+        "nip" : "1111111111",
+        "removalDate" : "2019-02-21",
+        "partners" : [ ],
+        "name" : "ABC Jan Nowak",
+        "registrationLegalDate" : "2018-02-21",
+        "removalBasis" : "Ustawa o podatku od towarów i usług Art. 97",
+        "pesel" : "22222222222",
+        "representatives" : [ {
+          "firstName" : "Jan",
+          "lastName" : "Nowak",
+          "nip" : "1111111111",
+          "companyName" : "Nazwa firmy"
+        }, {
+          "firstName" : "Jan",
+          "lastName" : "Nowak",
+          "nip" : "1111111111",
+          "companyName" : "Nazwa firmy"
+        } ],
+        "residenceAddress" : "ul/ Chmielna 85/87 00-805 Warszawa",
+        "registrationDenialDate" : "2019-02-21"
+      }, {
+        "authorizedClerks" : [ ],
+        "regon" : "regon",
+        "restorationDate" : "2019-02-21",
+        "workingAddress" : "ul/ Prosta 49 00-838 Warszawa",
+        "hasVirtualAccounts" : true,
+        "statusVat" : "Zwolniony",
+        "krs" : "0000636771",
+        "restorationBasis" : "Ustawa o podatku od towarów i usług art. 96",
+        "accountNumbers" : [ "90249000050247256316596736", "90249000050247256316596736" ],
+        "registrationDenialBasis" : "Ustawa o podatku od towarów i usług art. 96",
+        "nip" : "1111111111",
+        "removalDate" : "2019-02-21",
+        "partners" : [ ],
+        "name" : "ABC Jan Nowak",
+        "registrationLegalDate" : "2018-02-21",
+        "removalBasis" : "Ustawa o podatku od towarów i usług Art. 97",
+        "pesel" : "22222222222",
+        "representatives" : [ {
+          "firstName" : "Jan",
+          "lastName" : "Nowak",
+          "nip" : "1111111111",
+          "companyName" : "Nazwa firmy"
+        }, {
+          "firstName" : "Jan",
+          "lastName" : "Nowak",
+          "nip" : "1111111111",
+          "companyName" : "Nazwa firmy"
+        } ],
+        "residenceAddress" : "ul/ Chmielna 85/87 00-805 Warszawa",
+        "registrationDenialDate" : "2019-02-21"
+      } ]
+    }, {
+      "identifier" : "90249000050247256316596736",
+      "subjects" : [ {
+        "authorizedClerks" : [ ],
+        "regon" : "regon",
+        "restorationDate" : "2019-02-21",
+        "workingAddress" : "ul/ Prosta 49 00-838 Warszawa",
+        "hasVirtualAccounts" : true,
+        "statusVat" : "Zwolniony",
+        "krs" : "0000636771",
+        "restorationBasis" : "Ustawa o podatku od towarów i usług art. 96",
+        "accountNumbers" : [ "90249000050247256316596736", "90249000050247256316596736" ],
+        "registrationDenialBasis" : "Ustawa o podatku od towarów i usług art. 96",
+        "nip" : "1111111111",
+        "removalDate" : "2019-02-21",
+        "partners" : [ ],
+        "name" : "ABC Jan Nowak",
+        "registrationLegalDate" : "2018-02-21",
+        "removalBasis" : "Ustawa o podatku od towarów i usług Art. 97",
+        "pesel" : "22222222222",
+        "representatives" : [ {
+          "firstName" : "Jan",
+          "lastName" : "Nowak",
+          "nip" : "1111111111",
+          "companyName" : "Nazwa firmy"
+        }, {
+          "firstName" : "Jan",
+          "lastName" : "Nowak",
+          "nip" : "1111111111",
+          "companyName" : "Nazwa firmy"
+        } ],
+        "residenceAddress" : "ul/ Chmielna 85/87 00-805 Warszawa",
+        "registrationDenialDate" : "2019-02-21"
+      }, {
+        "authorizedClerks" : [ ],
+        "regon" : "regon",
+        "restorationDate" : "2019-02-21",
+        "workingAddress" : "ul/ Prosta 49 00-838 Warszawa",
+        "hasVirtualAccounts" : true,
+        "statusVat" : "Zwolniony",
+        "krs" : "0000636771",
+        "restorationBasis" : "Ustawa o podatku od towarów i usług art. 96",
+        "accountNumbers" : [ "90249000050247256316596736", "90249000050247256316596736" ],
+        "registrationDenialBasis" : "Ustawa o podatku od towarów i usług art. 96",
+        "nip" : "1111111111",
+        "removalDate" : "2019-02-21",
+        "exemptionSmeDate": "2019-02-21",
+        "partners" : [ ],
+        "name" : "ABC Jan Nowak",
+        "registrationLegalDate" : "2018-02-21",
+        "removalBasis" : "Ustawa o podatku od towarów i usług Art. 97",
+        "pesel" : "22222222222",
+        "representatives" : [ {
+          "firstName" : "Jan",
+          "lastName" : "Nowak",
+          "nip" : "1111111111",
+          "companyName" : "Nazwa firmy"
+        }, {
+          "firstName" : "Jan",
+          "lastName" : "Nowak",
+          "nip" : "1111111111",
+          "companyName" : "Nazwa firmy"
+        } ],
+        "residenceAddress" : "ul/ Chmielna 85/87 00-805 Warszawa",
+        "registrationDenialDate" : "2019-02-21"
+      } ]
+    }, {
+      "identifier": "identifier",
+      "error": {
+        "code": "WL-101",
+        "message": "error message"
+      }
+    } ],
+    "requestDateTime" : "19-11-2019 14:58:49",
+    "requestId" : "d2n10-84df1a1"
+  }
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Rezultat wyszukiwania w postaci listy wpisów
+        <a href="#EntryListResponse">EntryListResponse</a>
+    <h4 class="field-label">400</h4>
+    niepoprawny parametr na wejściu
+        <a href="#Exception">Exception</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="checkNip"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/check/nip/{nip}/bank-account/{bank-account}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">checkNip</span>)</div>
+    <div class="method-notes">Sprawdzenie pojedynczego podmiotu po nip i numerze konta</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">nip (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Nip </div>      <div class="param">bank-account (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Numer rachunku bankowego </div>    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">date (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash;  format: date</div>    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#EntityCheckResponse">EntityCheckResponse</a>
+      
+    </div>
+
+   
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "result" : {
+    "accountAssigned" : "TAK",
+    "requestDateTime" : "19-11-2019 14:58:49",
+    "requestId" : "d2n10-84df1a1"
+  }
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Informacja, że dany rachunek jest przypisany do podmiotu
+        <a href="#EntityCheckResponse">EntityCheckResponse</a>
+    <h4 class="field-label">400</h4>
+    niepoprawny parametr na wejściu
+        <a href="#Exception">Exception</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="checkRegon"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/check/regon/{regon}/bank-account/{bank-account}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">checkRegon</span>)</div>
+    <div class="method-notes">Sprawdzenie pojedynczego podmiotu po regon i numerze konta</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">regon (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Regon </div>      <div class="param">bank-account (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Numer rachunku bankowego </div>    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">date (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash;  format: date</div>    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#EntityCheckResponse">EntityCheckResponse</a>
+      
+    </div>
+
+    
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "result" : {
+    "accountAssigned" : "TAK",
+    "requestDateTime" : "19-11-2019 14:58:49",
+    "requestId" : "d2n10-84df1a1"
+  }
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Informacja, że dany rachunek jest przypisany do podmiotu
+        <a href="#EntityCheckResponse">EntityCheckResponse</a>
+    <h4 class="field-label">400</h4>
+    niepoprawny parametr na wejściu
+        <a href="#Exception">Exception</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="nip?date"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/search/nip/{nip}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">nip?date</span>)</div>
+    <div class="method-notes">Wyszukiwanie pojedynczego podmiotu po nip</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">nip (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Nip </div>    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">date (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash;  format: date</div>    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#EntityResponse">EntityResponse</a>
+      
+    </div>
+
+    
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "result" : {
+    "subject" : {
+      "authorizedClerks" : [ ],
+      "regon" : "regon",
+      "restorationDate" : "2019-02-21",
+      "workingAddress" : "ul/ Prosta 49 00-838 Warszawa",
+      "hasVirtualAccounts" : true,
+      "statusVat" : "Zwolniony",
+      "krs" : "0000636771",
+      "restorationBasis" : "Ustawa o podatku od towarów i usług art. 96",
+      "accountNumbers" : [ "90249000050247256316596736", "90249000050247256316596736" ],
+      "registrationDenialBasis" : "Ustawa o podatku od towarów i usług art. 96",
+      "nip" : "1111111111",
+      "removalDate" : "2019-02-21",
+      "exemptionSmeDate": "2019-02-21",
+      "partners" : [ ],
+      "name" : "ABC Jan Nowak",
+      "registrationLegalDate" : "2018-02-21",
+      "removalBasis" : "Ustawa o podatku od towarów i usług Art. 97",
+      "pesel" : "22222222222",
+      "representatives" : [ {
+        "firstName" : "Jan",
+        "lastName" : "Nowak",
+        "nip" : "1111111111",
+        "companyName" : "Nazwa firmy"
+      }, {
+        "firstName" : "Jan",
+        "lastName" : "Nowak",
+        "nip" : "1111111111",
+        "companyName" : "Nazwa firmy"
+      } ],
+      "residenceAddress" : "ul/ Chmielna 85/87 00-805 Warszawa",
+      "registrationDenialDate" : "2019-02-21"
+    },
+    "requestDateTime" : "19-11-2019 14:58:49",
+    "requestId" : "d2n10-84df1a1"
+  }
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Pojedynczy podmiot, który spełnił warunki wyszukiwania
+        <a href="#EntityResponse">EntityResponse</a>
+    <h4 class="field-label">400</h4>
+    niepoprawny parametr na wejściu
+        <a href="#Exception">Exception</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="nips?date"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/search/nips/{nips}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">nips?date</span>)</div>
+    <div class="method-notes">Wyszukiwanie podmiotow po numerach nip</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">nips (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Lista maksymalnie 30 numerow NIP rozdzielonych przecinkami </div>    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">date (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash;  format: date</div>    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#EntryListResponse">EntryListResponse</a>
+      
+    </div>
+
+   
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "result" : {
+    "entries" : [ {
+      "identifier" : "1111111111",
+      "subjects" : [ {
+        "authorizedClerks" : [ ],
+        "regon" : "regon",
+        "restorationDate" : "2019-02-21",
+        "workingAddress" : "ul/ Prosta 49 00-838 Warszawa",
+        "hasVirtualAccounts" : true,
+        "statusVat" : "Zwolniony",
+        "krs" : "0000636771",
+        "restorationBasis" : "Ustawa o podatku od towarów i usług art. 96",
+        "accountNumbers" : [ "90249000050247256316596736", "90249000050247256316596736" ],
+        "registrationDenialBasis" : "Ustawa o podatku od towarów i usług art. 96",
+        "nip" : "1111111111",
+        "removalDate" : "2019-02-21",
+         "exemptionSmeDate": "2019-02-21",
+        "partners" : [ ],
+        "name" : "ABC Jan Nowak",
+        "registrationLegalDate" : "2018-02-21",
+        "removalBasis" : "Ustawa o podatku od towarów i usług Art. 97",
+        "pesel" : "22222222222",
+        "representatives" : [ {
+          "firstName" : "Jan",
+          "lastName" : "Nowak",
+          "nip" : "1111111111",
+          "companyName" : "Nazwa firmy"
+        }, {
+          "firstName" : "Jan",
+          "lastName" : "Nowak",
+          "nip" : "1111111111",
+          "companyName" : "Nazwa firmy"
+        } ],
+        "residenceAddress" : "ul/ Chmielna 85/87 00-805 Warszawa",
+        "registrationDenialDate" : "2019-02-21"
+      } ]
+    }, {
+      "identifier" : "1111111111",
+      "subjects" : [ {
+        "authorizedClerks" : [ ],
+        "regon" : "regon",
+        "restorationDate" : "2019-02-21",
+        "workingAddress" : "ul/ Prosta 49 00-838 Warszawa",
+        "hasVirtualAccounts" : true,
+        "statusVat" : "Zwolniony",
+        "krs" : "0000636771",
+        "restorationBasis" : "Ustawa o podatku od towarów i usług art. 96",
+        "accountNumbers" : [ "90249000050247256316596736", "90249000050247256316596736" ],
+        "registrationDenialBasis" : "Ustawa o podatku od towarów i usług art. 96",
+        "nip" : "1111111111",
+        "removalDate" : "2019-02-21",
+        "exemptionSmeDate": "2019-02-21",
+        "partners" : [ ],
+        "name" : "ABC Jan Nowak",
+        "registrationLegalDate" : "2018-02-21",
+        "removalBasis" : "Ustawa o podatku od towarów i usług Art. 97",
+        "pesel" : "22222222222",
+        "representatives" : [ {
+          "firstName" : "Jan",
+          "lastName" : "Nowak",
+          "nip" : "1111111111",
+          "companyName" : "Nazwa firmy"
+        }, {
+          "firstName" : "Jan",
+          "lastName" : "Nowak",
+          "nip" : "1111111111",
+          "companyName" : "Nazwa firmy"
+        } ],
+        "residenceAddress" : "ul/ Chmielna 85/87 00-805 Warszawa",
+        "registrationDenialDate" : "2019-02-21"
+      } ]
+    }, {
+      "identifier": "identifier",
+      "error": {
+        "code": "WL-101",
+        "message": "error message"
+      }
+    } ],
+    "requestDateTime" : "19-11-2019 14:58:49",
+    "requestId" : "d2n10-84df1a1"
+  }
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Rezultat wyszukiwania w postaci listy wpisów
+        <a href="#EntryListResponse">EntryListResponse</a>
+    <h4 class="field-label">400</h4>
+    niepoprawny parametr na wejściu
+        <a href="#Exception">Exception</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="regon?date"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/search/regon/{regon}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">regon?date</span>)</div>
+    <div class="method-notes">Wyszukiwanie pojedynczego podmiotu po regon</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">regon (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Regon </div>    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">date (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash;  format: date</div>    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#EntityResponse">EntityResponse</a>
+      
+    </div>
+
+   
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "result" : {
+    "subject" : {
+      "authorizedClerks" : [ ],
+      "regon" : "regon",
+      "restorationDate" : "2019-02-21",
+      "workingAddress" : "ul/ Prosta 49 00-838 Warszawa",
+      "hasVirtualAccounts" : true,
+      "statusVat" : "Zwolniony",
+      "krs" : "0000636771",
+      "restorationBasis" : "Ustawa o podatku od towarów i usług art. 96",
+      "accountNumbers" : [ "90249000050247256316596736", "90249000050247256316596736" ],
+      "registrationDenialBasis" : "Ustawa o podatku od towarów i usług art. 96",
+      "nip" : "1111111111",
+      "removalDate" : "2019-02-21",
+      "exemptionSmeDate": "2019-02-21",
+      "partners" : [ ],
+      "name" : "ABC Jan Nowak",
+      "registrationLegalDate" : "2018-02-21",
+      "removalBasis" : "Ustawa o podatku od towarów i usług Art. 97",
+      "pesel" : "22222222222",
+      "representatives" : [ {
+        "firstName" : "Jan",
+        "lastName" : "Nowak",
+        "nip" : "1111111111",
+        "companyName" : "Nazwa firmy"
+      }, {
+        "firstName" : "Jan",
+        "lastName" : "Nowak",
+        "nip" : "1111111111",
+        "companyName" : "Nazwa firmy"
+      } ],
+      "residenceAddress" : "ul/ Chmielna 85/87 00-805 Warszawa",
+      "registrationDenialDate" : "2019-02-21"
+    },
+    "requestDateTime" : "19-11-2019 14:58:49",
+    "requestId" : "d2n10-84df1a1"
+  }
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Pojedynczy podmiot, który spełnił warunki wyszukiwania
+        <a href="#EntityResponse">EntityResponse</a>
+    <h4 class="field-label">400</h4>
+    niepoprawny parametr na wejściu
+        <a href="#Exception">Exception</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="regons?date"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /api/search/regons/{regons}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">regons?date</span>)</div>
+    <div class="method-notes">Wyszukiwanie podmiotow po numerach regon</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">regons (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Regon </div>    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">date (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash;  format: date</div>    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#EntryListResponse">EntryListResponse</a>
+      
+    </div>
+
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "result" : {
+    "entries" : [ {
+      "identifier" : "regon",
+      "subjects" : [ {
+        "authorizedClerks" : [ ],
+        "regon" : "regon",
+        "restorationDate" : "2019-02-21",
+        "workingAddress" : "ul/ Prosta 49 00-838 Warszawa",
+        "hasVirtualAccounts" : true,
+        "statusVat" : "Zwolniony",
+        "krs" : "0000636771",
+        "restorationBasis" : "Ustawa o podatku od towarów i usług art. 96",
+        "accountNumbers" : [ "90249000050247256316596736", "90249000050247256316596736" ],
+        "registrationDenialBasis" : "Ustawa o podatku od towarów i usług art. 96",
+        "nip" : "1111111111",
+        "removalDate" : "2019-02-21",
+        "exemptionSmeDate": "2019-02-21",
+        "partners" : [ ],
+        "name" : "ABC Jan Nowak",
+        "registrationLegalDate" : "2018-02-21",
+        "removalBasis" : "Ustawa o podatku od towarów i usług Art. 97",
+        "pesel" : "22222222222",
+        "representatives" : [ {
+          "firstName" : "Jan",
+          "lastName" : "Nowak",
+          "nip" : "1111111111",
+          "companyName" : "Nazwa firmy"
+        }, {
+          "firstName" : "Jan",
+          "lastName" : "Nowak",
+          "nip" : "1111111111",
+          "companyName" : "Nazwa firmy"
+        } ],
+        "residenceAddress" : "ul/ Chmielna 85/87 00-805 Warszawa",
+        "registrationDenialDate" : "2019-02-21"
+      } ]
+    }, {
+      "identifier" : "regon",
+      "subjects" : [ {
+        "authorizedClerks" : [ ],
+        "regon" : "regon",
+        "restorationDate" : "2019-02-21",
+        "workingAddress" : "ul/ Prosta 49 00-838 Warszawa",
+        "hasVirtualAccounts" : true,
+        "statusVat" : "Zwolniony",
+        "krs" : "0000636771",
+        "restorationBasis" : "Ustawa o podatku od towarów i usług art. 96",
+        "accountNumbers" : [ "90249000050247256316596736", "90249000050247256316596736" ],
+        "registrationDenialBasis" : "Ustawa o podatku od towarów i usług art. 96",
+        "nip" : "1111111111",
+        "removalDate" : "2019-02-21",
+        "exemptionSmeDate": "2019-02-21",
+        "partners" : [ ],
+        "name" : "ABC Jan Nowak",
+        "registrationLegalDate" : "2018-02-21",
+        "removalBasis" : "Ustawa o podatku od towarów i usług Art. 97",
+        "pesel" : "22222222222",
+        "representatives" : [ {
+          "firstName" : "Jan",
+          "lastName" : "Nowak",
+          "nip" : "1111111111",
+          "companyName" : "Nazwa firmy"
+        }, {
+          "firstName" : "Jan",
+          "lastName" : "Nowak",
+          "nip" : "1111111111",
+          "companyName" : "Nazwa firmy"
+        } ],
+        "residenceAddress" : "ul/ Chmielna 85/87 00-805 Warszawa",
+        "registrationDenialDate" : "2019-02-21"
+      } ]
+    }, {
+      "identifier": "identifier",
+      "error": {
+        "code": "WL-101",
+        "message": "error message"
+      }
+    } ],
+    "requestDateTime" : "19-11-2019 14:58:49",
+    "requestId" : "d2n10-84df1a1"
+  }
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Rezultat wyszukiwania w postaci listy wpisów
+        <a href="#EntryListResponse">EntryListResponse</a>
+    <h4 class="field-label">400</h4>
+    niepoprawny parametr na wejściu
+        <a href="#Exception">Exception</a>
+  </div> <!-- method -->
+  <hr/>
+
+  <h2><a name="__Models">Models</a></h2>
+  [ Jump to <a href="#__Methods">Methods</a> ]
+
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#Entity"><code>Entity</code></a></li>
+    <li><a href="#EntityCheck"><code>EntityCheck</code></a></li>
+    <li><a href="#EntityCheckResponse"><code>EntityCheckResponse</code></a></li>
+    <li><a href="#EntityItem"><code>EntityItem</code></a></li>
+    <li><a href="#EntityList"><code>EntityList</code></a></li>
+    <li><a href="#EntityListResponse"><code>EntityListResponse</code></a></li>
+    <li><a href="#EntityPerson"><code>EntityPerson</code></a></li>
+    <li><a href="#EntityResponse"><code>EntityResponse</code></a></li>
+    <li><a href="#Entry"><code>Entry</code></a></li>
+    <li><a href="#EntryError"><code>EntryError</code></a></li>
+    <li><a href="#EntryList"><code>EntryList</code></a></li>
+    <li><a href="#EntryListResponse"><code>EntryListResponse</code></a></li>
+    <li><a href="#Exception"><code>Exception</code></a></li>
+    <li><a href="#Pesel"><code>Pesel</code></a></li>
+  </ol>
+
+  <div class="model">
+    <h3><a name="Entity"><code>Entity</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Firma (nazwa) lub imię i nazwisko </div>
+          <div class="param-desc"><span class="param-type">example: ABC Jan Nowak</span></div>
+<div class="param">nip (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: 1111111111</span></div>
+<div class="param">statusVat (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Status podatnika VAT. </div>
+        <div class="param-enum-header">Enum:</div>
+        <div class="param-enum">Czynny</div><div class="param-enum">Zwolniony</div><div class="param-enum">Niezarejestrowany</div>
+          <div class="param-desc"><span class="param-type">example: Zwolniony</span></div>
+<div class="param">regon (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Numer identyfikacyjny REGON </div>
+<div class="param">pesel (optional)</div><div class="param-desc"><span class="param-type"><a href="#Pesel">Pesel</a></span>  </div>
+<div class="param">krs (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> numer KRS jeżeli został nadany </div>
+          <div class="param-desc"><span class="param-type">example: 0000636771</span></div>
+<div class="param">residenceAddress (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Adres siedziby działalności gospodarczej (Adres siedziby OSOBY FIZYCZNEJ prowadzącej działalność gospodarczą) </div>
+          <div class="param-desc"><span class="param-type">example: ul/ Chmielna 85/87 00-805 Warszawa</span></div>
+<div class="param">workingAddress (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Adres rejestracyjny (Adres zamieszkania OSOBY FIZYCZNEJ lub adres siedziby ORGANIZACJI.). </div>
+          <div class="param-desc"><span class="param-type">example: ul/ Prosta 49 00-838 Warszawa</span></div>
+<div class="param">representatives (optional)</div><div class="param-desc"><span class="param-type"><a href="#EntityPerson">array[EntityPerson]</a></span> Imiona i nazwiska osób wchodzących w skład organu uprawnionego do reprezentowania podmiotu oraz ich numery NIP i/lub PESEL </div>
+<div class="param">authorizedClerks (optional)</div><div class="param-desc"><span class="param-type"><a href="#EntityPerson">array[EntityPerson]</a></span> Imiona i nazwiska prokurentów oraz ich numery NIP i/lub PESEL </div>
+<div class="param">partners (optional)</div><div class="param-desc"><span class="param-type"><a href="#EntityPerson">array[EntityPerson]</a></span> Imiona i nazwiska lub firmę (nazwa) wspólnika oraz jego numeryNIP i/lub PESEL </div>
+<div class="param">registrationLegalDate (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> Data rejestracji jako podatnika VAT format: date</div>
+          <div class="param-desc"><span class="param-type">example: Wed Feb 21 00:00:00 GMT 2018</span></div>
+<div class="param">registrationDenialDate (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> Data odmowy rejestracji jako podatnika VAT format: date</div>
+          <div class="param-desc"><span class="param-type">example: Thu Feb 21 00:00:00 GMT 2019</span></div>
+<div class="param">registrationDenialBasis (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Podstawa prawna odmowy rejestracji </div>
+          <div class="param-desc"><span class="param-type">example: Ustawa o podatku od towarów i usług art. 96</span></div>
+<div class="param">restorationDate (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> Data przywrócenia jako podatnika VAT format: date</div>
+          <div class="param-desc"><span class="param-type">example: Thu Feb 21 00:00:00 GMT 2019</span></div>
+<div class="param">restorationBasis (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Podstawa prawna przywrócenia jako podatnika VAT </div>
+          <div class="param-desc"><span class="param-type">example: Ustawa o podatku od towarów i usług art. 96</span></div>
+<div class="param">removalDate (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> Data wykreślenia odmowy rejestracji jako podatnika VAT format: date</div>
+          <div class="param-desc"><span class="param-type">example: Thu Feb 21 00:00:00 GMT 2019</span></div>
+<div class="param">exemptionSmeDate (optional)</div><div class="param-desc"><span class="param-type"><a href="#date">date</a></span> Data zwolnienia SME format: date</div>
+          <div class="param-desc"><span class="param-type">example: Thu Feb 21 00:00:00 GMT 2019</span></div>
+<div class="param">removalBasis (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Podstawa prawna wykreślenia odmowy rejestracji jako podatnika VAT </div>
+          <div class="param-desc"><span class="param-type">example: Ustawa o podatku od towarów i usług Art. 97</span></div>
+<div class="param">accountNumbers (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
+<div class="param">hasVirtualAccounts (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Podmiot posiada maski kont wirtualnych </div>
+          <div class="param-desc"><span class="param-type">example: true</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="EntityCheck"><code>EntityCheck</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">accountAssigned (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Czy rachunek przypisany do podmiotu czynnego </div>
+          <div class="param-desc"><span class="param-type">example: TAK</span></div>
+<div class="param">requestDateTime (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: 19-11-2019 14:58:49</span></div>
+<div class="param">requestId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: d2n10-84df1a1</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="EntityCheckResponse"><code>EntityCheckResponse</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">result (optional)</div><div class="param-desc"><span class="param-type"><a href="#EntityCheck">EntityCheck</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="EntityItem"><code>EntityItem</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">subject (optional)</div><div class="param-desc"><span class="param-type"><a href="#Entity">Entity</a></span>  </div>
+<div class="param">requestDateTime (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: 19-11-2019 14:58:49</span></div>
+<div class="param">requestId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: d2n10-84df1a1</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="EntityList"><code>EntityList</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">subjects (optional)</div><div class="param-desc"><span class="param-type"><a href="#Entity">array[Entity]</a></span> Lista podmiotów </div>
+<div class="param">requestDateTime (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: 19-11-2019 14:58:49</span></div>
+<div class="param">requestId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: d2n10-84df1a1</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="EntityListResponse"><code>EntityListResponse</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">result (optional)</div><div class="param-desc"><span class="param-type"><a href="#EntityList">EntityList</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="EntityPerson"><code>EntityPerson</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">companyName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: Nazwa firmy</span></div>
+<div class="param">firstName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: Jan</span></div>
+<div class="param">lastName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: Nowak</span></div>
+<div class="param">pesel (optional)</div><div class="param-desc"><span class="param-type"><a href="#Pesel">Pesel</a></span>  </div>
+<div class="param">nip (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: 1111111111</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="EntityResponse"><code>EntityResponse</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">result (optional)</div><div class="param-desc"><span class="param-type"><a href="#EntityItem">EntityItem</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="Entry"><code>Entry</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">identifier </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Przekazany identyfikator (Nip, Regon, Numer rachunku bankowego) </div>
+<div class="param">subjects </div><div class="param-desc"><span class="param-type"><a href="#Entity">array[Entity]</a></span> Lista podmiotów </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="EntryError"><code>EntryError</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">identifier </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Przekazany identyfikator (Nip, Regon, Numer rachunku bankowego) </div>
+<div class="param">error </div><div class="param-desc"><span class="param-type"><a href="#Exception">Exception</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="EntryList"><code>EntryList</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">entries </div><div class="param-desc"><span class="param-type"><a href="#Entry|EntryError">array[Entry|EntryError]</a></span> Lista odpowiedzi </div>
+              <div class="param-desc"><span class="param-type">items oneOf:</span>
+                  <a href="#Entry"><code>Entry</code></a>&nbsp;&nbsp;&nbsp;
+                  <a href="#EntryError"><code>EntryError</code></a>&nbsp;&nbsp;&nbsp;
+              </div>
+<div class="param">requestDateTime (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: 19-11-2019 14:58:49</span></div>
+<div class="param">requestId (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: d2n10-84df1a1</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="EntryListResponse"><code>EntryListResponse</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">result (optional)</div><div class="param-desc"><span class="param-type"><a href="#EntryList">EntryList</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="Exception"><code>Exception</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">message </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: error message</span></div>
+<div class="param">code </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+          <div class="param-desc"><span class="param-type">example: WL-101</span></div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="Pesel"><code>Pesel</code></a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>numer PESEL jeżeli został nadany</div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  </body>
+</html>
