@@ -8,11 +8,16 @@ import React, {
   useState,
 } from 'react';
 
+import { createCostForPeriodUseCase } from '@/features/calculator/application/use-cases/createCostForPeriod';
+import { deleteCostFromPeriodUseCase } from '@/features/calculator/application/use-cases/deleteCostFromPeriod';
+import { duplicateCostInPeriodUseCase } from '@/features/calculator/application/use-cases/duplicateCostInPeriod';
+import type { CostEditorInput } from '@/features/calculator/application/use-cases/costCommands';
 import { createIncomeForPeriodUseCase } from '@/features/calculator/application/use-cases/createIncomeForPeriod';
 import { deleteIncomeFromPeriodUseCase } from '@/features/calculator/application/use-cases/deleteIncomeFromPeriod';
 import { duplicateIncomeInPeriodUseCase } from '@/features/calculator/application/use-cases/duplicateIncomeInPeriod';
 import type { IncomeEditorInput } from '@/features/calculator/application/use-cases/incomeCommands';
 import { loadIncomesForPeriodUseCase } from '@/features/calculator/application/use-cases/loadIncomesForPeriod';
+import { updateCostForPeriodUseCase } from '@/features/calculator/application/use-cases/updateCostForPeriod';
 import { updateIncomeForPeriodUseCase } from '@/features/calculator/application/use-cases/updateIncomeForPeriod';
 import type { ReportingPeriodBundle } from '@/features/calculator/domain/entities/reporting-period-bundle';
 import type { CalculatorRepository } from '@/features/calculator/domain/repositories/CalculatorRepository';
@@ -32,6 +37,7 @@ type CalculatorDataContextValue = {
   bundle: ReportingPeriodBundle | null;
   hasLoadedSelectedPeriod: boolean;
   hasAnyRecordsEver: boolean;
+  hasAnyCostsEver: boolean;
   isLoading: boolean;
   error: string | null;
   goToNextPeriod: () => void;
@@ -42,6 +48,10 @@ type CalculatorDataContextValue = {
   updateIncome: (incomeId: string, input: IncomeEditorInput) => Promise<void>;
   duplicateIncome: (incomeId: string) => Promise<void>;
   deleteIncome: (incomeId: string) => Promise<void>;
+  createCost: (input: CostEditorInput) => Promise<void>;
+  updateCost: (costId: string, input: CostEditorInput) => Promise<void>;
+  duplicateCost: (costId: string) => Promise<void>;
+  deleteCost: (costId: string) => Promise<void>;
 };
 
 const CalculatorDataContext = createContext<CalculatorDataContextValue | null>(null);
@@ -63,24 +73,29 @@ export function ManagedCalculatorDataProvider({
   const [loadedPeriod, setLoadedPeriod] = useState<MonthlyReportingPeriod | null>(null);
   const [bundle, setBundle] = useState<ReportingPeriodBundle | null>(null);
   const [hasAnyRecordsEver, setHasAnyRecordsEver] = useState<boolean>(false);
+  const [hasAnyCostsEver, setHasAnyCostsEver] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const loadSequenceRef = useRef(0);
 
-  // Check if any income records exist in the entire database on initial load
+  // Check if any income or cost records exist in the entire database on initial load.
   useEffect(() => {
     let isCancelled = false;
 
     const checkAnyRecordsEver = async () => {
       try {
-        const anyRecords = await calculatorRepository.hasAnyIncomes();
+        const [anyIncomeRecords, anyCostRecords] = await Promise.all([
+          calculatorRepository.hasAnyIncomes(),
+          calculatorRepository.hasAnyCosts(),
+        ]);
         if (!isCancelled) {
-          setHasAnyRecordsEver(anyRecords);
+          setHasAnyRecordsEver(anyIncomeRecords);
+          setHasAnyCostsEver(anyCostRecords);
         }
       } catch {
-        // Ignore errors during this check, just keep as false
         if (!isCancelled) {
           setHasAnyRecordsEver(false);
+          setHasAnyCostsEver(false);
         }
       }
     };
@@ -111,9 +126,12 @@ export function ManagedCalculatorDataProvider({
       setBundle(nextBundle);
       setLoadedPeriod(period);
 
-      // Update hasAnyRecordsEver if we now have any records
       if (!hasAnyRecordsEver && nextBundle.incomes.length > 0) {
         setHasAnyRecordsEver(true);
+      }
+
+      if (!hasAnyCostsEver && nextBundle.costs.length > 0) {
+        setHasAnyCostsEver(true);
       }
     } catch (loadError) {
       if (requestId !== loadSequenceRef.current) {
@@ -130,7 +148,7 @@ export function ManagedCalculatorDataProvider({
         setIsLoading(false);
       }
     }
-  }, [calculatorRepository, hasAnyRecordsEver, selectedPeriod, settingsRepository]);
+  }, [calculatorRepository, hasAnyCostsEver, hasAnyRecordsEver, selectedPeriod, settingsRepository]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -150,7 +168,7 @@ export function ManagedCalculatorDataProvider({
       );
       setBundle(nextBundle);
       setLoadedPeriod(selectedPeriod);
-      setHasAnyRecordsEver(true); // We've now created an income record, so set to true
+      setHasAnyRecordsEver(true);
       setError(null);
     },
     [calculatorRepository, selectedPeriod, settingsRepository]
@@ -169,7 +187,7 @@ export function ManagedCalculatorDataProvider({
       );
       setBundle(nextBundle);
       setLoadedPeriod(selectedPeriod);
-      setHasAnyRecordsEver(true); // Make sure it stays true if it's already true
+      setHasAnyRecordsEver(true);
       setError(null);
     },
     [calculatorRepository, selectedPeriod, settingsRepository]
@@ -187,7 +205,7 @@ export function ManagedCalculatorDataProvider({
       );
       setBundle(nextBundle);
       setLoadedPeriod(selectedPeriod);
-      setHasAnyRecordsEver(true); // Make sure it stays true if it's already true
+      setHasAnyRecordsEver(true);
       setError(null);
     },
     [calculatorRepository, selectedPeriod, settingsRepository]
@@ -205,10 +223,85 @@ export function ManagedCalculatorDataProvider({
       );
       setBundle(nextBundle);
       setLoadedPeriod(selectedPeriod);
-      // Update hasAnyRecordsEver if we need to check if database is now empty
       if (nextBundle.incomes.length === 0) {
         const anyRecords = await calculatorRepository.hasAnyIncomes();
         setHasAnyRecordsEver(anyRecords);
+      }
+      setError(null);
+    },
+    [calculatorRepository, selectedPeriod, settingsRepository]
+  );
+
+  const createCost = useCallback(
+    async (input: CostEditorInput) => {
+      const nextBundle = await createCostForPeriodUseCase(
+        calculatorRepository,
+        settingsRepository,
+        {
+          period: selectedPeriod,
+          input,
+        }
+      );
+      setBundle(nextBundle);
+      setLoadedPeriod(selectedPeriod);
+      setHasAnyCostsEver(true);
+      setError(null);
+    },
+    [calculatorRepository, selectedPeriod, settingsRepository]
+  );
+
+  const updateCost = useCallback(
+    async (costId: string, input: CostEditorInput) => {
+      const nextBundle = await updateCostForPeriodUseCase(
+        calculatorRepository,
+        settingsRepository,
+        {
+          period: selectedPeriod,
+          costId,
+          input,
+        }
+      );
+      setBundle(nextBundle);
+      setLoadedPeriod(selectedPeriod);
+      setHasAnyCostsEver(true);
+      setError(null);
+    },
+    [calculatorRepository, selectedPeriod, settingsRepository]
+  );
+
+  const duplicateCost = useCallback(
+    async (costId: string) => {
+      const nextBundle = await duplicateCostInPeriodUseCase(
+        calculatorRepository,
+        settingsRepository,
+        {
+          period: selectedPeriod,
+          costId,
+        }
+      );
+      setBundle(nextBundle);
+      setLoadedPeriod(selectedPeriod);
+      setHasAnyCostsEver(true);
+      setError(null);
+    },
+    [calculatorRepository, selectedPeriod, settingsRepository]
+  );
+
+  const deleteCost = useCallback(
+    async (costId: string) => {
+      const nextBundle = await deleteCostFromPeriodUseCase(
+        calculatorRepository,
+        settingsRepository,
+        {
+          period: selectedPeriod,
+          costId,
+        }
+      );
+      setBundle(nextBundle);
+      setLoadedPeriod(selectedPeriod);
+      if (nextBundle.costs.length === 0) {
+        const anyCosts = await calculatorRepository.hasAnyCosts();
+        setHasAnyCostsEver(anyCosts);
       }
       setError(null);
     },
@@ -224,6 +317,7 @@ export function ManagedCalculatorDataProvider({
       bundle,
       hasLoadedSelectedPeriod,
       hasAnyRecordsEver,
+      hasAnyCostsEver,
       isLoading,
       error,
       goToNextPeriod: () => setSelectedPeriod((current) => getNextMonthlyReportingPeriod(current)),
@@ -235,19 +329,28 @@ export function ManagedCalculatorDataProvider({
       updateIncome,
       duplicateIncome,
       deleteIncome,
+      createCost,
+      updateCost,
+      duplicateCost,
+      deleteCost,
     }),
     [
       bundle,
+      createCost,
       createIncome,
+      deleteCost,
       deleteIncome,
+      duplicateCost,
       duplicateIncome,
       error,
+      hasAnyCostsEver,
       hasLoadedSelectedPeriod,
       hasAnyRecordsEver,
       isLoading,
       loadedPeriod,
       loadBundle,
       selectedPeriod,
+      updateCost,
       updateIncome,
     ]
   );

@@ -3,6 +3,7 @@ import {
   createDefaultReportingPeriodRecord,
   createReportingPeriodId,
 } from '@/features/calculator/infrastructure/mappers/calculatorRecordMapper';
+import { createCost } from '@/features/calculator/domain/entities/cost';
 import { createIncome } from '@/features/calculator/domain/entities/income';
 import type { MonthlyCalculationSnapshot } from '@/features/calculator/domain/entities/monthly-calculation-snapshot';
 import type { ReportingPeriod } from '@/features/calculator/domain/entities/reporting-period';
@@ -471,6 +472,7 @@ class InMemoryCalculatorRepository implements CalculatorRepository {
   private settingsSnapshots = new Map<string, ReportingPeriodSettingsSnapshot>();
   private calculationSnapshots = new Map<string, MonthlyCalculationSnapshot>();
   private incomes = new Map<string, ReturnType<typeof createIncome>>();
+  private costs = new Map<string, ReturnType<typeof createCost>>();
 
   async ensureReportingPeriod(period: ReturnType<typeof createMonthlyReportingPeriod>, settingsSnapshot: ReportingPeriodSettingsSnapshot) {
     const id = createReportingPeriodId(period.year, period.month);
@@ -515,7 +517,7 @@ class InMemoryCalculatorRepository implements CalculatorRepository {
       settingsSnapshot,
       calculationSnapshot,
       incomes: [...this.incomes.values()].filter((income) => income.reportingPeriodId === reportingPeriodId),
-      costs: [],
+      costs: [...this.costs.values()].filter((cost) => cost.reportingPeriodId === reportingPeriodId),
     };
   }
 
@@ -532,6 +534,19 @@ class InMemoryCalculatorRepository implements CalculatorRepository {
     }
   }
 
+  async saveCost(cost: ReturnType<typeof createCost>) {
+    this.costs.set(cost.id, cost);
+    return cost;
+  }
+
+  async deleteCost(reportingPeriodId: string, costId: string): Promise<void> {
+    const cost = this.costs.get(costId);
+
+    if (cost?.reportingPeriodId === reportingPeriodId) {
+      this.costs.delete(costId);
+    }
+  }
+
   async saveMonthlyCalculationSnapshot(snapshot: MonthlyCalculationSnapshot) {
     this.calculationSnapshots.set(snapshot.reportingPeriodId, snapshot);
     return snapshot;
@@ -539,6 +554,10 @@ class InMemoryCalculatorRepository implements CalculatorRepository {
 
   async hasAnyIncomes(): Promise<boolean> {
     return this.incomes.size > 0;
+  }
+
+  async hasAnyCosts(): Promise<boolean> {
+    return this.costs.size > 0;
   }
 }
 

@@ -8,6 +8,7 @@ import {
   reportingPeriodSettingsSnapshotsTable,
 } from '@/core/database/schema';
 import type { DrizzleDatabase } from '@/core/database/client';
+import type { Cost } from '@/features/calculator/domain/entities/cost';
 import type { Income } from '@/features/calculator/domain/entities/income';
 import type { MonthlyReportingPeriod } from '@/features/calculator/domain/value-objects/MonthlyReportingPeriod';
 import { calculateMonthlySnapshot } from '@/features/calculator/domain/services/calculateMonthlySnapshot';
@@ -25,6 +26,7 @@ import {
   fromMonthlyCalculationSnapshotRecord,
   fromReportingPeriodRecord,
   fromReportingPeriodSettingsSnapshotRecord,
+  toCostRecord,
   toIncomeRecord,
   toMonthlyCalculationSnapshotRecord,
   toReportingPeriodRecord,
@@ -167,6 +169,41 @@ export class SQLiteCalculatorRepository implements CalculatorRepository {
       .where(and(eq(incomesTable.reportingPeriodId, reportingPeriodId), eq(incomesTable.id, incomeId)));
   }
 
+  async saveCost(cost: Cost): Promise<Cost> {
+    const existingPeriod = await this.database.query.reportingPeriodsTable.findFirst({
+      where: eq(reportingPeriodsTable.id, cost.reportingPeriodId),
+    });
+
+    if (!existingPeriod) {
+      throw new Error(`Reporting period ${cost.reportingPeriodId} does not exist.`);
+    }
+
+    const record = toCostRecord(cost);
+
+    await this.database
+      .insert(costsTable)
+      .values(record)
+      .onConflictDoUpdate({
+        target: costsTable.id,
+        set: {
+          label: record.label,
+          description: record.description,
+          netAmount: record.netAmount,
+          vatRate: record.vatRate,
+          category: record.category,
+          updatedAt: record.updatedAt,
+        },
+      });
+
+    return cost;
+  }
+
+  async deleteCost(reportingPeriodId: string, costId: string): Promise<void> {
+    await this.database
+      .delete(costsTable)
+      .where(and(eq(costsTable.reportingPeriodId, reportingPeriodId), eq(costsTable.id, costId)));
+  }
+
   async saveMonthlyCalculationSnapshot(
     snapshot: MonthlyCalculationSnapshot
   ): Promise<MonthlyCalculationSnapshot> {
@@ -188,12 +225,23 @@ export class SQLiteCalculatorRepository implements CalculatorRepository {
   }
 
   async hasAnyIncomes(): Promise<boolean> {
-    const result = await this.database
-      .select({ count: incomesTable.id })
-      .from(incomesTable)
-      .limit(1);
-    
-    return result.length > 0;
+    const record = await this.database.query.incomesTable.findFirst({
+      columns: {
+        id: true,
+      },
+    });
+
+    return record !== undefined;
+  }
+
+  async hasAnyCosts(): Promise<boolean> {
+    const record = await this.database.query.costsTable.findFirst({
+      columns: {
+        id: true,
+      },
+    });
+
+    return record !== undefined;
   }
 
   private async findReportingPeriod(period: MonthlyReportingPeriod) {

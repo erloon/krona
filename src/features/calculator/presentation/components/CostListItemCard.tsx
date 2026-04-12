@@ -2,51 +2,66 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors, radius, spacing, typography } from '@/shared/theme';
+import { InfoBanner } from '@/shared/ui/primitives/InfoBanner';
 import { StatusTag } from '@/shared/ui/primitives/StatusTag';
 
 import { RecordActionRow } from './RecordActionRow';
 
 type CostListItemCardProps = {
   title: string;
-  metadata: string;
   amount: string;
+  netAmount: string;
   vatLabel: string;
   categoryLabel: string;
+  deductionLabel: string;
   onEdit?: () => void;
   onDuplicate?: () => void;
   onDelete?: () => void;
   deleteDisabled?: boolean;
+  actionDisabled?: boolean;
+  duplicateLoading?: boolean;
 };
 
 export function CostListItemCard({
   title,
-  metadata,
   amount,
+  netAmount,
   vatLabel,
   categoryLabel,
+  deductionLabel,
   onEdit,
   onDuplicate,
   onDelete,
   deleteDisabled = false,
+  actionDisabled = false,
+  duplicateLoading = false,
 }: CostListItemCardProps) {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
         <View style={styles.copy}>
+          <StatusTag label={categoryLabel} />
           <Text style={styles.title}>{title}</Text>
-          <Text style={styles.metadata}>{metadata}</Text>
         </View>
 
         <View style={styles.amountWrap}>
           <Text style={styles.amount}>{amount}</Text>
-          <View style={styles.tags}>
-            <StatusTag label={categoryLabel} />
-            <StatusTag label={vatLabel} />
-          </View>
+          <Text style={styles.metadata}>{vatLabel} | Netto: {netAmount} PLN</Text>
         </View>
       </View>
 
-      <RecordActionRow deleteDisabled={deleteDisabled} onDelete={onDelete} onDuplicate={onDuplicate} onEdit={onEdit} />
+      <InfoBanner message={deductionLabel} />
+
+      <RecordActionRow
+        actionDisabled={actionDisabled}
+        deleteDisabled={deleteDisabled}
+        duplicateLoading={duplicateLoading}
+        entityLabel="koszt"
+        onDelete={onDelete}
+        onDuplicate={onDuplicate}
+        onEdit={onEdit}
+        title={title}
+      />
     </View>
   );
 }
@@ -74,8 +89,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   metadata: {
-    ...typography.bodySmall,
+    ...typography.caption,
     color: colors.text.secondary,
+    textAlign: 'right',
   },
   amountWrap: {
     alignItems: 'flex-end',
@@ -86,9 +102,5 @@ const styles = StyleSheet.create({
     ...typography.metricValueCompact,
     color: colors.text.primary,
     textAlign: 'right',
-  },
-  tags: {
-    alignItems: 'flex-end',
-    gap: spacing.xs,
   },
 });

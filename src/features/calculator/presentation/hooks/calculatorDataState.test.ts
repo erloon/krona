@@ -4,6 +4,7 @@ import { createMonthlyReportingPeriod } from '@/features/calculator/domain/value
 import {
   getSelectedPeriodLabel,
   hasBundleForSelectedPeriod,
+  resolveCostsScreenContentState,
   resolveIncomesScreenContentState,
 } from './calculatorDataState';
 
@@ -98,6 +99,44 @@ export function testResolveIncomesScreenContentStateSeparatesEmptyAndList(): voi
       hasAnyRecordsEver: true,
     }) === 'no-results',
     'Loaded month with hidden records should render a no-results state.'
+  );
+}
+
+export function testResolveCostsScreenContentStateSeparatesFirstUseEmptyAndNoResults(): void {
+  assert(
+    resolveCostsScreenContentState({
+      isLoading: false,
+      error: null,
+      hasLoadedSelectedPeriod: true,
+      hasAnyRecordsInPeriod: false,
+      hasVisibleResults: false,
+      hasAnyCostsEver: false,
+    }) === 'first-use',
+    'First time user with no saved costs anywhere should render first-use state.'
+  );
+
+  assert(
+    resolveCostsScreenContentState({
+      isLoading: false,
+      error: null,
+      hasLoadedSelectedPeriod: true,
+      hasAnyRecordsInPeriod: false,
+      hasVisibleResults: false,
+      hasAnyCostsEver: true,
+    }) === 'empty',
+    'Loaded month without costs but other months have data should render empty state.'
+  );
+
+  assert(
+    resolveCostsScreenContentState({
+      isLoading: false,
+      error: null,
+      hasLoadedSelectedPeriod: true,
+      hasAnyRecordsInPeriod: true,
+      hasVisibleResults: false,
+      hasAnyCostsEver: true,
+    }) === 'no-results',
+    'Hidden costs behind filters should render a no-results state.'
   );
 }
 

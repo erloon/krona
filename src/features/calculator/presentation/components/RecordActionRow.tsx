@@ -14,6 +14,7 @@ type RecordActionRowProps = {
   duplicateLoading?: boolean;
   deleteDisabled?: boolean;
   title?: string;
+  entityLabel?: string;
 };
 
 export function RecordActionRow({
@@ -24,14 +25,15 @@ export function RecordActionRow({
   duplicateLoading = false,
   deleteDisabled = false,
   title,
+  entityLabel = 'przychód',
 }: RecordActionRowProps) {
-  const deleteLabel = title ? `Usuń przychód ${title}` : 'Usuń przychód';
+  const deleteLabel = title ? `Usuń ${entityLabel} ${title}` : `Usuń ${entityLabel}`;
 
   return (
     <View style={styles.row}>
       <SecondaryButton
-        accessibilityHint="Otwiera formularz edycji tego przychodu."
-        accessibilityLabel={title ? `Edytuj przychód ${title}` : 'Edytuj przychód'}
+        accessibilityHint={`Otwiera formularz edycji rekordu ${entityLabel}.`}
+        accessibilityLabel={title ? `Edytuj ${entityLabel} ${title}` : `Edytuj ${entityLabel}`}
         disabled={actionDisabled}
         fullWidth
         label="EDYTUJ"
@@ -42,8 +44,8 @@ export function RecordActionRow({
         style={styles.actionButton}
       />
       <SecondaryButton
-        accessibilityHint="Tworzy kopię tego przychodu w bieżącym miesiącu."
-        accessibilityLabel={title ? `Duplikuj przychód ${title}` : 'Duplikuj przychód'}
+        accessibilityHint={`Tworzy kopię rekordu ${entityLabel} w bieżącym miesiącu.`}
+        accessibilityLabel={title ? `Duplikuj ${entityLabel} ${title}` : `Duplikuj ${entityLabel}`}
         disabled={actionDisabled}
         fullWidth
         label="DUPLIKUJ"
@@ -55,7 +57,7 @@ export function RecordActionRow({
         style={styles.actionButton}
       />
       <IconButton
-        accessibilityHint="Otwiera potwierdzenie usunięcia tego przychodu."
+        accessibilityHint={`Otwiera potwierdzenie usunięcia rekordu ${entityLabel}.`}
         accessibilityLabel={deleteLabel}
         color={colors.brand.destructive}
         disabled={actionDisabled || deleteDisabled}

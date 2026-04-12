@@ -130,6 +130,39 @@ export class LocalStorageCalculatorRepository implements CalculatorRepository {
     this.writeStorage(storage);
   }
 
+  async saveCost(cost: Cost): Promise<Cost> {
+    const storage = this.readStorage();
+    const reportingPeriod = storage.reportingPeriods.find(
+      (candidate) => candidate.id === cost.reportingPeriodId
+    );
+
+    if (!reportingPeriod) {
+      throw new Error(`Reporting period ${cost.reportingPeriodId} does not exist.`);
+    }
+
+    const existingIndex = storage.costs.findIndex((candidate) => candidate.id === cost.id);
+
+    if (existingIndex >= 0) {
+      storage.costs[existingIndex] = cost;
+    } else {
+      storage.costs.push(cost);
+    }
+
+    this.writeStorage(storage);
+
+    return cost;
+  }
+
+  async deleteCost(reportingPeriodId: string, costId: string): Promise<void> {
+    const storage = this.readStorage();
+
+    storage.costs = storage.costs.filter(
+      (candidate) => !(candidate.reportingPeriodId === reportingPeriodId && candidate.id === costId)
+    );
+
+    this.writeStorage(storage);
+  }
+
   async saveMonthlyCalculationSnapshot(
     snapshot: MonthlyCalculationSnapshot
   ): Promise<MonthlyCalculationSnapshot> {
@@ -151,6 +184,11 @@ export class LocalStorageCalculatorRepository implements CalculatorRepository {
   async hasAnyIncomes(): Promise<boolean> {
     const storage = this.readStorage();
     return storage.incomes.length > 0;
+  }
+
+  async hasAnyCosts(): Promise<boolean> {
+    const storage = this.readStorage();
+    return storage.costs.length > 0;
   }
 
   private readStorage(): LocalStorageShape {

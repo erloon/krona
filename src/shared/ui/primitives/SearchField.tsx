@@ -4,9 +4,16 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { colors, radius, spacing, typography } from '@/shared/theme';
 
-type SearchFieldProps = Omit<TextInputProps, 'style'>;
+type SearchFieldProps = Omit<TextInputProps, 'style'> & {
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+};
 
-export function SearchField(props: SearchFieldProps) {
+export function SearchField({
+  accessibilityHint = 'Wpisz nazwę klienta albo numer faktury, aby zawęzić listę.',
+  accessibilityLabel = 'Szukaj przychodów',
+  ...props
+}: SearchFieldProps) {
   return (
     <View style={styles.container}>
       <MaterialCommunityIcons
@@ -16,8 +23,8 @@ export function SearchField(props: SearchFieldProps) {
         style={styles.icon}
       />
       <TextInput
-        accessibilityHint="Wpisz nazwę klienta albo numer faktury, aby zawęzić listę."
-        accessibilityLabel="Szukaj przychodów"
+        accessibilityHint={accessibilityHint}
+        accessibilityLabel={accessibilityLabel}
         placeholderTextColor={colors.text.muted}
         style={styles.input}
         {...props}

@@ -35,10 +35,15 @@ export type IncomeSummaryViewModel = {
 export type CostListItemViewModel = {
   id: string;
   title: string;
-  metadata: string;
   amount: number;
+  netAmount: number;
   vatLabel: string;
   categoryLabel: string;
+  deductionLabel: string;
+  searchableText: string;
+  vatRate: Cost['vatRate'];
+  category: Cost['category'];
+  createdAt: string;
 };
 
 export type CostSummaryViewModel = {
@@ -110,10 +115,15 @@ export function buildCostListItems(bundle: ReportingPeriodBundle): CostListItemV
   return bundle.costs.map((cost) => ({
     id: cost.id,
     title: cost.label,
-    metadata: cost.description || fallbackCostMetadata(cost),
-    amount: cost.netAmount,
+    amount: resolveCostGrossAmount(cost),
+    netAmount: cost.netAmount,
     vatLabel: toCostVatLabel(cost),
     categoryLabel: toCostCategoryLabel(cost),
+    deductionLabel: toCostDeductionLabel(cost),
+    searchableText: [cost.label, cost.description, cost.category, cost.vatRate].join(' '),
+    vatRate: cost.vatRate,
+    category: cost.category,
+    createdAt: cost.createdAt,
   }));
 }
 
@@ -156,11 +166,11 @@ function toCostVatLabel(cost: Cost) {
 function toCostCategoryLabel(cost: Cost) {
   switch (cost.category) {
     case 'CAR_MIXED':
-      return 'Auto 50/75';
+      return 'Auto mieszane';
     case 'CAR_BUSINESS':
       return 'Auto firmowe';
     default:
-      return 'Koszt standardowy';
+      return 'Standard';
   }
 }
 
@@ -179,8 +189,27 @@ function toIncomeBillingTypeLabel(income: Income) {
   }
 }
 
-function fallbackCostMetadata(cost: Cost) {
-  return cost.createdAt.slice(0, 10);
+function resolveCostGrossAmount(cost: Cost) {
+  return cost.netAmount + cost.netAmount * parseCostVatRate(cost.vatRate);
+}
+
+function parseCostVatRate(vatRate: Cost['vatRate']) {
+  if (vatRate === 'ZW') {
+    return 0;
+  }
+
+  return Number(vatRate) / 100;
+}
+
+function toCostDeductionLabel(cost: Cost) {
+  switch (cost.category) {
+    case 'CAR_MIXED':
+      return 'Odliczenie: PIT 75% | VAT 50%';
+    case 'CAR_BUSINESS':
+      return 'Odliczenie: PIT 100% | VAT 100%';
+    default:
+      return 'Odliczenie: PIT 100% | VAT 100%';
+  }
 }
 
 const amountFormatter = new Intl.NumberFormat('pl-PL', {
