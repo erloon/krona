@@ -88,12 +88,27 @@ export type DashboardViewModel = {
     ratio: number;
     percentageLabel: string;
   };
+  vatInfo: {
+    label: string;
+    amount: number;
+    currency: 'PLN';
+  };
   breakdown: {
     title: string;
     summaryLabel: string;
     summaryAmount: number;
     rows: readonly {
-      key: 'pit' | 'vat' | 'zus' | 'health';
+      key: 'pit' | 'zus' | 'health';
+      label: string;
+      amount: number;
+    }[];
+  };
+  costSavings: {
+    title: string;
+    summaryLabel: string;
+    summaryAmount: number;
+    rows: readonly {
+      key: 'pitSavings' | 'vatSavings';
       label: string;
       amount: number;
     }[];
@@ -204,9 +219,19 @@ export function buildCostListItems(bundle: ReportingPeriodBundle): CostListItemV
 }
 
 export function buildDashboardViewModel(bundle: ReportingPeriodBundle): DashboardViewModel {
+  const snapshotWithoutCosts = calculateMonthlySnapshot({
+    reportingPeriodId: bundle.reportingPeriod.id,
+    settingsSnapshot: bundle.settingsSnapshot,
+    incomes: bundle.incomes,
+    costs: [],
+  });
+  const pitSavingsAmount = Math.max(
+    0,
+    roundMoney(snapshotWithoutCosts.pitAmount - bundle.calculationSnapshot.pitAmount)
+  );
+  const vatSavingsAmount = bundle.calculationSnapshot.deductibleInputVatAmount;
   const burdenAmount = roundMoney(
     bundle.calculationSnapshot.pitAmount +
-      bundle.calculationSnapshot.vatPayableAmount +
       bundle.calculationSnapshot.zusAmount +
       bundle.calculationSnapshot.healthContributionAmount
   );
@@ -239,26 +264,33 @@ export function buildDashboardViewModel(bundle: ReportingPeriodBundle): Dashboar
       route: '/costs',
     },
     burden: {
-      title: 'Obciążenie całkowite',
+      title: 'Obciążenia przedsiębiorcy',
       detailLabel: formatCurrencyAmount(burdenAmount),
       amount: burdenAmount,
       ratio: burdenRatio,
       percentageLabel: `${formatPercentage(burdenRatio)} przychodu`,
     },
+    vatInfo:
+      bundle.calculationSnapshot.vatSurplusAmount > 0
+        ? {
+            label: 'Nadwyżka VAT',
+            amount: bundle.calculationSnapshot.vatSurplusAmount,
+            currency: 'PLN',
+          }
+        : {
+            label: 'VAT do zapłaty',
+            amount: bundle.calculationSnapshot.vatPayableAmount,
+            currency: 'PLN',
+          },
     breakdown: {
       title: 'Podatki i składki',
-      summaryLabel: 'Suma obciążeń',
+      summaryLabel: 'PIT, ZUS i zdrowotna',
       summaryAmount: burdenAmount,
       rows: [
         {
           key: 'pit',
           label: 'PIT',
           amount: bundle.calculationSnapshot.pitAmount,
-        },
-        {
-          key: 'vat',
-          label: 'VAT',
-          amount: bundle.calculationSnapshot.vatPayableAmount,
         },
         {
           key: 'zus',
@@ -269,6 +301,23 @@ export function buildDashboardViewModel(bundle: ReportingPeriodBundle): Dashboar
           key: 'health',
           label: 'Zdrowotna',
           amount: bundle.calculationSnapshot.healthContributionAmount,
+        },
+      ],
+    },
+    costSavings: {
+      title: 'Korzyści z kosztów',
+      summaryLabel: 'Zaoszczędzone na podatkach',
+      summaryAmount: roundMoney(vatSavingsAmount + pitSavingsAmount),
+      rows: [
+        {
+          key: 'vatSavings',
+          label: 'VAT odzyskany na kosztach',
+          amount: vatSavingsAmount,
+        },
+        {
+          key: 'pitSavings',
+          label: 'PIT zaoszczędzony na kosztach',
+          amount: pitSavingsAmount,
         },
       ],
     },

@@ -45,6 +45,7 @@ export function DashboardScreen() {
     selectedPeriod,
   } = useCalculatorData();
   const [isBreakdownExpanded, setIsBreakdownExpanded] = React.useState(false);
+  const [isCostSavingsExpanded, setIsCostSavingsExpanded] = React.useState(false);
   const [isPeriodPickerVisible, setIsPeriodPickerVisible] = React.useState(false);
   const [draftYear, setDraftYear] = React.useState(String(selectedPeriod.year));
   const [draftMonth, setDraftMonth] = React.useState(String(selectedPeriod.month));
@@ -203,8 +204,8 @@ export function DashboardScreen() {
 
           <SurfaceCard
             accessible
-            accessibilityLabel={`Obciążenie całkowite ${dashboard.burden.percentageLabel}`}
-            accessibilityHint="Pokazuje udział podatków i składek w przychodzie bieżącego okresu."
+            accessibilityLabel={`Obciążenia przedsiębiorcy ${dashboard.burden.percentageLabel}`}
+            accessibilityHint="Pokazuje udział PIT, ZUS i składki zdrowotnej w przychodzie bieżącego okresu."
             style={styles.burdenCard}
           >
             <View style={styles.burdenHeader}>
@@ -216,6 +217,14 @@ export function DashboardScreen() {
             </View>
             <ProgressBar progress={dashboard.burden.ratio} />
           </SurfaceCard>
+
+          <MetricCard
+            accessibilityHint="Pokazuje wyłącznie informacyjną kwotę rozliczenia VAT za bieżący okres."
+            accessibilityLabel={`${dashboard.vatInfo.label} ${formatCurrencyAmount(dashboard.vatInfo.amount)} PLN`}
+            amount={formatCurrencyAmount(dashboard.vatInfo.amount)}
+            currency={dashboard.vatInfo.currency}
+            label={dashboard.vatInfo.label}
+          />
 
           <InfoBanner
             message={`${dashboard.thresholdContext.title}: ${dashboard.thresholdContext.detail}`}
@@ -261,6 +270,25 @@ export function DashboardScreen() {
             summaryAmount={formatCurrencyAmount(dashboard.breakdown.summaryAmount)}
             summaryLabel={dashboard.breakdown.summaryLabel}
             title={dashboard.breakdown.title}
+          />
+
+          <FinancialBreakdownCard
+            accessibilityHint="Rozwija lub zwija listę oszczędności podatkowych wynikających z kosztów."
+            accessibilityLabel={
+              isCostSavingsExpanded
+                ? 'Zwiń korzyści z kosztów'
+                : 'Rozwiń korzyści z kosztów'
+            }
+            expanded={isCostSavingsExpanded}
+            onToggle={() => setIsCostSavingsExpanded((current) => !current)}
+            rows={dashboard.costSavings.rows.map((row) => ({
+              key: row.key,
+              label: row.label,
+              amount: formatCurrencyAmount(row.amount),
+            }))}
+            summaryAmount={formatCurrencyAmount(dashboard.costSavings.summaryAmount)}
+            summaryLabel={dashboard.costSavings.summaryLabel}
+            title={dashboard.costSavings.title}
           />
 
           {ipBoxEstimate ? (
