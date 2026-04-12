@@ -7,6 +7,7 @@ type BrandMarkProps = {
   title?: string;
   subtitle?: string;
   iconSize?: number;
+  showTitle?: boolean;
   showSubtitle?: boolean;
   variant?: 'splash' | 'compact';
 };
@@ -15,6 +16,7 @@ export function BrandMark({
   title = 'KRONA',
   subtitle = 'Kalkulator B2B',
   iconSize = 76,
+  showTitle = true,
   showSubtitle = true,
   variant = 'splash',
 }: BrandMarkProps) {
@@ -31,7 +33,9 @@ export function BrandMark({
         </View>
       </View>
 
-      <Text style={variant === 'compact' ? styles.titleCompact : styles.title}>{title}</Text>
+      {showTitle ? (
+        <Text style={variant === 'compact' ? styles.titleCompact : styles.title}>{title}</Text>
+      ) : null}
       {showSubtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
     </View>
   );

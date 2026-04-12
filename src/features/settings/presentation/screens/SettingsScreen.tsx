@@ -13,6 +13,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { startupSessionActions } from '@/core/store/startup-session';
 import { colors, radius, spacing, typography } from '@/shared/theme';
 import { ScreenContainer } from '@/shared/ui/layout/ScreenContainer';
+import { AppHeaderAvatar } from '@/shared/ui/primitives/AppHeaderAvatar';
+import { AppHeaderBrand } from '@/shared/ui/primitives/AppHeaderBrand';
 import { AppTopBar } from '@/shared/ui/primitives/AppTopBar';
 import { ChoiceCard } from '@/shared/ui/primitives/ChoiceCard';
 import { ConfirmationModal } from '@/shared/ui/primitives/ConfirmationModal';
@@ -84,21 +86,9 @@ export function SettingsScreen() {
   return (
     <ScreenContainer contentContainerStyle={styles.content}>
       <AppTopBar
-        title="Krona"
-        trailingContent={
-          <View style={styles.topBarActions}>
-            <Pressable style={styles.iconAction}>
-              <MaterialCommunityIcons
-                color={colors.text.secondary}
-                name="bell-outline"
-                size={20}
-              />
-            </Pressable>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarLabel}>K</Text>
-            </View>
-          </View>
-        }
+        title="KRONA"
+        leadingContent={<AppHeaderBrand />}
+        trailingContent={<AppHeaderAvatar />}
       />
 
       <View style={styles.hero}>
@@ -396,32 +386,6 @@ const styles = StyleSheet.create({
   content: {
     gap: spacing.xxl,
     paddingBottom: spacing.hero,
-  },
-  topBarActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  iconAction: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.pill,
-  },
-  avatar: {
-    width: 28,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border.whisper,
-    borderRadius: radius.pill,
-    backgroundColor: colors.background.surfaceContainerLow,
-  },
-  avatarLabel: {
-    ...typography.caption,
-    color: colors.text.primary,
   },
   hero: {
     gap: spacing.xs,

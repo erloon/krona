@@ -6,6 +6,8 @@ import { createMonthlyReportingPeriod } from '@/features/calculator/domain/value
 import { useCalculatorData } from '@/features/calculator/presentation/hooks/useManagedCalculatorData';
 import { colors, radius, spacing, typography } from '@/shared/theme';
 import { ScreenContainer } from '@/shared/ui/layout/ScreenContainer';
+import { AppHeaderAvatar } from '@/shared/ui/primitives/AppHeaderAvatar';
+import { AppHeaderBrand } from '@/shared/ui/primitives/AppHeaderBrand';
 import { AppTopBar } from '@/shared/ui/primitives/AppTopBar';
 import { ConfirmationModal } from '@/shared/ui/primitives/ConfirmationModal';
 import { EmptyState } from '@/shared/ui/primitives/EmptyState';
@@ -196,13 +198,9 @@ export function IncomesScreen() {
     <View style={styles.screen}>
       <ScreenContainer contentContainerStyle={styles.content}>
         <AppTopBar
-          leadingContent={<IconButton accessibilityHint="Otwiera nawigację aplikacji." accessibilityLabel="Otwórz menu" icon="menu" />}
+          leadingContent={<AppHeaderBrand />}
           title="KRONA"
-          trailingContent={
-            <View style={styles.avatar}>
-              <Text style={styles.avatarLabel}>MK</Text>
-            </View>
-          }
+          trailingContent={<AppHeaderAvatar />}
         />
 
         <View style={styles.headerSection}>
@@ -387,21 +385,6 @@ const styles = StyleSheet.create({
   },
   searchFieldWrap: {
     flex: 1,
-  },
-  avatar: {
-    minWidth: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: 'rgba(26, 28, 28, 0.08)',
-    backgroundColor: colors.background.surface,
-  },
-  avatarLabel: {
-    ...typography.caption,
-    color: colors.text.primary,
   },
   listSection: {
     gap: spacing.lg,

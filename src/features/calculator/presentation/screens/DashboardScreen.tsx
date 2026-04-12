@@ -6,9 +6,10 @@ import { createMonthlyReportingPeriod } from '@/features/calculator/domain/value
 import { useCalculatorData } from '@/features/calculator/presentation/hooks/useManagedCalculatorData';
 import { colors, radius, spacing, typography } from '@/shared/theme';
 import { ScreenContainer } from '@/shared/ui/layout/ScreenContainer';
+import { AppHeaderAvatar } from '@/shared/ui/primitives/AppHeaderAvatar';
+import { AppHeaderBrand } from '@/shared/ui/primitives/AppHeaderBrand';
 import { AppTopBar } from '@/shared/ui/primitives/AppTopBar';
 import { EmptyState } from '@/shared/ui/primitives/EmptyState';
-import { IconButton } from '@/shared/ui/primitives/IconButton';
 import { InfoBanner } from '@/shared/ui/primitives/InfoBanner';
 import { LoadingIndicator } from '@/shared/ui/primitives/LoadingIndicator';
 import { MetricCard } from '@/shared/ui/primitives/MetricCard';
@@ -107,19 +108,9 @@ export function DashboardScreen() {
   return (
     <ScreenContainer contentContainerStyle={styles.content}>
       <AppTopBar
-        leadingContent={
-          <IconButton
-            accessibilityHint="Otwiera nawigację aplikacji."
-            accessibilityLabel="Otwórz menu"
-            icon="menu"
-          />
-        }
+        leadingContent={<AppHeaderBrand />}
         title="KRONA"
-        trailingContent={
-          <View accessible accessibilityLabel="Profil użytkownika, inicjały MK" style={styles.avatar}>
-            <Text style={styles.avatarLabel}>{dashboard?.profileInitials ?? 'MK'}</Text>
-          </View>
-        }
+        trailingContent={<AppHeaderAvatar initials={dashboard?.profileInitials ?? 'K'} />}
       />
 
       <View style={styles.headerSection}>
@@ -342,21 +333,6 @@ const styles = StyleSheet.create({
   },
   headerSection: {
     gap: spacing.lg,
-  },
-  avatar: {
-    minWidth: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.border.subtle,
-    backgroundColor: colors.background.surface,
-  },
-  avatarLabel: {
-    ...typography.caption,
-    color: colors.text.primary,
   },
   welcomeSection: {
     gap: spacing.xs,
