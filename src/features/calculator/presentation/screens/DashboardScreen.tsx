@@ -13,6 +13,7 @@ import { SurfaceCard } from '@/shared/ui/primitives/SurfaceCard';
 
 import { ReportingPeriodHeader } from '../components/ReportingPeriodHeader';
 import { ReportingPeriodPickerModal } from '../components/ReportingPeriodPickerModal';
+import { getSelectedPeriodLabel } from '../hooks/calculatorDataState';
 import {
   buildDashboardViewModel,
   formatCurrencyAmount,
@@ -24,6 +25,7 @@ export function DashboardScreen() {
     error,
     goToNextPeriod,
     goToPreviousPeriod,
+    hasLoadedSelectedPeriod,
     isLoading,
     selectPeriod,
     selectedPeriod,
@@ -31,7 +33,11 @@ export function DashboardScreen() {
   const [isPeriodPickerVisible, setIsPeriodPickerVisible] = React.useState(false);
   const [draftYear, setDraftYear] = React.useState(String(selectedPeriod.year));
   const [draftMonth, setDraftMonth] = React.useState(String(selectedPeriod.month));
-  const dashboard = bundle ? buildDashboardViewModel(bundle) : null;
+  const dashboard = hasLoadedSelectedPeriod && bundle ? buildDashboardViewModel(bundle) : null;
+  const selectedPeriodLabel = React.useMemo(
+    () => getSelectedPeriodLabel(selectedPeriod),
+    [selectedPeriod]
+  );
 
   function handleCalendarPress() {
     setDraftYear(String(selectedPeriod.year));
@@ -64,15 +70,13 @@ export function DashboardScreen() {
         trailingContent={null}
       />
 
-      {bundle ? (
-        <ReportingPeriodHeader
-          navigationDisabled={isLoading}
-          onCalendarPress={handleCalendarPress}
-          onNextPress={goToNextPeriod}
-          onPreviousPress={goToPreviousPeriod}
-          periodLabel={dashboard?.monthLabel ?? ''}
-        />
-      ) : null}
+      <ReportingPeriodHeader
+        navigationDisabled={isLoading}
+        onCalendarPress={handleCalendarPress}
+        onNextPress={goToNextPeriod}
+        onPreviousPress={goToPreviousPeriod}
+        periodLabel={selectedPeriodLabel}
+      />
 
       {isLoading ? (
         <LoadingIndicator label="Ładowanie dashboardu..." />
@@ -102,7 +106,14 @@ export function DashboardScreen() {
             />
           </View>
         </>
-      ) : null}
+      ) : (
+        <View style={styles.emptyStateCard}>
+          <EmptyState
+            description="Wybrany okres raportowy nie ma jeszcze zapisanych danych do podsumowania."
+            title="Brak danych dla dashboardu"
+          />
+        </View>
+      )}
 
       <ReportingPeriodPickerModal
         draftMonth={draftMonth}

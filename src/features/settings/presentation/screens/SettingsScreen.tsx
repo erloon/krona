@@ -15,6 +15,8 @@ import { colors, radius, spacing, typography } from '@/shared/theme';
 import { ScreenContainer } from '@/shared/ui/layout/ScreenContainer';
 import { AppTopBar } from '@/shared/ui/primitives/AppTopBar';
 import { ChoiceCard } from '@/shared/ui/primitives/ChoiceCard';
+import { ConfirmationModal } from '@/shared/ui/primitives/ConfirmationModal';
+import { DestructiveButton } from '@/shared/ui/primitives/DestructiveButton';
 import { InfoBanner } from '@/shared/ui/primitives/InfoBanner';
 import { SectionHeader } from '@/shared/ui/primitives/SectionHeader';
 import { SelectField } from '@/shared/ui/primitives/SelectField';
@@ -36,13 +38,32 @@ import {
 
 export function SettingsScreen() {
   const router = useRouter();
-  const { error, isLoading, reload, saveState, settings, updateSettings } = useSettings();
+  const {
+    clearDatabase,
+    error,
+    isClearingData,
+    isLoading,
+    reload,
+    saveState,
+    settings,
+    updateSettings,
+  } = useSettings();
+  const [isResetConfirmationVisible, setIsResetConfirmationVisible] = React.useState(false);
 
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
 
   function handleLogout() {
     startupSessionActions.setAuthenticated(false);
     router.replace('/(auth)/login');
+  }
+
+  async function handleConfirmClearDatabase() {
+    try {
+      await clearDatabase();
+      setIsResetConfirmationVisible(false);
+    } catch {
+      // The hook already exposes a screen-level error message.
+    }
   }
 
   if (isLoading || !settings) {
@@ -340,12 +361,33 @@ export function SettingsScreen() {
       </View>
 
       <View style={styles.footer}>
+        <DestructiveButton
+          accessibilityHint="Usuwa wszystkie zapisane przychody, koszty, snapshoty i ustawienia aplikacji."
+          disabled={isClearingData}
+          label="Wyczyść bazę danych"
+          loading={isClearingData}
+          onPress={() => setIsResetConfirmationVisible(true)}
+          style={styles.clearDataButton}
+        />
         <Pressable onPress={handleLogout} style={styles.logoutButton}>
           <MaterialCommunityIcons color={colors.text.primary} name="logout" size={18} />
           <Text style={styles.logoutLabel}>Wyloguj się</Text>
         </Pressable>
         <Text style={styles.footerMeta}>KRONA v{appVersion} • 2026</Text>
       </View>
+
+      <ConfirmationModal
+        cancelLabel="Anuluj"
+        confirmLabel="Wyczyść"
+        destructive
+        loading={isClearingData}
+        message="Wszystkie przychody, koszty, okresy raportowe, snapshoty obliczeń i ustawienia zostaną trwale usunięte."
+        onCancel={() => setIsResetConfirmationVisible(false)}
+        onConfirm={handleConfirmClearDatabase}
+        title="Wyczyścić bazę danych?"
+        visible={isResetConfirmationVisible}
+        warningMessage="Ta operacja przywróci aplikację do stanu początkowego, ale nie wyloguje Cię z konta."
+      />
     </ScreenContainer>
   );
 }
@@ -442,6 +484,9 @@ const styles = StyleSheet.create({
   footer: {
     gap: spacing.xl,
     paddingTop: spacing.lg,
+  },
+  clearDataButton: {
+    marginBottom: spacing.xs,
   },
   ipBoxCosts: {
     gap: spacing.md,

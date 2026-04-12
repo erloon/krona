@@ -165,9 +165,30 @@ export function formatCurrencyAmount(value: number) {
 }
 
 function toBundlePeriodLabel(bundle: ReportingPeriodBundle) {
+  const parsedFromId = parseReportingPeriodParts(bundle.reportingPeriod.id);
+  const year = bundle.reportingPeriod.year ?? parsedFromId?.year;
+  const month = bundle.reportingPeriod.month ?? parsedFromId?.month;
+
+  if (!Number.isInteger(year) || !Number.isInteger(month)) {
+    return '';
+  }
+
   return toMonthlyReportingPeriodLabel(
-    createMonthlyReportingPeriod(bundle.reportingPeriod.year, bundle.reportingPeriod.month)
+    createMonthlyReportingPeriod(year, month)
   );
+}
+
+function parseReportingPeriodParts(value: string) {
+  const match = /^reporting-period-(\d{4})-(0[1-9]|1[0-2])$/.exec(value);
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    year: Number(match[1]),
+    month: Number(match[2]),
+  };
 }
 
 function toIncomeVatLabel(income: Income) {

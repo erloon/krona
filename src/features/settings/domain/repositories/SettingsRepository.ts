@@ -4,4 +4,5 @@ export interface SettingsRepository {
   getSettings(): Promise<AppSettings>;
   saveSettings(next: AppSettings): Promise<AppSettings>;
   updateSettings(patch: SettingsPatch): Promise<AppSettings>;
+  clearSettings(): Promise<void>;
 }

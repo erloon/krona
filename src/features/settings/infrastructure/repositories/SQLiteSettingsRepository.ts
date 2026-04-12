@@ -67,4 +67,8 @@ export class SQLiteSettingsRepository implements SettingsRepository {
 
     return this.saveSettings(next);
   }
+
+  async clearSettings(): Promise<void> {
+    await this.database.delete(settingsTable).where(eq(settingsTable.id, APP_SETTINGS_ID));
+  }
 }

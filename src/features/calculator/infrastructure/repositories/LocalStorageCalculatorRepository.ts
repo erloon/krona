@@ -7,6 +7,7 @@ import type { ReportingPeriodBundle } from '@/features/calculator/domain/entitie
 import type { ReportingPeriodSettingsSnapshot } from '@/features/calculator/domain/entities/reporting-period-settings-snapshot';
 import type { CalculatorRepository } from '@/features/calculator/domain/repositories/CalculatorRepository';
 import { calculateMonthlySnapshot } from '@/features/calculator/domain/services/calculateMonthlySnapshot';
+import { REPORTING_PERIOD_STATUS, createReportingPeriod } from '@/features/calculator/domain/entities/reporting-period';
 
 import {
   createDefaultEmptyCalculationSnapshot,
@@ -96,6 +97,18 @@ export class LocalStorageCalculatorRepository implements CalculatorRepository {
     };
   }
 
+  async listReportingPeriods(): Promise<readonly ReportingPeriod[]> {
+    const storage = this.readStorage();
+
+    return [...storage.reportingPeriods].sort((left, right) => {
+      if (left.year !== right.year) {
+        return right.year - left.year;
+      }
+
+      return right.month - left.month;
+    });
+  }
+
   async saveIncome(income: Income): Promise<Income> {
     const storage = this.readStorage();
     const reportingPeriod = storage.reportingPeriods.find(
@@ -163,6 +176,25 @@ export class LocalStorageCalculatorRepository implements CalculatorRepository {
     this.writeStorage(storage);
   }
 
+  async saveReportingPeriodSettingsSnapshot(
+    snapshot: ReportingPeriodSettingsSnapshot
+  ): Promise<ReportingPeriodSettingsSnapshot> {
+    const storage = this.readStorage();
+    const existingIndex = storage.settingsSnapshots.findIndex(
+      (candidate) => candidate.reportingPeriodId === snapshot.reportingPeriodId
+    );
+
+    if (existingIndex >= 0) {
+      storage.settingsSnapshots[existingIndex] = snapshot;
+    } else {
+      storage.settingsSnapshots.push(snapshot);
+    }
+
+    this.writeStorage(storage);
+
+    return snapshot;
+  }
+
   async saveMonthlyCalculationSnapshot(
     snapshot: MonthlyCalculationSnapshot
   ): Promise<MonthlyCalculationSnapshot> {
@@ -179,6 +211,11 @@ export class LocalStorageCalculatorRepository implements CalculatorRepository {
 
     this.writeStorage(storage);
     return snapshot;
+  }
+
+  async clearAllData(): Promise<void> {
+    const storage = getStorage();
+    storage?.removeItem(STORAGE_KEY);
   }
 
   async hasAnyIncomes(): Promise<boolean> {
@@ -203,7 +240,9 @@ export class LocalStorageCalculatorRepository implements CalculatorRepository {
       const parsed = JSON.parse(rawValue) as Partial<LocalStorageShape>;
 
       return {
-        reportingPeriods: parsed.reportingPeriods ?? [],
+        reportingPeriods: (parsed.reportingPeriods ?? [])
+          .map((reportingPeriod) => migrateStoredReportingPeriod(reportingPeriod))
+          .filter((reportingPeriod): reportingPeriod is ReportingPeriod => reportingPeriod !== null),
         settingsSnapshots: parsed.settingsSnapshots ?? [],
         calculationSnapshots: parsed.calculationSnapshots ?? [],
         incomes: (parsed.incomes ?? []).map((income) => migrateStoredIncome(income)),
@@ -236,6 +275,46 @@ function getStorage() {
   }
 
   return globalThis.localStorage;
+}
+
+function migrateStoredReportingPeriod(
+  reportingPeriod: Partial<ReportingPeriod>
+): ReportingPeriod | null {
+  const parsedFromId = parseReportingPeriodParts(reportingPeriod.id);
+  const year = reportingPeriod.year ?? parsedFromId?.year;
+  const month = reportingPeriod.month ?? parsedFromId?.month;
+
+  if (!Number.isInteger(year) || !Number.isInteger(month)) {
+    return null;
+  }
+
+  return createReportingPeriod({
+    id:
+      reportingPeriod.id ??
+      createReportingPeriodId(year, month),
+    year,
+    month,
+    status: reportingPeriod.status ?? REPORTING_PERIOD_STATUS.open,
+    createdAt: reportingPeriod.createdAt,
+    updatedAt: reportingPeriod.updatedAt,
+  });
+}
+
+function parseReportingPeriodParts(value?: string): { year: number; month: number } | null {
+  if (!value) {
+    return null;
+  }
+
+  const match = /^reporting-period-(\d{4})-(0[1-9]|1[0-2])$/.exec(value);
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    year: Number(match[1]),
+    month: Number(match[2]),
+  };
 }
 
 function migrateStoredIncome(income: Partial<Income> & { netAmount?: number }): Income {

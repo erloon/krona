@@ -14,9 +14,18 @@ type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
 const TEXT_INPUT_DEBOUNCE_MS = 450;
 
-export function useManagedSettings(repository: SettingsRepository) {
+type UseManagedSettingsOptions = {
+  onSettingsSaved?: (settings: AppSettings) => Promise<void> | void;
+  onSettingsCleared?: () => Promise<void> | void;
+};
+
+export function useManagedSettings(
+  repository: SettingsRepository,
+  options: UseManagedSettingsOptions = {}
+) {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isClearingData, setIsClearingData] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>('idle');
 
@@ -51,6 +60,33 @@ export function useManagedSettings(repository: SettingsRepository) {
     };
   }, []);
 
+  const clearDatabase = useCallback(async () => {
+    latestRequestIdRef.current += 1;
+
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+      debounceTimeoutRef.current = null;
+    }
+
+    setError(null);
+    setIsClearingData(true);
+
+    try {
+      await repository.clearSettings();
+      await options.onSettingsCleared?.();
+      await loadSettings();
+      setSaveState('saved');
+    } catch (clearError) {
+      const message =
+        clearError instanceof Error ? clearError.message : 'Nie udało się wyczyścić danych.';
+      setError(message);
+      setSaveState('error');
+      throw clearError;
+    } finally {
+      setIsClearingData(false);
+    }
+  }, [loadSettings, options, repository]);
+
   const enqueueSave = useCallback(
     (nextSettings: AppSettings) => {
       const requestId = ++latestRequestIdRef.current;
@@ -64,6 +100,19 @@ export function useManagedSettings(repository: SettingsRepository) {
 
             if (requestId === latestRequestIdRef.current) {
               setSettings(saved);
+              try {
+                await options.onSettingsSaved?.(saved);
+              } catch (syncError) {
+                const message =
+                  syncError instanceof Error
+                    ? syncError.message
+                    : 'Zapisano ustawienia, ale nie udało się przeliczyć danych.';
+
+                setError(message);
+                setSaveState('error');
+                return;
+              }
+
               setSaveState('saved');
             }
           } catch (saveError) {
@@ -79,7 +128,7 @@ export function useManagedSettings(repository: SettingsRepository) {
           }
         });
     },
-    [repository]
+    [options, repository]
   );
 
   const updateSettings = useCallback(
@@ -116,7 +165,9 @@ export function useManagedSettings(repository: SettingsRepository) {
     isLoading,
     error,
     saveState,
+    isClearingData,
     reload: loadSettings,
     updateSettings,
+    clearDatabase,
   };
 }

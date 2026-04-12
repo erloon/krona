@@ -17,6 +17,7 @@ import { deleteIncomeFromPeriodUseCase } from '@/features/calculator/application
 import { duplicateIncomeInPeriodUseCase } from '@/features/calculator/application/use-cases/duplicateIncomeInPeriod';
 import type { IncomeEditorInput } from '@/features/calculator/application/use-cases/incomeCommands';
 import { loadIncomesForPeriodUseCase } from '@/features/calculator/application/use-cases/loadIncomesForPeriod';
+import { syncAllReportingPeriodsWithSettingsUseCase } from '@/features/calculator/application/use-cases/syncAllReportingPeriodsWithSettings';
 import { updateCostForPeriodUseCase } from '@/features/calculator/application/use-cases/updateCostForPeriod';
 import { updateIncomeForPeriodUseCase } from '@/features/calculator/application/use-cases/updateIncomeForPeriod';
 import type { ReportingPeriodBundle } from '@/features/calculator/domain/entities/reporting-period-bundle';
@@ -44,6 +45,8 @@ type CalculatorDataContextValue = {
   goToPreviousPeriod: () => void;
   selectPeriod: (period: MonthlyReportingPeriod) => void;
   reloadSelectedPeriod: () => Promise<void>;
+  syncAllPeriodsWithCurrentSettings: () => Promise<void>;
+  resetCalculatorData: () => Promise<void>;
   createIncome: (input: IncomeEditorInput) => Promise<void>;
   updateIncome: (incomeId: string, input: IncomeEditorInput) => Promise<void>;
   duplicateIncome: (incomeId: string) => Promise<void>;
@@ -77,6 +80,16 @@ export function ManagedCalculatorDataProvider({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const loadSequenceRef = useRef(0);
+  const resetToCurrentMonth = useCallback(() => {
+    loadSequenceRef.current += 1;
+    setSelectedPeriod(monthlyReportingPeriodFromDate(new Date()));
+    setLoadedPeriod(null);
+    setBundle(null);
+    setHasAnyRecordsEver(false);
+    setHasAnyCostsEver(false);
+    setError(null);
+    setIsLoading(false);
+  }, []);
 
   // Check if any income or cost records exist in the entire database on initial load.
   useEffect(() => {
@@ -308,6 +321,37 @@ export function ManagedCalculatorDataProvider({
     [calculatorRepository, selectedPeriod, settingsRepository]
   );
 
+  const syncAllPeriodsWithCurrentSettings = useCallback(async () => {
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      await syncAllReportingPeriodsWithSettingsUseCase(calculatorRepository, settingsRepository);
+
+      const [anyRecords, anyCosts] = await Promise.all([
+        calculatorRepository.hasAnyIncomes(),
+        calculatorRepository.hasAnyCosts(),
+      ]);
+
+      setHasAnyRecordsEver(anyRecords);
+      setHasAnyCostsEver(anyCosts);
+      await loadBundle(selectedPeriod);
+    } catch (syncError) {
+      const message =
+        syncError instanceof Error
+          ? syncError.message
+          : 'Nie udało się przeliczyć danych dla zapisanych okresów.';
+      setError(message);
+      setIsLoading(false);
+      throw syncError;
+    }
+  }, [calculatorRepository, loadBundle, selectedPeriod, settingsRepository]);
+
+  const resetCalculatorData = useCallback(async () => {
+    await calculatorRepository.clearAllData();
+    resetToCurrentMonth();
+  }, [calculatorRepository, resetToCurrentMonth]);
+
   const hasLoadedSelectedPeriod = hasBundleForSelectedPeriod(bundle, loadedPeriod, selectedPeriod);
 
   const value = useMemo<CalculatorDataContextValue>(
@@ -325,6 +369,8 @@ export function ManagedCalculatorDataProvider({
         setSelectedPeriod((current) => getPreviousMonthlyReportingPeriod(current)),
       selectPeriod: (period) => setSelectedPeriod(period),
       reloadSelectedPeriod: loadBundle,
+      syncAllPeriodsWithCurrentSettings,
+      resetCalculatorData,
       createIncome,
       updateIncome,
       duplicateIncome,
@@ -350,6 +396,8 @@ export function ManagedCalculatorDataProvider({
       loadedPeriod,
       loadBundle,
       selectedPeriod,
+      syncAllPeriodsWithCurrentSettings,
+      resetCalculatorData,
       updateCost,
       updateIncome,
     ]

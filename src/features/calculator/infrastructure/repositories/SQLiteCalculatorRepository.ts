@@ -13,6 +13,7 @@ import type { Income } from '@/features/calculator/domain/entities/income';
 import type { MonthlyReportingPeriod } from '@/features/calculator/domain/value-objects/MonthlyReportingPeriod';
 import { calculateMonthlySnapshot } from '@/features/calculator/domain/services/calculateMonthlySnapshot';
 import type { MonthlyCalculationSnapshot } from '@/features/calculator/domain/entities/monthly-calculation-snapshot';
+import type { ReportingPeriod } from '@/features/calculator/domain/entities/reporting-period';
 import type { ReportingPeriodBundle } from '@/features/calculator/domain/entities/reporting-period-bundle';
 import type { ReportingPeriodSettingsSnapshot } from '@/features/calculator/domain/entities/reporting-period-settings-snapshot';
 import type { CalculatorRepository } from '@/features/calculator/domain/repositories/CalculatorRepository';
@@ -123,6 +124,14 @@ export class SQLiteCalculatorRepository implements CalculatorRepository {
     };
   }
 
+  async listReportingPeriods(): Promise<readonly ReportingPeriod[]> {
+    const records = await this.database.query.reportingPeriodsTable.findMany({
+      orderBy: (fields, operators) => [operators.desc(fields.year), operators.desc(fields.month)],
+    });
+
+    return records.map(fromReportingPeriodRecord);
+  }
+
   async saveIncome(income: Income): Promise<Income> {
     const existingPeriod = await this.database.query.reportingPeriodsTable.findFirst({
       where: eq(reportingPeriodsTable.id, income.reportingPeriodId),
@@ -210,6 +219,26 @@ export class SQLiteCalculatorRepository implements CalculatorRepository {
       .where(and(eq(costsTable.reportingPeriodId, reportingPeriodId), eq(costsTable.id, costId)));
   }
 
+  async saveReportingPeriodSettingsSnapshot(
+    snapshot: ReportingPeriodSettingsSnapshot
+  ): Promise<ReportingPeriodSettingsSnapshot> {
+    const record = toReportingPeriodSettingsSnapshotRecord(snapshot);
+
+    await this.database
+      .insert(reportingPeriodSettingsSnapshotsTable)
+      .values(record)
+      .onConflictDoUpdate({
+        target: reportingPeriodSettingsSnapshotsTable.reportingPeriodId,
+        set: {
+          version: record.version,
+          payload: record.payload,
+          updatedAt: record.updatedAt,
+        },
+      });
+
+    return snapshot;
+  }
+
   async saveMonthlyCalculationSnapshot(
     snapshot: MonthlyCalculationSnapshot
   ): Promise<MonthlyCalculationSnapshot> {
@@ -228,6 +257,14 @@ export class SQLiteCalculatorRepository implements CalculatorRepository {
       });
 
     return snapshot;
+  }
+
+  async clearAllData(): Promise<void> {
+    await this.database.delete(costsTable);
+    await this.database.delete(incomesTable);
+    await this.database.delete(monthlyCalculationSnapshotsTable);
+    await this.database.delete(reportingPeriodSettingsSnapshotsTable);
+    await this.database.delete(reportingPeriodsTable);
   }
 
   async hasAnyIncomes(): Promise<boolean> {

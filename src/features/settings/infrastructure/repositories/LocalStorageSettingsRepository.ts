@@ -55,6 +55,11 @@ export class LocalStorageSettingsRepository implements SettingsRepository {
     const current = await this.getSettings();
     return this.saveSettings(applySettingsPatch(current, patch));
   }
+
+  async clearSettings(): Promise<void> {
+    const storage = getStorage();
+    storage?.removeItem(STORAGE_KEY);
+  }
 }
 
 function getStorage() {
