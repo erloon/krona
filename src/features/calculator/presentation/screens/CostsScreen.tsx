@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 
+import { createMonthlyReportingPeriod } from '@/features/calculator/domain/value-objects/MonthlyReportingPeriod';
 import { useCalculatorData } from '@/features/calculator/presentation/hooks/useManagedCalculatorData';
 import { colors, radius, spacing, typography } from '@/shared/theme';
 import { ScreenContainer } from '@/shared/ui/layout/ScreenContainer';
@@ -13,6 +14,7 @@ import { LoadingIndicator } from '@/shared/ui/primitives/LoadingIndicator';
 import { CostListItemCard } from '../components/CostListItemCard';
 import { IncomeSummaryHeader } from '../components/IncomeSummaryHeader';
 import { ReportingPeriodHeader } from '../components/ReportingPeriodHeader';
+import { ReportingPeriodPickerModal } from '../components/ReportingPeriodPickerModal';
 import {
   buildCostListItems,
   buildCostSummaryViewModel,
@@ -20,12 +22,46 @@ import {
 } from '../view-models/calculatorViewModels';
 
 export function CostsScreen() {
-  const { bundle, error, goToNextPeriod, goToPreviousPeriod, isLoading } = useCalculatorData();
+  const {
+    bundle,
+    error,
+    goToNextPeriod,
+    goToPreviousPeriod,
+    isLoading,
+    selectPeriod,
+    selectedPeriod,
+  } = useCalculatorData();
+  const [isPeriodPickerVisible, setIsPeriodPickerVisible] = React.useState(false);
+  const [draftYear, setDraftYear] = React.useState(String(selectedPeriod.year));
+  const [draftMonth, setDraftMonth] = React.useState(String(selectedPeriod.month));
   const costSummary = bundle ? buildCostSummaryViewModel(bundle) : null;
   const costItems = bundle ? buildCostListItems(bundle) : [];
 
   function handleAddCost() {
     // Placeholder for navigation to the cost creation flow.
+  }
+
+  function handleCalendarPress() {
+    setDraftYear(String(selectedPeriod.year));
+    setDraftMonth(String(selectedPeriod.month));
+    setIsPeriodPickerVisible(true);
+  }
+
+  function handleApplyPeriod() {
+    if (!/^\d{4}$/.test(draftYear)) {
+      Alert.alert('Nieprawidłowy rok', 'Podaj rok w formacie RRRR.');
+      return;
+    }
+
+    const month = Number(draftMonth);
+
+    if (!Number.isInteger(month) || month < 1 || month > 12) {
+      Alert.alert('Nieprawidłowy miesiąc', 'Wybierz miesiąc od 1 do 12.');
+      return;
+    }
+
+    selectPeriod(createMonthlyReportingPeriod(Number(draftYear), month));
+    setIsPeriodPickerVisible(false);
   }
 
   return (
@@ -40,15 +76,14 @@ export function CostsScreen() {
         {bundle ? (
           <>
             <ReportingPeriodHeader
-              description="Koszty są przypisane do tego samego miesiąca raportowego co przychody i snapshot obciążeń."
+              navigationDisabled={isLoading}
+              onCalendarPress={handleCalendarPress}
               onNextPress={goToNextPeriod}
               onPreviousPress={goToPreviousPeriod}
               periodLabel={costSummary?.monthLabel ?? ''}
-              title="Okres kosztowy"
             />
 
             <IncomeSummaryHeader
-              monthLabel={costSummary?.monthLabel}
               pitAmount={formatCurrencyAmount(costSummary?.deductibleAmount ?? 0)}
               title="Koszty"
               totalAmount={formatCurrencyAmount(costSummary?.totalAmount ?? 0)}
@@ -87,6 +122,17 @@ export function CostsScreen() {
           </View>
         )}
       </ScreenContainer>
+
+      <ReportingPeriodPickerModal
+        draftMonth={draftMonth}
+        draftYear={draftYear}
+        onApply={handleApplyPeriod}
+        onClose={() => setIsPeriodPickerVisible(false)}
+        onDraftMonthChange={setDraftMonth}
+        onDraftYearChange={setDraftYear}
+        selectedPeriod={selectedPeriod}
+        visible={isPeriodPickerVisible}
+      />
 
       <FloatingActionButton accessibilityLabel="Dodaj koszt" onPress={handleAddCost} style={styles.fab} />
     </View>

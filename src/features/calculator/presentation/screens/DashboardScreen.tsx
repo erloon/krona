@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 
+import { createMonthlyReportingPeriod } from '@/features/calculator/domain/value-objects/MonthlyReportingPeriod';
 import { useCalculatorData } from '@/features/calculator/presentation/hooks/useManagedCalculatorData';
 import { colors, radius, spacing, typography } from '@/shared/theme';
 import { ScreenContainer } from '@/shared/ui/layout/ScreenContainer';
@@ -11,14 +12,49 @@ import { LoadingIndicator } from '@/shared/ui/primitives/LoadingIndicator';
 import { SurfaceCard } from '@/shared/ui/primitives/SurfaceCard';
 
 import { ReportingPeriodHeader } from '../components/ReportingPeriodHeader';
+import { ReportingPeriodPickerModal } from '../components/ReportingPeriodPickerModal';
 import {
   buildDashboardViewModel,
   formatCurrencyAmount,
 } from '../view-models/calculatorViewModels';
 
 export function DashboardScreen() {
-  const { bundle, error, goToNextPeriod, goToPreviousPeriod, isLoading } = useCalculatorData();
+  const {
+    bundle,
+    error,
+    goToNextPeriod,
+    goToPreviousPeriod,
+    isLoading,
+    selectPeriod,
+    selectedPeriod,
+  } = useCalculatorData();
+  const [isPeriodPickerVisible, setIsPeriodPickerVisible] = React.useState(false);
+  const [draftYear, setDraftYear] = React.useState(String(selectedPeriod.year));
+  const [draftMonth, setDraftMonth] = React.useState(String(selectedPeriod.month));
   const dashboard = bundle ? buildDashboardViewModel(bundle) : null;
+
+  function handleCalendarPress() {
+    setDraftYear(String(selectedPeriod.year));
+    setDraftMonth(String(selectedPeriod.month));
+    setIsPeriodPickerVisible(true);
+  }
+
+  function handleApplyPeriod() {
+    if (!/^\d{4}$/.test(draftYear)) {
+      Alert.alert('Nieprawidłowy rok', 'Podaj rok w formacie RRRR.');
+      return;
+    }
+
+    const month = Number(draftMonth);
+
+    if (!Number.isInteger(month) || month < 1 || month > 12) {
+      Alert.alert('Nieprawidłowy miesiąc', 'Wybierz miesiąc od 1 do 12.');
+      return;
+    }
+
+    selectPeriod(createMonthlyReportingPeriod(Number(draftYear), month));
+    setIsPeriodPickerVisible(false);
+  }
 
   return (
     <ScreenContainer contentContainerStyle={styles.content}>
@@ -30,12 +66,11 @@ export function DashboardScreen() {
 
       {bundle ? (
         <ReportingPeriodHeader
-          description="Dashboard czyta zapisany snapshot obciążeń i rekordy powiązane z wybranym miesiącem."
+          navigationDisabled={isLoading}
+          onCalendarPress={handleCalendarPress}
           onNextPress={goToNextPeriod}
           onPreviousPress={goToPreviousPeriod}
           periodLabel={dashboard?.monthLabel ?? ''}
-          statusLabel={dashboard?.statusLabel}
-          title="Okres dashboardu"
         />
       ) : null}
 
@@ -53,7 +88,6 @@ export function DashboardScreen() {
               <Text style={styles.heroValue}>{formatCurrencyAmount(dashboard.netToHandAmount)}</Text>
               <Text style={styles.heroCurrency}>PLN</Text>
             </View>
-            <Text style={styles.heroPeriod}>{dashboard.monthLabel}</Text>
           </SurfaceCard>
 
           <View style={styles.metricGrid}>
@@ -69,6 +103,17 @@ export function DashboardScreen() {
           </View>
         </>
       ) : null}
+
+      <ReportingPeriodPickerModal
+        draftMonth={draftMonth}
+        draftYear={draftYear}
+        onApply={handleApplyPeriod}
+        onClose={() => setIsPeriodPickerVisible(false)}
+        onDraftMonthChange={setDraftMonth}
+        onDraftYearChange={setDraftYear}
+        selectedPeriod={selectedPeriod}
+        visible={isPeriodPickerVisible}
+      />
     </ScreenContainer>
   );
 }
@@ -119,10 +164,6 @@ const styles = StyleSheet.create({
   heroCurrency: {
     ...typography.metricValueCompact,
     color: colors.brand.primary,
-  },
-  heroPeriod: {
-    ...typography.bodySmall,
-    color: colors.text.secondary,
   },
   metricGrid: {
     gap: spacing.md,

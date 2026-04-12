@@ -205,34 +205,51 @@ export function IncomesScreen() {
           }
         />
 
-        <ReportingPeriodHeader
-          description="Przychody i snapshot miesięczny są zapisane pod wybranym okresem raportowym."
-          onNextPress={goToNextPeriod}
-          onPreviousPress={goToPreviousPeriod}
-          navigationDisabled={isLoading || isMutatingIncome}
-          periodLabel={selectedPeriodLabel}
-          statusLabel={isLoading ? 'Ładowanie okresu' : undefined}
-          title="Okres raportowy"
-        />
-
-        {incomeListSummary ? (
-          <IncomeSummaryHeader
-            monthLabel={incomeListSummary.monthLabel}
-            pitAmount={formatCurrencyAmount(incomeListSummary.pitAmount)}
-            title="Przychody"
-            totalAmount={formatCurrencyAmount(incomeListSummary.totalNetAmount)}
-            totalCurrency="PLN"
-            totalLabel="Suma netto:"
-            vatAmount={formatCurrencyAmount(incomeListSummary.vatAmount)}
+        <View style={styles.headerSection}>
+          <ReportingPeriodHeader
+            onNextPress={goToNextPeriod}
+            onPreviousPress={goToPreviousPeriod}
+            onCalendarPress={handleCalendarPress}
+            navigationDisabled={isLoading || isMutatingIncome}
+            periodLabel={selectedPeriodLabel}
           />
-        ) : null}
 
-        <SearchField
-          editable={!isMutatingIncome}
-          onChangeText={setSearchQuery}
-          placeholder="Szukaj klienta lub faktury..."
-          value={searchQuery}
-        />
+          {incomeListSummary ? (
+            <IncomeSummaryHeader
+              pitAmount={formatCurrencyAmount(incomeListSummary.pitAmount)}
+              title="Przychody"
+              totalAmount={formatCurrencyAmount(incomeListSummary.totalNetAmount)}
+              totalCurrency="PLN"
+              totalLabel="Suma netto:"
+              vatAmount={formatCurrencyAmount(incomeListSummary.vatAmount)}
+            />
+          ) : null}
+        </View>
+
+        <View style={styles.searchSection}>
+          <View style={styles.searchRow}>
+            <View style={styles.searchFieldWrap}>
+              <SearchField
+                editable={!isMutatingIncome}
+                onChangeText={setSearchQuery}
+                placeholder="Szukaj klienta lub faktury..."
+                value={searchQuery}
+              />
+            </View>
+            <IconButton
+              accessibilityHint="Otwiera filtry listy przychodów."
+              accessibilityLabel={
+                hasActiveFilters ? 'Filtruj przychody, aktywne filtry' : 'Filtruj przychody'
+              }
+              color={hasActiveFilters ? colors.brand.primary : colors.text.secondary}
+              disabled={isMutatingIncome}
+              filled={hasActiveFilters}
+              icon="filter-variant"
+              onPress={handleFilterPress}
+            />
+          </View>
+          {listStatusLabel ? <Text style={styles.listStatusLabel}>{listStatusLabel}</Text> : null}
+        </View>
 
         {contentState === 'loading' ? (
           <LoadingIndicator label="Ładowanie okresu raportowego..." />
@@ -248,35 +265,6 @@ export function IncomesScreen() {
           </View>
         ) : shouldShowListSection ? (
           <View style={styles.listSection}>
-            <View style={styles.monthHeader}>
-              <View style={styles.monthHeaderCopy}>
-                <Text style={styles.monthLabel}>
-                  {incomeListSummary?.monthLabel ?? selectedPeriodLabel}
-                </Text>
-                {listStatusLabel ? <Text style={styles.listStatusLabel}>{listStatusLabel}</Text> : null}
-              </View>
-              <View style={styles.monthActions}>
-                <IconButton
-                  accessibilityHint="Otwiera filtry listy przychodów."
-                  accessibilityLabel={
-                    hasActiveFilters ? 'Filtruj przychody, aktywne filtry' : 'Filtruj przychody'
-                  }
-                  color={hasActiveFilters ? colors.brand.primary : colors.text.secondary}
-                  disabled={isMutatingIncome}
-                  filled={hasActiveFilters}
-                  icon="filter-variant"
-                  onPress={handleFilterPress}
-                />
-                <IconButton
-                  accessibilityHint="Otwiera wybór okresu raportowego."
-                  accessibilityLabel="Wybierz okres raportowy"
-                  disabled={isMutatingIncome}
-                  icon="calendar-month-outline"
-                  onPress={handleCalendarPress}
-                />
-              </View>
-            </View>
-
             {contentState === 'no-results' ? (
               <View style={styles.emptyStateCard}>
                 <EmptyState
@@ -386,6 +374,20 @@ const styles = StyleSheet.create({
     gap: spacing.xxl,
     paddingBottom: 120,
   },
+  headerSection: {
+    gap: spacing.md,
+  },
+  searchSection: {
+    gap: spacing.sm,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  searchFieldWrap: {
+    flex: 1,
+  },
   avatar: {
     minWidth: 36,
     height: 36,
@@ -402,33 +404,11 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
   },
   listSection: {
-    gap: spacing.xl,
-  },
-  monthHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-    paddingTop: spacing.xs,
-  },
-  monthHeaderCopy: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  monthLabel: {
-    ...typography.sectionLabel,
-    color: colors.text.secondary,
+    gap: spacing.lg,
   },
   listStatusLabel: {
     ...typography.caption,
     color: colors.text.subtle,
-  },
-  monthActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    marginLeft: 'auto',
   },
   cards: {
     gap: spacing.md,

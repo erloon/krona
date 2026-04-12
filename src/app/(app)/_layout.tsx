@@ -36,7 +36,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: 'Dashboard',
+          title: 'Pulpit',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="view-dashboard" size={size} color={color} />
           ),
@@ -45,7 +45,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="incomes"
         options={{
-          title: 'Incomes',
+          title: 'Przychody',
           tabBarIcon: ({ color, size }) => (
             <FontAwesome6 name="money-bill-1-wave" size={size} color={color} />
           ),
@@ -54,7 +54,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="costs"
         options={{
-          title: 'Costs',
+          title: 'Koszty',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="receipt-text" size={size} color={color} />
           ),
@@ -63,7 +63,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: 'Ustawienia',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="cog" size={size} color={color} />
           ),
