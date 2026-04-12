@@ -59,6 +59,7 @@ export const incomesTable = sqliteTable(
     description: text('description').notNull(),
     billingType: text('billing_type').notNull().default('MONTHLY'),
     baseAmount: real('base_amount').notNull().default(0),
+    netAmount: real('net_amount').notNull(),
     currency: text('currency').notNull(),
     vatRate: text('vat_rate').notNull(),
     workingDaysPerMonth: integer('working_days_per_month').notNull().default(21),

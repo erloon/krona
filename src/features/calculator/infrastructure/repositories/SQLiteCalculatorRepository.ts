@@ -153,6 +153,7 @@ export class SQLiteCalculatorRepository implements CalculatorRepository {
           description: record.description,
           billingType: record.billingType,
           baseAmount: record.baseAmount,
+          netAmount: record.netAmount,
           currency: record.currency,
           vatRate: record.vatRate,
           workingDaysPerMonth: record.workingDaysPerMonth,

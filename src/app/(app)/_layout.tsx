@@ -1,10 +1,13 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, spacing, typography } from '@/shared/theme';
 
 export default function AppLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       initialRouteName="dashboard"
@@ -14,9 +17,9 @@ export default function AppLayout() {
         tabBarInactiveTintColor: colors.text.secondary,
         tabBarShowLabel: true,
         tabBarStyle: {
-          height: 76,
+          height: 76 + insets.bottom,
           paddingTop: spacing.sm,
-          paddingBottom: spacing.md,
+          paddingBottom: Math.max(spacing.md, insets.bottom),
           backgroundColor: colors.background.surface,
           borderTopColor: colors.border.input,
         },

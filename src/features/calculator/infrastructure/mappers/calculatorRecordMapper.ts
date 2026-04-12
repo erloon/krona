@@ -6,7 +6,11 @@ import type {
   reportingPeriodSettingsSnapshotsTable,
 } from '@/core/database/schema';
 import { createCost, type Cost, type CostAttachment } from '@/features/calculator/domain/entities/cost';
-import { createIncome, type Income } from '@/features/calculator/domain/entities/income';
+import {
+  createIncome,
+  resolveIncomeMonthlyNetAmount,
+  type Income,
+} from '@/features/calculator/domain/entities/income';
 import {
   createMonthlyCalculationSnapshot,
   MONTHLY_CALCULATION_SNAPSHOT_VERSION,
@@ -203,6 +207,7 @@ export function toIncomeRecord(income: Income): IncomeInsertRecord {
     description: income.description,
     billingType: income.billingType,
     baseAmount: income.baseAmount,
+    netAmount: resolveIncomeMonthlyNetAmount(income),
     currency: income.currency,
     vatRate: income.vatRate,
     workingDaysPerMonth: income.workParameters.workingDaysPerMonth,
