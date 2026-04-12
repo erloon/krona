@@ -1,8 +1,10 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import type { IncomeValidationWarning } from '@/features/calculator/domain/services/validateIncomeBusinessRules';
 import { colors, radius, spacing, typography } from '@/shared/theme';
 import { StatusTag } from '@/shared/ui/primitives/StatusTag';
+import { ValidationWarningsList } from '@/shared/ui/primitives/ValidationWarning';
 
 import { RecordActionRow } from './RecordActionRow';
 
@@ -12,6 +14,7 @@ type IncomeListItemCardProps = {
   amount: string;
   currency: string;
   vatLabel: string;
+  warnings?: readonly IncomeValidationWarning[];
   onEdit?: () => void;
   onDuplicate?: () => void;
   onDelete?: () => void;
@@ -24,6 +27,7 @@ export function IncomeListItemCard({
   amount,
   currency,
   vatLabel,
+  warnings = [],
   onEdit,
   onDuplicate,
   onDelete,
@@ -45,6 +49,10 @@ export function IncomeListItemCard({
           <StatusTag label={vatLabel} />
         </View>
       </View>
+
+      {warnings.length > 0 ? (
+        <ValidationWarningsList warnings={warnings.map((w) => w.message)} />
+      ) : null}
 
       <RecordActionRow deleteDisabled={deleteDisabled} onDelete={onDelete} onDuplicate={onDuplicate} onEdit={onEdit} />
     </View>

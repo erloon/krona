@@ -8,7 +8,13 @@ import {
   type IncomeCurrency,
   type IncomeVatRate,
 } from '@/features/calculator/domain/entities/income';
-import type { IncomeEditorInput } from '@/features/calculator/application/use-cases/incomeCommands';
+import {
+  type IncomeEditorInput,
+} from '@/features/calculator/application/use-cases/incomeCommands';
+import {
+  validateIncomeInputBusinessRules,
+  type IncomeValidationInput,
+} from '@/features/calculator/domain/services/validateIncomeBusinessRules';
 import { useCalculatorData } from '@/features/calculator/presentation/hooks/useManagedCalculatorData';
 import { colors, spacing, typography } from '@/shared/theme';
 import { ScreenContainer } from '@/shared/ui/layout/ScreenContainer';
@@ -22,6 +28,7 @@ import { NumericAmountField } from '@/shared/ui/primitives/NumericAmountField';
 import { PrimaryButton } from '@/shared/ui/primitives/PrimaryButton';
 import { TextAreaField } from '@/shared/ui/primitives/TextAreaField';
 import { TextField } from '@/shared/ui/primitives/TextField';
+import { ValidationWarningsList } from '@/shared/ui/primitives/ValidationWarning';
 
 import { AmountSummaryPanel } from '../components/AmountSummaryPanel';
 import { SettlementTypeSelector } from '../components/SettlementTypeSelector';
@@ -74,6 +81,7 @@ export function AddIncomeScreen() {
   const { createIncome } = useCalculatorData();
   const [form, setForm] = React.useState<AddIncomeFormState>(defaultFormState);
   const [validationMessage, setValidationMessage] = React.useState<string | null>(null);
+  const [validationWarnings, setValidationWarnings] = React.useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const summary = React.useMemo(() => buildIncomeSummary(form), [form]);
@@ -92,14 +100,20 @@ export function AddIncomeScreen() {
   }
 
   async function handleSave() {
-    const input = validateIncomeInput(form);
+    const validationInput = buildValidationInput(form);
+    const validationResult = validateIncomeInputBusinessRules(validationInput);
 
-    if (typeof input === 'string') {
-      setValidationMessage(input);
+    if (!validationResult.isValid) {
+      setValidationMessage(validationResult.errors[0]?.message ?? 'Nieprawidłowe dane.');
+      setValidationWarnings([]);
       return;
     }
 
     setValidationMessage(null);
+    setValidationWarnings(validationResult.warnings.map((w) => w.message));
+
+    const input = buildIncomeEditorInput(form);
+
     setIsSubmitting(true);
 
     try {
@@ -206,6 +220,10 @@ export function AddIncomeScreen() {
 
       {validationMessage ? <Text style={styles.validation}>{validationMessage}</Text> : null}
 
+      {validationWarnings.length > 0 ? (
+        <ValidationWarningsList warnings={validationWarnings} />
+      ) : null}
+
       <PrimaryButton
         disabled={isSubmitting}
         label={isSubmitting ? 'ZAPISYWANIE...' : 'ZAPISZ PRZYCHÓD'}
@@ -246,23 +264,29 @@ function buildIncomeSummary(form: AddIncomeFormState) {
   };
 }
 
-function validateIncomeInput(form: AddIncomeFormState): IncomeEditorInput | string {
+function buildValidationInput(form: AddIncomeFormState): IncomeValidationInput {
   const baseAmount = parseDecimalInput(form.baseAmount);
-
-  if (!Number.isFinite(baseAmount) || baseAmount <= 0) {
-    return 'Kwota netto musi być większa od zera.';
-  }
-
   const workingDaysPerMonth = parseIntegerInput(form.workingDaysPerMonth);
   const workingHoursPerDay = parseIntegerInput(form.workingHoursPerDay);
 
-  if (form.billingType !== 'MONTHLY' && (!Number.isInteger(workingDaysPerMonth) || workingDaysPerMonth <= 0)) {
-    return 'Podaj liczbę dni roboczych w miesiącu.';
-  }
+  return {
+    baseAmount,
+    billingType: form.billingType,
+    currency: form.currency,
+    vatRate: form.vatRate,
+    workingDaysPerMonth,
+    workingHoursPerDay,
+    exchangeRate: 1, // Default for PLN, will be set by domain if foreign currency
+    exchangeRateEffectiveDate: new Date().toISOString().slice(0, 10),
+    ipBoxQualifiedIncomePercent: null,
+    lumpSumRate: null,
+  };
+}
 
-  if (form.billingType === 'HOURLY' && (!Number.isInteger(workingHoursPerDay) || workingHoursPerDay <= 0)) {
-    return 'Podaj liczbę godzin pracy na dzień.';
-  }
+function buildIncomeEditorInput(form: AddIncomeFormState): IncomeEditorInput {
+  const baseAmount = parseDecimalInput(form.baseAmount);
+  const workingDaysPerMonth = parseIntegerInput(form.workingDaysPerMonth);
+  const workingHoursPerDay = parseIntegerInput(form.workingHoursPerDay);
 
   return {
     label: form.label.trim() || form.clientName.trim() || 'Nowe źródło przychodu',

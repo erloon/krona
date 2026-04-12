@@ -5,6 +5,10 @@ import {
   createMonthlyReportingPeriod,
   toMonthlyReportingPeriodLabel,
 } from '@/features/calculator/domain/value-objects/MonthlyReportingPeriod';
+import {
+  validateIncomeEntityBusinessRules,
+  type IncomeValidationWarning,
+} from '@/features/calculator/domain/services/validateIncomeBusinessRules';
 
 export type IncomeListItemViewModel = {
   id: string;
@@ -18,6 +22,7 @@ export type IncomeListItemViewModel = {
   billingTypeLabel: string;
   createdAt: string;
   searchableText: string;
+  warnings: readonly IncomeValidationWarning[];
 };
 
 export type IncomeSummaryViewModel = {
@@ -67,6 +72,7 @@ export function buildIncomeSummaryViewModel(bundle: ReportingPeriodBundle): Inco
 export function buildIncomeListItems(bundle: ReportingPeriodBundle): IncomeListItemViewModel[] {
   return bundle.incomes.map((income) => {
     const metadata = income.description || fallbackIncomeMetadata(income);
+    const validationResult = validateIncomeEntityBusinessRules(income);
 
     return {
       id: income.id,
@@ -88,6 +94,7 @@ export function buildIncomeListItems(bundle: ReportingPeriodBundle): IncomeListI
       ]
         .filter(Boolean)
         .join(' '),
+      warnings: validationResult.warnings,
     };
   });
 }

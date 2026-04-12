@@ -62,6 +62,14 @@ export const colors = {
     subtle: 'rgba(26, 28, 28, 0.08)',
     whisper: 'rgba(26, 28, 28, 0.12)',
   },
+  feedback: {
+    warning: '#8a6200',
+    warningBackground: '#fff4e0',
+    error: '#b3261e',
+    errorBackground: '#fce8e6',
+    success: '#146e2a',
+    successBackground: '#e6f4ea',
+  },
 } as const;
 
 export const shadows = {

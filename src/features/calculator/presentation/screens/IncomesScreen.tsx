@@ -14,7 +14,6 @@ import { IconButton } from '@/shared/ui/primitives/IconButton';
 import { LoadingIndicator } from '@/shared/ui/primitives/LoadingIndicator';
 import { SearchField } from '@/shared/ui/primitives/SearchField';
 
-import type { IncomeEditorValues } from '../components/IncomeEditorModal';
 import { IncomeFiltersModal } from '../components/IncomeFiltersModal';
 import { IncomeListItemCard } from '../components/IncomeListItemCard';
 import { IncomeSummaryHeader } from '../components/IncomeSummaryHeader';
@@ -61,8 +60,6 @@ export function IncomesScreen() {
   const [deleteConfirmationVisible, setDeleteConfirmationVisible] = React.useState(false);
   const [pendingDeleteIncomeId, setPendingDeleteIncomeId] = React.useState<string | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
-  // const [editingIncomeId, setEditingIncomeId] = React.useState<string | null>(null);
-  // const [editorVisible, setEditorVisible] = React.useState(false);
 
   const isLastIncome = bundle?.incomes.length === 1;
   const incomeListItems = hasLoadedSelectedPeriod && bundle ? buildIncomeListItems(bundle) : [];
@@ -184,50 +181,6 @@ export function IncomesScreen() {
     setPendingDeleteIncomeId(null);
   }
 
-  // function closeEditor() {
-  //   if (isSubmitting) {
-  //     return;
-  //   }
-
-  //   setEditorVisible(false);
-  //   setEditingIncomeId(null);
-  // }
-
-  // async function handleSubmitIncome(values: IncomeEditorValues) {
-  //   setIsSubmitting(true);
-
-  //   try {
-  //     const input = {
-  //       label: values.label,
-  //       description: values.description,
-  //       billingType: values.billingType,
-  //       baseAmount: Number(values.baseAmount),
-  //       currency: values.currency,
-  //       vatRate: values.vatRate,
-  //       clientName: values.clientName,
-  //       invoiceNumber: values.invoiceNumber,
-  //       workParameters: {
-  //         workingDaysPerMonth: Number(values.workingDaysPerMonth),
-  //         workingHoursPerDay: Number(values.workingHoursPerDay),
-  //       },
-  //     } as const;
-
-  //     if (editingIncome) {
-  //       await updateIncome(editingIncome.id, input);
-  //     }
-
-  //     setEditorVisible(false);
-  //     setEditingIncomeId(null);
-  //   } catch (saveError) {
-  //     Alert.alert(
-  //       'Nie udało się zapisać przychodu',
-  //       saveError instanceof Error ? saveError.message : 'Spróbuj ponownie.'
-  //     );
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // }
-
   return (
     <View style={styles.screen}>
       <ScreenContainer contentContainerStyle={styles.content}>
@@ -343,6 +296,7 @@ export function IncomesScreen() {
                     onEdit={() => handleEditIncome(item.id)}
                     title={item.title}
                     vatLabel={item.vatLabel}
+                    warnings={item.warnings}
                   />
                 ))}
               </View>
@@ -396,15 +350,6 @@ export function IncomesScreen() {
         selectedPeriod={selectedPeriod}
         visible={isPeriodPickerVisible}
       />
-
-      {/* <IncomeEditorModal
-        initialValues={editorInitialValues}
-        isSubmitting={isSubmitting}
-        mode="edit"
-        onClose={closeEditor}
-        onSubmit={handleSubmitIncome}
-        visible={editorVisible}
-      /> */}
     </View>
   );
 }
@@ -477,19 +422,6 @@ const styles = StyleSheet.create({
     bottom: 104,
   },
 });
-
-const incomeToEditorValuesPlaceholder: IncomeEditorValues = {
-  label: '',
-  description: '',
-  baseAmount: '',
-  billingType: 'MONTHLY',
-  currency: 'PLN',
-  vatRate: '23',
-  clientName: '',
-  invoiceNumber: '',
-  workingDaysPerMonth: '21',
-  workingHoursPerDay: '8',
-};
 
 function buildListStatusLabel(searchQuery: string, appliedFilterCount: number) {
   const bits: string[] = [];

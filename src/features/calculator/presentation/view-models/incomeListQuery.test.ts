@@ -86,6 +86,7 @@ function createItems(): IncomeListItemViewModel[] {
       billingTypeLabel: 'Miesięcznie',
       createdAt: '2026-03-02T08:00:00.000Z',
       searchableText: 'Monthly Retainer Premium support Acme Corp FV/03/2026 Acme Corp · FV/03/2026',
+      warnings: [],
     },
     {
       id: 'b',
@@ -99,6 +100,7 @@ function createItems(): IncomeListItemViewModel[] {
       billingTypeLabel: 'Godzinowo',
       createdAt: '2026-03-08T10:00:00.000Z',
       searchableText: 'Design Sprint Workshop Nebula Ltd. INV-44 Nebula Ltd. · INV-44',
+      warnings: [],
     },
     {
       id: 'c',
@@ -112,6 +114,7 @@ function createItems(): IncomeListItemViewModel[] {
       billingTypeLabel: 'Dziennie',
       createdAt: '2026-03-08T10:00:00.000Z',
       searchableText: 'Platform Delivery Roadmap phase Fintech Horizon FIN-55 Roadmap phase',
+      warnings: [],
     },
   ];
 }
