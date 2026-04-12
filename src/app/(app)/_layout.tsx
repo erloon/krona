@@ -15,6 +15,14 @@ export default function AppLayout() {
   }
 
   if (phase !== 'app') {
+    if (phase === 'pin-setup') {
+      return <Redirect href="/(auth)/pin-setup" />;
+    }
+
+    if (phase === 'pin-unlock') {
+      return <Redirect href="/(auth)/pin-unlock" />;
+    }
+
     return <Redirect href="/(auth)/login" />;
   }
 

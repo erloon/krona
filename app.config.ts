@@ -74,6 +74,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     plugins: [
       'expo-router',
       [
+        'expo-sqlite',
+        {
+          useSQLCipher: true,
+        },
+      ],
+      [
         'expo-splash-screen',
         {
           backgroundColor: '#faf9f8',

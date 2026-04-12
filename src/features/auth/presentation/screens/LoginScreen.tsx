@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, layout, spacing } from '@/shared/theme';
+import { useStartupSession } from '@/core/store/startup-session';
 import { InfoBanner } from '@/shared/ui/primitives/InfoBanner';
 
 import { AuthCard } from '../components/AuthCard';
@@ -11,15 +12,23 @@ import { useGoogleSignIn } from '../hooks/useGoogleSignIn';
 
 export function LoginScreen() {
   const { error, isPending, signIn } = useGoogleSignIn();
+  const { securityMessage } = useStartupSession();
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.screen}>
         <View style={styles.content}>
           <AuthCard
-            action={<GoogleSignInButton disabled={isPending} loading={isPending} onPress={signIn} />}
-            statusMessage="Logowanie zapisuje lokalną sesję na tym urządzeniu."
+            action={
+              <GoogleSignInButton
+                disabled={isPending}
+                loading={isPending}
+                onPress={signIn}
+              />
+            }
+            statusMessage="Google potwierdza Twoją tożsamość. Następnie ustawisz albo wpiszesz 4-cyfrowy PIN chroniący lokalną, zaszyfrowaną bazę danych."
           />
+          {securityMessage ? <InfoBanner message={securityMessage} /> : null}
           {error ? <InfoBanner message={error} /> : null}
         </View>
       </View>

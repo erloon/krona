@@ -14,5 +14,13 @@ export default function AuthLayout() {
     return <Redirect href="/(app)" />;
   }
 
+  if (phase === 'pin-setup') {
+    return <Redirect href="/(auth)/pin-setup" />;
+  }
+
+  if (phase === 'pin-unlock') {
+    return <Redirect href="/(auth)/pin-unlock" />;
+  }
+
   return <Stack screenOptions={{ headerShown: false }} />;
 }

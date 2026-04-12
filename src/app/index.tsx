@@ -30,6 +30,14 @@ export default function HomeScreen() {
       router.replace('/(auth)/login');
     }
 
+    if (phase === 'pin-setup') {
+      router.replace('/(auth)/pin-setup');
+    }
+
+    if (phase === 'pin-unlock') {
+      router.replace('/(auth)/pin-unlock');
+    }
+
     if (phase === 'app') {
       router.replace('/(app)');
     }

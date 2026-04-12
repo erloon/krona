@@ -11,6 +11,7 @@ import {
 import { startupSessionActions } from '@/core/store/startup-session';
 
 import { authSessionService } from '../../application/services/authSessionService';
+import { localSecurityService } from '../../application/services/localSecurityService';
 
 function buildGooglePromptError(error: unknown) {
   if (error instanceof Error && error.message) {
@@ -63,6 +64,8 @@ export function useGoogleSignIn() {
   const promptAsync = requestResult[2];
 
   async function signIn() {
+    const runtimeSupport = localSecurityService.getRuntimeSupport();
+
     if (isExpoGoGoogleBypassAvailable()) {
       setError(null);
       setIsPending(true);
@@ -72,8 +75,21 @@ export function useGoogleSignIn() {
           googleAuthConfig.expoGoFallbackUser
         );
 
-        startupSessionActions.setSession(session);
-        router.replace('/(app)');
+        if (Platform.OS === 'web') {
+          startupSessionActions.finishHydration(session, 'app', {
+            securityMessage: runtimeSupport.supported ? null : runtimeSupport.message,
+          });
+          router.replace('/(app)');
+          return;
+        }
+
+        const hasPin = await localSecurityService.hasPin(session.user.id);
+
+        startupSessionActions.setPendingSession(
+          session,
+          hasPin ? 'pin-unlock' : 'pin-setup'
+        );
+        router.replace(hasPin ? '/(auth)/pin-unlock' : '/(auth)/pin-setup');
       } catch (signInError) {
         setError(buildGooglePromptError(signInError));
       } finally {
@@ -133,8 +149,21 @@ export function useGoogleSignIn() {
         idToken,
       });
 
-      startupSessionActions.setSession(session);
-      router.replace('/(app)');
+      if (Platform.OS === 'web') {
+        startupSessionActions.finishHydration(session, 'app', {
+          securityMessage: runtimeSupport.supported ? null : runtimeSupport.message,
+        });
+        router.replace('/(app)');
+        return;
+      }
+
+      const hasPin = await localSecurityService.hasPin(session.user.id);
+
+      startupSessionActions.setPendingSession(
+        session,
+        hasPin ? 'pin-unlock' : 'pin-setup'
+      );
+      router.replace(hasPin ? '/(auth)/pin-unlock' : '/(auth)/pin-setup');
     } catch (signInError) {
       setError(buildGooglePromptError(signInError));
     } finally {

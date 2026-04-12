@@ -12,6 +12,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { startupSessionActions, useStartupSession } from '@/core/store/startup-session';
 import { authSessionService } from '@/features/auth/application/services/authSessionService';
+import { localSecurityService } from '@/features/auth/application/services/localSecurityService';
 import { colors, radius, spacing, typography } from '@/shared/theme';
 import { ScreenContainer } from '@/shared/ui/layout/ScreenContainer';
 import { AppHeaderBrand } from '@/shared/ui/primitives/AppHeaderBrand';
@@ -21,6 +22,8 @@ import { ChoiceCard } from '@/shared/ui/primitives/ChoiceCard';
 import { ConfirmationModal } from '@/shared/ui/primitives/ConfirmationModal';
 import { DestructiveButton } from '@/shared/ui/primitives/DestructiveButton';
 import { InfoBanner } from '@/shared/ui/primitives/InfoBanner';
+import { PrimaryButton } from '@/shared/ui/primitives/PrimaryButton';
+import { SecondaryButton } from '@/shared/ui/primitives/SecondaryButton';
 import { SectionHeader } from '@/shared/ui/primitives/SectionHeader';
 import { SelectField } from '@/shared/ui/primitives/SelectField';
 import { TextAreaField } from '@/shared/ui/primitives/TextAreaField';
@@ -53,15 +56,39 @@ export function SettingsScreen() {
     updateSettings,
   } = useSettings();
   const [isResetConfirmationVisible, setIsResetConfirmationVisible] = React.useState(false);
+  const [isLogoutConfirmationVisible, setIsLogoutConfirmationVisible] = React.useState(false);
+  const [isSecureResetConfirmationVisible, setIsSecureResetConfirmationVisible] = React.useState(false);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
+  const [pinError, setPinError] = React.useState<string | null>(null);
+  const [currentPin, setCurrentPin] = React.useState('');
+  const [nextPin, setNextPin] = React.useState('');
+  const [confirmNextPin, setConfirmNextPin] = React.useState('');
+  const [isChangingPin, setIsChangingPin] = React.useState(false);
 
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
 
-  async function handleLogout() {
+  async function handleSignOut() {
     try {
       setIsSigningOut(true);
       await authSessionService.signOut();
-      startupSessionActions.setSession(null);
+      await localSecurityService.resetSecureLocalData();
+      startupSessionActions.signOut(
+        'Wylogowano Cię i usunięto lokalną, zaszyfrowaną bazę danych z tego urządzenia.'
+      );
+      router.replace('/(auth)/login');
+    } finally {
+      setIsSigningOut(false);
+    }
+  }
+
+  async function handleResetSecureData() {
+    try {
+      setIsSigningOut(true);
+      await authSessionService.signOut();
+      await localSecurityService.resetSecureLocalData();
+      startupSessionActions.signOut(
+        'Lokalne dane zostały usunięte. Zaloguj się ponownie przez Google i ustaw nowy PIN.'
+      );
       router.replace('/(auth)/login');
     } finally {
       setIsSigningOut(false);
@@ -74,6 +101,40 @@ export function SettingsScreen() {
       setIsResetConfirmationVisible(false);
     } catch {
       // The hook already exposes a screen-level error message.
+    }
+  }
+
+  async function handleChangePin() {
+    if (!session) {
+      setPinError('Sesja logowania wygasła. Zaloguj się ponownie.');
+      return;
+    }
+
+    if (!/^\d{4}$/.test(currentPin) || !/^\d{4}$/.test(nextPin) || !/^\d{4}$/.test(confirmNextPin)) {
+      setPinError('Każdy PIN musi składać się dokładnie z 4 cyfr.');
+      return;
+    }
+
+    if (nextPin !== confirmNextPin) {
+      setPinError('Nowy PIN i potwierdzenie muszą być identyczne.');
+      return;
+    }
+
+    try {
+      setPinError(null);
+      setIsChangingPin(true);
+      await localSecurityService.changePin(session.user.id, currentPin, nextPin);
+      setCurrentPin('');
+      setNextPin('');
+      setConfirmNextPin('');
+    } catch (changeError) {
+      setPinError(
+        changeError instanceof Error
+          ? changeError.message
+          : 'Nie udało się zmienić PIN-u.'
+      );
+    } finally {
+      setIsChangingPin(false);
     }
   }
 
@@ -320,6 +381,58 @@ export function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
+        <SectionHeader title="Bezpieczeństwo" />
+        <SettingsGroupCard>
+          <InfoBanner message="PIN chroni dostęp do aplikacji i do zaszyfrowanej bazy danych. Jeśli go utracisz, lokalnych danych nie będzie można odzyskać." />
+          <TextField
+            keyboardType="number-pad"
+            label="Aktualny PIN"
+            maxLength={4}
+            onChangeText={(value) => {
+              setPinError(null);
+              setCurrentPin(value.replace(/\D/g, '').slice(0, 4));
+            }}
+            secureTextEntry
+            value={currentPin}
+          />
+          <TextField
+            keyboardType="number-pad"
+            label="Nowy PIN"
+            maxLength={4}
+            onChangeText={(value) => {
+              setPinError(null);
+              setNextPin(value.replace(/\D/g, '').slice(0, 4));
+            }}
+            secureTextEntry
+            value={nextPin}
+          />
+          <TextField
+            keyboardType="number-pad"
+            label="Powtórz nowy PIN"
+            maxLength={4}
+            onChangeText={(value) => {
+              setPinError(null);
+              setConfirmNextPin(value.replace(/\D/g, '').slice(0, 4));
+            }}
+            secureTextEntry
+            value={confirmNextPin}
+          />
+          {pinError ? <InfoBanner message={pinError} /> : null}
+          <PrimaryButton
+            disabled={isChangingPin}
+            label="Zmień PIN"
+            loading={isChangingPin}
+            onPress={handleChangePin}
+          />
+          <SecondaryButton
+            disabled={isSigningOut}
+            label="Usuń lokalne dane i zresetuj PIN"
+            onPress={() => setIsSecureResetConfirmationVisible(true)}
+          />
+        </SettingsGroupCard>
+      </View>
+
+      <View style={styles.section}>
         <SectionHeader title="Preferencje" />
         <SettingsGroupCard>
           <SelectField
@@ -374,7 +487,7 @@ export function SettingsScreen() {
         <Pressable
           accessibilityState={{ busy: isSigningOut, disabled: isSigningOut }}
           disabled={isSigningOut}
-          onPress={handleLogout}
+          onPress={() => setIsLogoutConfirmationVisible(true)}
           style={[styles.logoutButton, isSigningOut ? styles.logoutButtonDisabled : null]}
         >
           <MaterialCommunityIcons color={colors.text.primary} name="logout" size={18} />
@@ -396,6 +509,30 @@ export function SettingsScreen() {
         title="Wyczyścić bazę danych?"
         visible={isResetConfirmationVisible}
         warningMessage="Ta operacja przywróci aplikację do stanu początkowego, ale nie wyloguje Cię z konta."
+      />
+      <ConfirmationModal
+        cancelLabel="Anuluj"
+        confirmLabel="Wyloguj i usuń dane"
+        destructive
+        loading={isSigningOut}
+        message="Wylogowanie usunie lokalną sesję, PIN i zaszyfrowaną bazę danych z tego urządzenia."
+        onCancel={() => setIsLogoutConfirmationVisible(false)}
+        onConfirm={handleSignOut}
+        title="Wylogować się?"
+        visible={isLogoutConfirmationVisible}
+        warningMessage="Po ponownym logowaniu przez Google trzeba będzie utworzyć nowy PIN i rozpocząć pracę z pustą lokalną bazą."
+      />
+      <ConfirmationModal
+        cancelLabel="Anuluj"
+        confirmLabel="Usuń dane"
+        destructive
+        loading={isSigningOut}
+        message="Ta operacja usuwa PIN i całą zaszyfrowaną bazę danych z tego urządzenia."
+        onCancel={() => setIsSecureResetConfirmationVisible(false)}
+        onConfirm={handleResetSecureData}
+        title="Zresetować PIN i dane?"
+        visible={isSecureResetConfirmationVisible}
+        warningMessage="Jeśli kontynuujesz, nie będzie możliwości odzyskania zapisanych lokalnie danych."
       />
     </ScreenContainer>
   );
