@@ -33,28 +33,26 @@ export function RecordActionRow({
     <View style={styles.row}>
       <SecondaryButton
         accessibilityHint={`Otwiera formularz edycji rekordu ${entityLabel}.`}
-        accessibilityLabel={title ? `Edytuj ${entityLabel} ${title}` : `Edytuj ${entityLabel}`}
+        accessibilityLabel={title ? `Details ${entityLabel} ${title}` : `Details ${entityLabel}`}
         disabled={actionDisabled}
         fullWidth
-        label="EDYTUJ"
+        label="Details"
         leadingAccessory={
           <MaterialCommunityIcons color={colors.text.primary} name="pencil-outline" size={16} />
         }
         onPress={onEdit}
         style={styles.actionButton}
       />
-      <SecondaryButton
+      <IconButton
         accessibilityHint={`Tworzy kopię rekordu ${entityLabel} w bieżącym miesiącu.`}
         accessibilityLabel={title ? `Duplikuj ${entityLabel} ${title}` : `Duplikuj ${entityLabel}`}
+        color={colors.text.primary}
         disabled={actionDisabled}
-        fullWidth
-        label="DUPLIKUJ"
-        leadingAccessory={
-          <MaterialCommunityIcons color={colors.text.primary} name="content-copy" size={16} />
-        }
+        filled
+        icon="content-copy"
         loading={duplicateLoading}
         onPress={onDuplicate}
-        style={styles.actionButton}
+        style={styles.iconActionButton}
       />
       <IconButton
         accessibilityHint={`Otwiera potwierdzenie usunięcia rekordu ${entityLabel}.`}
@@ -78,6 +76,11 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
     minHeight: 44,
+  },
+  iconActionButton: {
+    borderWidth: 1,
+    borderColor: colors.border.input,
+    backgroundColor: colors.background.surface,
   },
   deleteButton: {
     alignSelf: 'stretch',

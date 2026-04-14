@@ -1,8 +1,5 @@
 import React from 'react';
 import { Platform } from 'react-native';
-import * as AuthSession from 'expo-auth-session';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
 import { useRouter } from 'expo-router';
 
 import {
@@ -14,8 +11,6 @@ import {
 import { startupSessionActions } from '@/core/store/startup-session';
 
 import { authSessionService } from '../../application/services/authSessionService';
-
-WebBrowser.maybeCompleteAuthSession();
 
 function buildGooglePromptError(error: unknown) {
   if (error instanceof Error && error.message) {
@@ -30,21 +25,42 @@ export function useGoogleSignIn() {
   const [error, setError] = React.useState<string | null>(null);
   const [isPending, setIsPending] = React.useState(false);
   const platformClientId = getGooglePlatformClientId();
+  const authModules = React.useMemo(() => loadGoogleAuthModules(), []);
 
-  const redirectUri = AuthSession.makeRedirectUri({
-    scheme: 'krona',
-    path: 'oauthredirect',
-  });
+  React.useEffect(() => {
+    authModules?.webBrowser.maybeCompleteAuthSession();
+  }, [authModules]);
 
-  const [request, , promptAsync] = Google.useAuthRequest({
-    clientId: platformClientId ?? 'missing-google-client-id',
-    webClientId: googleAuthConfig.webClientId,
-    androidClientId: googleAuthConfig.androidClientId,
-    iosClientId: googleAuthConfig.iosClientId,
-    redirectUri,
-    scopes: ['openid', 'profile', 'email'],
-    selectAccount: true,
-  });
+  const redirectUri = React.useMemo(
+    () =>
+      authModules?.authSession.makeRedirectUri({
+        scheme: 'krona',
+        path: 'oauthredirect',
+      }) ?? null,
+    [authModules]
+  );
+
+  const authRequestConfig = React.useMemo(
+    () =>
+      authModules && redirectUri
+        ? {
+            clientId: platformClientId ?? 'missing-google-client-id',
+            webClientId: googleAuthConfig.webClientId,
+            androidClientId: googleAuthConfig.androidClientId,
+            iosClientId: googleAuthConfig.iosClientId,
+            redirectUri,
+            scopes: ['openid', 'profile', 'email'],
+            selectAccount: true,
+          }
+        : null,
+    [authModules, platformClientId, redirectUri]
+  );
+
+  const requestResult = authModules && authRequestConfig
+    ? authModules.google.useAuthRequest(authRequestConfig)
+    : [null, null, null];
+  const request = requestResult[0];
+  const promptAsync = requestResult[2];
 
   async function signIn() {
     if (isExpoGoGoogleBypassAvailable()) {
@@ -69,6 +85,13 @@ export function useGoogleSignIn() {
 
     if (!platformClientId) {
       setError(getGoogleClientIdError());
+      return;
+    }
+
+    if (!authModules || !promptAsync) {
+      setError(
+        'Ta wersja aplikacji nie zawiera natywnych modułów logowania. Zainstaluj nowy build po dodaniu expo-secure-store i expo-crypto.'
+      );
       return;
     }
 
@@ -124,4 +147,52 @@ export function useGoogleSignIn() {
     isPending,
     signIn,
   };
+}
+
+type GoogleAuthModules = {
+  authSession: {
+    makeRedirectUri(input: { scheme: string; path: string }): string;
+  };
+  google: {
+    useAuthRequest(config: {
+      clientId: string;
+      webClientId?: string;
+      androidClientId?: string;
+      iosClientId?: string;
+      redirectUri: string;
+      scopes: string[];
+      selectAccount: boolean;
+    }): [unknown, null, ((options?: object) => Promise<AuthPromptResult>) | null];
+  };
+  webBrowser: {
+    maybeCompleteAuthSession(): void;
+  };
+};
+
+type AuthPromptResult = {
+  type: 'cancel' | 'dismiss' | 'success' | 'error';
+  authentication?: {
+    accessToken?: string;
+    idToken?: string;
+  } | null;
+  params: Record<string, string>;
+  error?: {
+    description?: string;
+  } | null;
+};
+
+function loadGoogleAuthModules(): GoogleAuthModules | null {
+  try {
+    return {
+      // Lazy load so login can fail gracefully on binaries missing native auth modules.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      authSession: require('expo-auth-session') as GoogleAuthModules['authSession'],
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      google: require('expo-auth-session/providers/google') as GoogleAuthModules['google'],
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      webBrowser: require('expo-web-browser') as GoogleAuthModules['webBrowser'],
+    };
+  } catch {
+    return null;
+  }
 }

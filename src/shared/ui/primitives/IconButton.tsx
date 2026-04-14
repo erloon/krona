@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   View,
@@ -20,6 +21,7 @@ type IconButtonProps = {
   size?: number;
   filled?: boolean;
   disabled?: boolean;
+  loading?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -32,27 +34,38 @@ export function IconButton({
   size = 20,
   filled = false,
   disabled = false,
+  loading = false,
   style,
 }: IconButtonProps) {
+  const isDisabled = disabled || loading;
+
   return (
     <Pressable
       accessibilityHint={accessibilityHint}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
-      accessibilityState={{ disabled }}
-      disabled={disabled}
+      accessibilityState={{ busy: loading, disabled: isDisabled }}
+      disabled={isDisabled}
       hitSlop={4}
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
         filled ? styles.filled : null,
-        pressed && !disabled ? styles.pressed : null,
-        disabled ? styles.disabled : null,
+        pressed && !isDisabled ? styles.pressed : null,
+        isDisabled ? styles.disabled : null,
         style,
       ]}
     >
       <View style={styles.iconWrap}>
-        <MaterialCommunityIcons color={disabled ? colors.text.muted : color} name={icon} size={size} />
+        {loading ? (
+          <ActivityIndicator color={color} size="small" />
+        ) : (
+          <MaterialCommunityIcons
+            color={disabled ? colors.text.muted : color}
+            name={icon}
+            size={size}
+          />
+        )}
       </View>
     </Pressable>
   );
