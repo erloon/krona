@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.page,
   },
   message: {
-    ...typography.bodyBase,
+    ...typography.body,
     color: colors.text.secondary,
   },
 });
