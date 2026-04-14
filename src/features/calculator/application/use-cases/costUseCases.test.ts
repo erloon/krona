@@ -35,6 +35,9 @@ export async function testCreateAndUpdateCostRecalculateSnapshot(): Promise<void
       input: {
         label: 'Leasing auta',
         description: 'Rata miesięczna',
+        nip: '',
+        supplierName: '',
+        supplierAddress: '',
         enteredNetAmount: 1000,
         currency: 'PLN',
         netAmount: 1000,
@@ -65,6 +68,9 @@ export async function testCreateAndUpdateCostRecalculateSnapshot(): Promise<void
       input: {
         label: 'Leasing auta premium',
         description: 'Rata po korekcie',
+        nip: '',
+        supplierName: '',
+        supplierAddress: '',
         enteredNetAmount: 1200,
         currency: 'PLN',
         netAmount: 1200,
@@ -100,6 +106,9 @@ export async function testDuplicateAndDeleteCostKeepOtherPeriodsUntouched(): Pro
       input: {
         label: 'Biuro',
         description: '',
+        nip: '',
+        supplierName: '',
+        supplierAddress: '',
         enteredNetAmount: 500,
         currency: 'PLN',
         netAmount: 500,
@@ -119,6 +128,9 @@ export async function testDuplicateAndDeleteCostKeepOtherPeriodsUntouched(): Pro
     input: {
       label: 'Paliwo',
       description: '',
+      nip: '',
+      supplierName: '',
+      supplierAddress: '',
       enteredNetAmount: 300,
       currency: 'PLN',
       netAmount: 300,

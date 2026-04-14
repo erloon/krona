@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"\\\\.ts$\")",
+      "Bash(xargs grep:*)",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}

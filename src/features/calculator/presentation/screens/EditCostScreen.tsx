@@ -26,6 +26,8 @@ import { ValidationWarningsList } from '@/shared/ui/primitives/ValidationWarning
 
 import { AttachmentDropzone } from '../components/AttachmentDropzone';
 import { DeductionModeSelector } from '../components/DeductionModeSelector';
+import { fetchVatSubjectByNip } from '@/features/calculator/infrastructure/services/VatWhiteListClient';
+
 import {
   attachCostReference,
   buildCostEditorInput,
@@ -62,6 +64,11 @@ export function EditCostScreen() {
   const [attachmentNameDraft, setAttachmentNameDraft] = React.useState('');
   const [fxMessage, setFxMessage] = React.useState<string | null>(null);
   const [fxErrorMessage, setFxErrorMessage] = React.useState<string | null>(null);
+  const [nipCheckStatus, setNipCheckStatus] = React.useState<
+    'idle' | 'loading' | 'found' | 'found-exempt' | 'not-found' | 'error'
+  >('idle');
+  const [nipCheckMessage, setNipCheckMessage] = React.useState<string | null>(null);
+  const preExemptVatRateRef = React.useRef<CostVatRate | null>(null);
 
   const costEntity = bundle?.costs.find((cost) => cost.id === costId) ?? null;
   const settingsSnapshot = bundle?.settingsSnapshot ?? null;
@@ -97,7 +104,7 @@ export function EditCostScreen() {
       <ScreenContainer contentContainerStyle={styles.content}>
         <AppTopBar
           leadingContent={
-            <IconButton accessibilityLabel="Wróć" icon="arrow-left" onPress={() => router.back()} />
+            <IconButton accessibilityLabel="Wróć" icon="arrow-left" onPress={() => { if (router.canGoBack()) { router.back(); } else { router.replace('/'); } }} />
           }
           title="Edytuj koszt"
         />
@@ -105,7 +112,7 @@ export function EditCostScreen() {
           description="Wybrany koszt nie istnieje w bieżącym okresie raportowym."
           title="Nie znaleziono kosztu"
         />
-        <PrimaryButton label="Wróć do listy" onPress={() => router.back()} />
+        <PrimaryButton label="Wróć do listy" onPress={() => { if (router.canGoBack()) { router.back(); } else { router.replace('/'); } }} />
       </ScreenContainer>
     );
   }
@@ -193,6 +200,97 @@ export function EditCostScreen() {
     }
   }
 
+  async function handleNipChange(rawValue: string) {
+    const digits = rawValue.replace(/\D/g, '').slice(0, 10);
+    updateForm('nip', digits);
+
+    if (digits.length === 0) {
+      const restoreRate = preExemptVatRateRef.current;
+      preExemptVatRateRef.current = null;
+      setForm((current) =>
+        current
+          ? { ...current, supplierName: '', supplierAddress: '', ...(restoreRate !== null ? { vatRate: restoreRate } : {}) }
+          : current
+      );
+      setNipCheckStatus('idle');
+      setNipCheckMessage(null);
+      return;
+    }
+
+    if (digits.length < 10) {
+      setNipCheckStatus('idle');
+      setNipCheckMessage(null);
+      return;
+    }
+
+    setNipCheckStatus('loading');
+    setNipCheckMessage(null);
+
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const result = await fetchVatSubjectByNip(digits, today);
+
+      if (result.status === 'not-found') {
+        setNipCheckStatus('not-found');
+        setNipCheckMessage('Nie znaleziono podmiotu o podanym NIP w rejestrze VAT.');
+        return;
+      }
+
+      if (result.status === 'invalid-nip') {
+        setNipCheckStatus('found-exempt');
+        setNipCheckMessage('Nieprawidłowy NIP lub brak podatnika w rejestrze — stawka zmieniona na ZW, brak prawa do odliczenia VAT.');
+        if (preExemptVatRateRef.current === null) {
+          preExemptVatRateRef.current = activeForm.vatRate;
+        }
+        setForm((current) => (current ? { ...current, vatRate: 'ZW' as const } : current));
+        return;
+      }
+
+      const { subject } = result;
+      const isVatActive = subject.statusVat === 'Czynny';
+
+      if (isVatActive) {
+        setNipCheckStatus('found');
+        setNipCheckMessage('Czynny podatnik VAT');
+        const restoreRate = preExemptVatRateRef.current;
+        preExemptVatRateRef.current = null;
+        setForm((current) =>
+          current
+            ? {
+                ...current,
+                supplierName: subject.name,
+                supplierAddress: subject.residenceAddress || subject.workingAddress || '',
+                ...(restoreRate !== null ? { vatRate: restoreRate } : {}),
+              }
+            : current
+        );
+      } else {
+        setNipCheckStatus('found-exempt');
+        setNipCheckMessage(
+          `Status VAT: ${subject.statusVat} — dostawca nie jest czynnym podatnikiem VAT. Stawka zmieniona na ZW, brak prawa do odliczenia VAT od tego kosztu.`
+        );
+        if (preExemptVatRateRef.current === null) {
+          preExemptVatRateRef.current = activeForm.vatRate;
+        }
+        setForm((current) =>
+          current
+            ? {
+                ...current,
+                supplierName: subject.name,
+                supplierAddress: subject.residenceAddress || subject.workingAddress || '',
+                vatRate: 'ZW' as const,
+              }
+            : current
+        );
+      }
+    } catch (err) {
+      setNipCheckStatus('error');
+      setNipCheckMessage(
+        err instanceof Error ? err.message : 'Błąd podczas sprawdzania NIP w rejestrze VAT.'
+      );
+    }
+  }
+
   function handleOpenAttachmentEditor() {
     setAttachmentUriDraft(activeForm.attachment?.uri ?? '');
     setAttachmentNameDraft(activeForm.attachment?.fileName ?? '');
@@ -233,7 +331,7 @@ export function EditCostScreen() {
 
     try {
       await updateCost(activeCostId, buildCostEditorInput(activeForm));
-      router.back();
+      if (router.canGoBack()) { router.back(); } else { router.replace('/'); }
     } catch (saveError) {
       Alert.alert(
         'Nie udało się zapisać kosztu',
@@ -248,7 +346,7 @@ export function EditCostScreen() {
     <ScreenContainer contentContainerStyle={styles.content}>
       <AppTopBar
         leadingContent={
-          <IconButton accessibilityLabel="Wróć" icon="arrow-left" onPress={() => router.back()} />
+          <IconButton accessibilityLabel="Wróć" icon="arrow-left" onPress={() => { if (router.canGoBack()) { router.back(); } else { router.replace('/'); } }} />
         }
         title="Edytuj koszt"
       />
@@ -315,6 +413,51 @@ export function EditCostScreen() {
         value={activeForm.category}
       />
 
+      <View style={styles.nipSection}>
+        <TextField
+          autoCapitalize="none"
+          keyboardType="numeric"
+          label="NIP DOSTAWCY (opcjonalnie)"
+          onChangeText={(value) => {
+            void handleNipChange(value);
+          }}
+          placeholder="Np. 5260250274"
+          value={activeForm.nip}
+        />
+        {nipCheckStatus === 'loading' ? (
+          <Text style={styles.nipHint}>Sprawdzanie rejestru VAT...</Text>
+        ) : nipCheckStatus === 'found' ? (
+          <Text style={styles.nipSuccess}>{nipCheckMessage}</Text>
+        ) : nipCheckStatus === 'found-exempt' ? (
+          <Text style={styles.nipWarning}>{nipCheckMessage}</Text>
+        ) : nipCheckStatus === 'not-found' ? (
+          <Text style={styles.nipWarning}>{nipCheckMessage}</Text>
+        ) : nipCheckStatus === 'error' ? (
+          <Text style={styles.validation}>{nipCheckMessage}</Text>
+        ) : null}
+      </View>
+
+      {activeForm.nip.length === 10 ||
+      activeForm.supplierName.length > 0 ||
+      activeForm.supplierAddress.length > 0 ? (
+        <View style={styles.supplierSection}>
+          <TextField
+            autoCapitalize="words"
+            label="NAZWA DOSTAWCY (opcjonalnie)"
+            onChangeText={(value) => updateForm('supplierName', value)}
+            placeholder="Np. Adobe Inc. Sp. z o.o."
+            value={activeForm.supplierName}
+          />
+          <TextField
+            autoCapitalize="words"
+            label="ADRES DOSTAWCY (opcjonalnie)"
+            onChangeText={(value) => updateForm('supplierAddress', value)}
+            placeholder="Np. ul. Polska 1, 00-001 Warszawa"
+            value={activeForm.supplierAddress}
+          />
+        </View>
+      ) : null}
+
       <View style={styles.section}>
         <TextField
           autoCapitalize="sentences"
@@ -332,6 +475,7 @@ export function EditCostScreen() {
         />
       </View>
 
+      {/* ZAŁĄCZNIK — tymczasowo ukryty, kod zachowany
       <AttachmentDropzone
         attachment={activeForm.attachment}
         onAddPress={handleOpenAttachmentEditor}
@@ -360,15 +504,38 @@ export function EditCostScreen() {
           </View>
         </SurfaceCard>
       ) : null}
+      */}
 
-      <SurfaceCard style={styles.infoCard}>
-        <Text style={styles.infoTitle}>Podgląd skutku kosztu</Text>
-        <Text style={styles.infoText}>
-          PLN do obliczeń: {resolvePlnNetAmount(activeForm).toFixed(2).replace('.', ',')} · VAT odliczalny: {preview.deductibleVatAmount.toFixed(2).replace('.', ',')} PLN
-        </Text>
-        <Text style={styles.infoText}>
-          PIT/Zdrowotna: {preview.deductibleCostAmount.toFixed(2).replace('.', ',')} PLN · Gotówka: {preview.economicCostAmount.toFixed(2).replace('.', ',')} PLN
-        </Text>
+      <SurfaceCard style={styles.summaryCard}>
+        <Text style={styles.summaryTitle}>Podgląd skutku kosztu</Text>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryKey}>Kwota w PLN</Text>
+          <Text style={styles.summaryValue}>
+            {resolvePlnNetAmount(activeForm).toFixed(2).replace('.', ',')} PLN
+          </Text>
+        </View>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryKey}>VAT teoretyczny</Text>
+          <Text style={styles.summaryValue}>{preview.vatAmount.toFixed(2).replace('.', ',')} PLN</Text>
+        </View>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryKey}>VAT odliczalny</Text>
+          <Text style={styles.summaryValue}>{preview.deductibleVatAmount.toFixed(2).replace('.', ',')} PLN</Text>
+        </View>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryKey}>VAT nieodliczalny</Text>
+          <Text style={styles.summaryValue}>{preview.nonDeductibleVatAmount.toFixed(2).replace('.', ',')} PLN</Text>
+        </View>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryKey}>Podstawa PIT/Zdrowotna</Text>
+          <Text style={styles.summaryValue}>{preview.deductibleCostAmount.toFixed(2).replace('.', ',')} PLN</Text>
+        </View>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryKey}>Efekt gotówkowy</Text>
+          <Text style={styles.summaryValue}>{preview.economicCostAmount.toFixed(2).replace('.', ',')} PLN</Text>
+        </View>
+        <Text style={styles.summaryNote}>{preview.taxEffectLabel}</Text>
+        <Text style={styles.summaryNote}>{preview.cashEffectLabel}</Text>
       </SurfaceCard>
 
       {validationMessage ? <Text style={styles.validation}>{validationMessage}</Text> : null}
@@ -398,16 +565,55 @@ const styles = StyleSheet.create({
   section: {
     gap: spacing.md,
   },
-  infoCard: {
+  nipSection: {
     gap: spacing.xs,
   },
-  fxSection: {
+  supplierSection: {
+    gap: spacing.md,
+  },
+  nipHint: {
+    ...typography.caption,
+    color: colors.text.secondary,
+  },
+  nipSuccess: {
+    ...typography.caption,
+    color: colors.brand.primary,
+  },
+  nipWarning: {
+    ...typography.caption,
+    color: '#E6820E',
+  },
+  summaryCard: {
     gap: spacing.sm,
   },
-  infoTitle: {
+  summaryTitle: {
     ...typography.bodyMedium,
     color: colors.text.primary,
     fontWeight: '700',
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  summaryKey: {
+    ...typography.bodySmall,
+    color: colors.text.secondary,
+    flex: 1,
+  },
+  summaryValue: {
+    ...typography.bodySmall,
+    color: colors.text.primary,
+    fontWeight: '600',
+    textAlign: 'right',
+  },
+  summaryNote: {
+    ...typography.caption,
+    color: colors.text.secondary,
+  },
+  fxSection: {
+    gap: spacing.sm,
   },
   infoText: {
     ...typography.bodySmall,

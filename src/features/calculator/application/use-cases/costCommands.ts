@@ -10,6 +10,9 @@ import type { MonthlyReportingPeriod } from '@/features/calculator/domain/value-
 export type CostEditorInput = Readonly<{
   label: string;
   description: string;
+  nip: string;
+  supplierName: string;
+  supplierAddress: string;
   enteredNetAmount: number;
   currency: CostCurrency;
   netAmount: number;

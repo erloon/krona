@@ -26,6 +26,8 @@ import { AttachmentDropzone } from '../components/AttachmentDropzone';
 import { DeductionModeSelector } from '../components/DeductionModeSelector';
 import { getSelectedPeriodLabel } from '../hooks/calculatorDataState';
 import { useCalculatorData } from '../hooks/useManagedCalculatorData';
+import { fetchVatSubjectByNip } from '@/features/calculator/infrastructure/services/VatWhiteListClient';
+
 import {
   attachCostReference,
   buildCostEditorInput,
@@ -64,6 +66,11 @@ export function AddCostScreen() {
   const [attachmentNameDraft, setAttachmentNameDraft] = React.useState('');
   const [fxMessage, setFxMessage] = React.useState<string | null>(null);
   const [fxErrorMessage, setFxErrorMessage] = React.useState<string | null>(null);
+  const [nipCheckStatus, setNipCheckStatus] = React.useState<
+    'idle' | 'loading' | 'found' | 'found-exempt' | 'not-found' | 'error'
+  >('idle');
+  const [nipCheckMessage, setNipCheckMessage] = React.useState<string | null>(null);
+  const preExemptVatRateRef = React.useRef<CostVatRate | null>(null);
 
   const settingsSnapshot = bundle?.settingsSnapshot ?? null;
   const preview = React.useMemo(
@@ -161,6 +168,88 @@ export function AddCostScreen() {
     }
   }
 
+  async function handleNipChange(rawValue: string) {
+    const digits = rawValue.replace(/\D/g, '').slice(0, 10);
+    updateForm('nip', digits);
+
+    if (digits.length === 0) {
+      if (preExemptVatRateRef.current !== null) {
+        setForm((current) => ({ ...current, supplierName: '', supplierAddress: '', vatRate: preExemptVatRateRef.current! }));
+        preExemptVatRateRef.current = null;
+      } else {
+        setForm((current) => ({ ...current, supplierName: '', supplierAddress: '' }));
+      }
+      setNipCheckStatus('idle');
+      setNipCheckMessage(null);
+      return;
+    }
+
+    if (digits.length < 10) {
+      setNipCheckStatus('idle');
+      setNipCheckMessage(null);
+      return;
+    }
+
+    setNipCheckStatus('loading');
+    setNipCheckMessage(null);
+
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const result = await fetchVatSubjectByNip(digits, today);
+
+      if (result.status === 'not-found') {
+        setNipCheckStatus('not-found');
+        setNipCheckMessage('Nie znaleziono podmiotu o podanym NIP w rejestrze VAT.');
+        return;
+      }
+
+      if (result.status === 'invalid-nip') {
+        setNipCheckStatus('found-exempt');
+        setNipCheckMessage('Nieprawidłowy NIP lub brak podatnika w rejestrze — stawka zmieniona na ZW, brak prawa do odliczenia VAT.');
+        if (preExemptVatRateRef.current === null) {
+          preExemptVatRateRef.current = form.vatRate;
+        }
+        setForm((current) => ({ ...current, vatRate: 'ZW' as const }));
+        return;
+      }
+
+      const { subject } = result;
+      const isVatActive = subject.statusVat === 'Czynny';
+
+      if (isVatActive) {
+        setNipCheckStatus('found');
+        setNipCheckMessage('Czynny podatnik VAT');
+        const restoreRate = preExemptVatRateRef.current;
+        preExemptVatRateRef.current = null;
+        setForm((current) => ({
+          ...current,
+          supplierName: subject.name,
+          supplierAddress: subject.residenceAddress || subject.workingAddress || '',
+          ...(restoreRate !== null ? { vatRate: restoreRate } : {}),
+        }));
+      } else {
+        setNipCheckStatus('found-exempt');
+        setNipCheckMessage(
+          `Status VAT: ${subject.statusVat} — dostawca nie jest czynnym podatnikiem VAT. Stawka zmieniona na ZW, brak prawa do odliczenia VAT od tego kosztu.`
+        );
+        if (preExemptVatRateRef.current === null) {
+          preExemptVatRateRef.current = form.vatRate;
+        }
+        setForm((current) => ({
+          ...current,
+          supplierName: subject.name,
+          supplierAddress: subject.residenceAddress || subject.workingAddress || '',
+          vatRate: 'ZW' as const,
+        }));
+      }
+    } catch (err) {
+      setNipCheckStatus('error');
+      setNipCheckMessage(
+        err instanceof Error ? err.message : 'Błąd podczas sprawdzania NIP w rejestrze VAT.'
+      );
+    }
+  }
+
   function handleOpenAttachmentEditor() {
     setAttachmentUriDraft(form.attachment?.uri ?? '');
     setAttachmentNameDraft(form.attachment?.fileName ?? '');
@@ -200,7 +289,7 @@ export function AddCostScreen() {
 
     try {
       await createCost(buildCostEditorInput(form));
-      router.back();
+      if (router.canGoBack()) { router.back(); } else { router.replace('/'); }
     } catch (saveError) {
       setSaveErrorMessage(
         saveError instanceof Error ? saveError.message : 'Nie udało się zapisać kosztu.'
@@ -214,7 +303,7 @@ export function AddCostScreen() {
     <ScreenContainer contentContainerStyle={styles.content}>
       <AppTopBar
         leadingContent={
-          <IconButton accessibilityLabel="Wróć do listy kosztów" icon="arrow-left" onPress={() => router.back()} />
+          <IconButton accessibilityLabel="Wróć do listy kosztów" icon="arrow-left" onPress={() => { if (router.canGoBack()) { router.back(); } else { router.replace('/'); } }} />
         }
         title="Dodaj koszt"
       />
@@ -307,6 +396,49 @@ export function AddCostScreen() {
         value={form.category}
       />
 
+      <View style={styles.nipSection}>
+        <TextField
+          autoCapitalize="none"
+          keyboardType="numeric"
+          label="NIP DOSTAWCY (opcjonalnie)"
+          onChangeText={(value) => {
+            void handleNipChange(value);
+          }}
+          placeholder="Np. 5260250274"
+          value={form.nip}
+        />
+        {nipCheckStatus === 'loading' ? (
+          <Text style={styles.nipHint}>Sprawdzanie rejestru VAT...</Text>
+        ) : nipCheckStatus === 'found' ? (
+          <Text style={styles.nipSuccess}>{nipCheckMessage}</Text>
+        ) : nipCheckStatus === 'found-exempt' ? (
+          <Text style={styles.nipWarning}>{nipCheckMessage}</Text>
+        ) : nipCheckStatus === 'not-found' ? (
+          <Text style={styles.nipWarning}>{nipCheckMessage}</Text>
+        ) : nipCheckStatus === 'error' ? (
+          <Text style={styles.errorText}>{nipCheckMessage}</Text>
+        ) : null}
+      </View>
+
+      {form.nip.length === 10 || form.supplierName.length > 0 || form.supplierAddress.length > 0 ? (
+        <View style={styles.supplierSection}>
+          <TextField
+            autoCapitalize="words"
+            label="NAZWA DOSTAWCY (opcjonalnie)"
+            onChangeText={(value) => updateForm('supplierName', value)}
+            placeholder="Np. Adobe Inc. Sp. z o.o."
+            value={form.supplierName}
+          />
+          <TextField
+            autoCapitalize="words"
+            label="ADRES DOSTAWCY (opcjonalnie)"
+            onChangeText={(value) => updateForm('supplierAddress', value)}
+            placeholder="Np. ul. Polska 1, 00-001 Warszawa"
+            value={form.supplierAddress}
+          />
+        </View>
+      ) : null}
+
       <View style={styles.fields}>
         <TextField
           autoCapitalize="sentences"
@@ -324,6 +456,7 @@ export function AddCostScreen() {
         />
       </View>
 
+      {/* ZAŁĄCZNIK — tymczasowo ukryty, kod zachowany
       <AttachmentDropzone
         attachment={form.attachment}
         onAddPress={handleOpenAttachmentEditor}
@@ -352,6 +485,7 @@ export function AddCostScreen() {
           </View>
         </SurfaceCard>
       ) : null}
+      */}
 
       <SurfaceCard style={styles.summaryCard}>
         <Text style={styles.summaryTitle}>Podgląd skutku kosztu</Text>
@@ -403,7 +537,7 @@ export function AddCostScreen() {
         <SecondaryButton
           accessibilityHint="Anuluje tworzenie kosztu i wraca do listy w tym samym miesiącu."
           label="ANULUJ"
-          onPress={() => router.back()}
+          onPress={() => { if (router.canGoBack()) { router.back(); } else { router.replace('/'); } }}
         />
       </View>
     </ScreenContainer>
@@ -485,6 +619,24 @@ const styles = StyleSheet.create({
   },
   fields: {
     gap: spacing.md,
+  },
+  nipSection: {
+    gap: spacing.xs,
+  },
+  supplierSection: {
+    gap: spacing.md,
+  },
+  nipHint: {
+    ...typography.caption,
+    color: colors.text.secondary,
+  },
+  nipSuccess: {
+    ...typography.caption,
+    color: colors.brand.primary,
+  },
+  nipWarning: {
+    ...typography.caption,
+    color: '#E6820E',
   },
   attachmentEditor: {
     gap: spacing.md,
